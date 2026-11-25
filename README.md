@@ -73,6 +73,7 @@ One use per run, set with the inputs above.
 | **Reproduce a bug report** | Each phone answers yes, no or unclear, with screenshots ([brief](briefs/reproduce.md)). |
 | **Get an improvement report** | Where each persona hesitated, what it expected, what to change first ([brief](briefs/improve.md)). |
 | **Compare two versions** | The same personas on two branches or builds, then one table of goals, scores and issues ([how](docs/compare-versions.md)). |
+| **Test a website on phones** | The same personas in a phone's browser, on any site or web app. It runs on free Linux runners ([configuration](docs/configuration.md)). |
 
 Any Anthropic-compatible model works, from Claude Haiku to OpenRouter, DeepSeek, Kimi, GLM, MiniMax or Qwen; findings are only as good as the model's reading of screenshots ([docs/cheaper-models.md](docs/cheaper-models.md)). Maestro or Appium run the tests you write; these agents look for what nobody thought to test ([how it compares](docs/compare.md)).
 

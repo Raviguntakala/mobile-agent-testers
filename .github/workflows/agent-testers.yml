@@ -14,6 +14,12 @@ on:
       ios_personas:
         description: iOS personas from personas.json (comma-separated, all = every iOS persona, none = skip iOS)
         default: "clara,jonas"
+      web_personas:
+        description: Web personas from personas.json, a phone's browser on web_url (comma-separated, all = every web persona, none = skip the web)
+        default: "none"
+      web_url:
+        description: "Address of the site or web app for the web personas (https://...)"
+        default: ""
       app_dir:
         description: App folder (where package.json is)
         default: demo-app
@@ -91,6 +97,7 @@ jobs:
     outputs:
       android: ${{ steps.m.outputs.android }}
       ios: ${{ steps.m.outputs.ios }}
+      web: ${{ steps.m.outputs.web }}
     steps:
       - uses: actions/checkout@v4
       - name: Check setup
@@ -100,9 +107,13 @@ jobs:
         env:
           A: ${{ inputs.android_personas }}
           I: ${{ inputs.ios_personas }}
+          W: ${{ inputs.web_personas }}
+          U: ${{ inputs.web_url }}
         run: |
-          PERSONAS="$A" PLATFORM=android python3 scripts/matrix.py >> "$GITHUB_OUTPUT"
-          PERSONAS="$I" PLATFORM=ios python3 scripts/matrix.py >> "$GITHUB_OUTPUT"
+          { PERSONAS="$A" PLATFORM=android python3 scripts/matrix.py
+            PERSONAS="$I" PLATFORM=ios python3 scripts/matrix.py
+            PERSONAS="$W" PLATFORM=web python3 scripts/matrix.py; } >> "$GITHUB_OUTPUT"
+          case "$(printf '%s' "$W" | tr -d ' ,')" in ""|none) ;; *) case "$U" in https://*|http://*) ;; *) echo "::error::web_personas needs web_url (https://...)"; exit 1 ;; esac ;; esac
 
   build-android:
     needs: plan
@@ -432,6 +443,71 @@ jobs:
           BLOCK_HOSTS: ${{ inputs.block_hosts }}
           RECORD_VIDEO: ${{ inputs.record_video }}
         run: bash scripts/ios/run_agent.sh
+
+      - name: Encrypt results
+        if: always()
+        run: bash scripts/encrypt_results.sh "${{ matrix.persona }}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: "results-${{ matrix.persona }}", path: results.enc/, retention-days: 14 }
+
+  web:
+    needs: plan
+    if: needs.plan.outputs.web != '[]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 10   # model usage: see "Costs and limits" in the README
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.web) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tools (Playwright with WebKit and Chromium, Claude Code)
+        run: |
+          python3 -m pip install -q playwright==1.58.0
+          python3 -m playwright install --with-deps webkit chromium > /dev/null
+          npm install -g --silent @anthropic-ai/claude-code
+
+      # The browser also blocks these hosts itself (scripts/web/browser.py), but its routes miss the
+      # target of a redirect: /etc/hosts and the firewall close that gap, like on the other runners.
+      - name: Block analytics and ad hosts
+        env: { HOSTS: "${{ inputs.block_hosts }}" }
+        run: |
+          for h in $HOSTS; do
+            printf '0.0.0.0 %s\n:: %s\n' "$h" "$h" | sudo tee -a /etc/hosts >/dev/null
+            for ip in $(dig +short A "$h" @8.8.8.8 | grep -E '^[0-9.]+$'); do sudo iptables -I OUTPUT -d "$ip" -j REJECT; done
+          done
+
+      - name: Bug report to reproduce
+        if: inputs.bug_report != ''
+        env:
+          BUG_REPORT: ${{ inputs.bug_report }}
+          GH_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN || github.token }}
+        run: bash scripts/bug_report.sh
+
+      # Hosts of block_hosts are blocked inside the browser (scripts/web/browser.py):
+      # the tester is told where a link to one of them would have gone.
+      - name: Browser + agent
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          PERSONA: ${{ matrix.persona }}
+          DEVICE: ${{ matrix.device }}
+          WEB_DEVICE: ${{ matrix.emulate }}
+          THEME: ${{ matrix.theme }}
+          INCREASE_CONTRAST: ${{ matrix.increase_contrast }}
+          REDUCE_MOTION: ${{ matrix.reduce_motion }}
+          LOCALE: ${{ matrix.locale }}
+          GEO: ${{ matrix.geo }}
+          WEB_URL: ${{ inputs.web_url }}
+          BRIEF: ${{ inputs.bug_report != '' && inputs.brief == 'AGENT_BRIEF.md' && 'briefs/reproduce.md' || inputs.brief }}
+          MODEL: ${{ inputs.model }}
+          LLM_BASE_URL: ${{ inputs.llm_base_url }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          BLOCK_HOSTS: ${{ inputs.block_hosts }}
+          RECORD_VIDEO: ${{ inputs.record_video }}
+        run: bash scripts/web/run_agent.sh
 
       - name: Encrypt results
         if: always()

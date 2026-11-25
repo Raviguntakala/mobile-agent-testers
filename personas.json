@@ -178,5 +178,41 @@
     "locale": "zh-CN",
     "geo": [31.2304, 121.4737],
     "device": {"simulator": "iPhone 16e", "ios": 18, "text_size": "extra-large", "theme": "light"}
+  },
+  {
+    "id": "tom",
+    "platform": "web",
+    "profile": "Plumber, 46, checks websites on an old small iPhone between jobs, has little time.",
+    "goal": "Find out what the site offers and how to get in touch, in under two minutes.",
+    "locale": "en-GB",
+    "geo": [51.5072, -0.1276],
+    "device": {"name": "iPhone SE, Safari (WebKit)", "emulate": "iPhone SE", "theme": "light"}
+  },
+  {
+    "id": "amelie",
+    "platform": "web",
+    "profile": "Night nurse, 34, reads French, browses in dark mode with one hand.",
+    "goal": "Understand the main offer and compare the options before deciding.",
+    "locale": "fr-FR",
+    "geo": [45.764, 4.8357],
+    "device": {"name": "Pixel 7, Chrome (Chromium)", "emulate": "Pixel 7", "theme": "dark"}
+  },
+  {
+    "id": "lena",
+    "platform": "web",
+    "profile": "Architect, 52, reads German, gets dizzy from moving pages, reduced motion on.",
+    "goal": "Read the main pages fully, legal pages included, and check that nothing moves on its own.",
+    "locale": "de-DE",
+    "geo": [52.52, 13.405],
+    "device": {"name": "iPhone 15 Pro Max, Safari (WebKit)", "emulate": "iPhone 15 Pro Max", "theme": "light", "reduce_motion": true}
+  },
+  {
+    "id": "arjun",
+    "platform": "web",
+    "profile": "Student, 20, impatient, taps the first thing that looks clickable, increased contrast on.",
+    "goal": "Reach the main action of the site as fast as possible and report what slows him down.",
+    "locale": "en-IN",
+    "geo": [12.9716, 77.5946],
+    "device": {"name": "Galaxy S24, Chrome (Chromium)", "emulate": "Galaxy S24", "theme": "light", "increase_contrast": true}
   }
 ]

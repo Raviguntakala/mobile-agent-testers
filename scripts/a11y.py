@@ -146,3 +146,23 @@ def ios(tree, wpt, hpt):
 
     visit(tree, [])
     return _line(noname, small, "pt", 44)
+
+
+# ---------- Web: the element list of scripts/web/browser.py ----------
+
+def web(elements, w, h):
+    """elements: dicts with kind, name, x, y, w, h, inline (CSS px); w, h: viewport in CSS px.
+    Targets under 24 px follow WCAG 2.5.8; links inside a line of text are left out, as it allows."""
+    noname, small = [], []
+    screen = (0, 0, w, h)
+    for e in elements:
+        if e["kind"] not in ("button", "field"):
+            continue
+        box = (e["x"], e["y"], e["x"] + e["w"], e["y"] + e["h"])
+        cx, cy = round(e["x"] + e["w"] / 2), round(e["y"] + e["h"] / 2)
+        if not e["name"] and e["w"] * e["h"] <= 0.4 * w * h:
+            noname.append((cx, cy))
+        wd, hd = round(e["w"]), round(e["h"])
+        if min(wd, hd) < 24 and not e.get("inline") and not _cut(box, [screen], hd <= wd):
+            small.append((e["name"][:30], wd, hd, cx, cy))
+    return _line(noname, small, "px", 24)
