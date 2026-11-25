@@ -21,6 +21,7 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
 | `block_hosts` | Analytics hosts blocked during tests |
 | `record_video` | Screen recording of each phone, encrypted with the reports |
 | `replay_path` | Experimental, Android: after each agent, its path is replayed on the same phone with no model ([docs/replay.md](replay.md)) |
+| `replay_traces`, `replay_times` | Experimental, Android: no agent. The traces kept in a folder of the repo are replayed `replay_times` times each (20 by default) on each persona's phone, with no model ([docs/replay.md](../docs/replay.md#replay-kept-traces-many-times)) |
 | `map` | Experimental, Android: map every screen first. `robot`: a robot with no model, free. `robot+agent`: the robot, then an agent only for the forms it could not pass. Use one persona ([docs/dashboard.md](dashboard.md)) |
 
 **Supported out of the box** (detected automatically):

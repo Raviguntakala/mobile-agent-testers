@@ -21,6 +21,7 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
 | `block_hosts` | テスト中にブロックする分析系のホスト |
 | `record_video` | 各端末の画面録画（レポートと一緒に暗号化） |
 | `replay_path` | 実験的、Android のみ：各エージェントの終了後、その操作の流れを同じ端末でモデルなしで再生（[docs/replay.md](../../../docs/replay.md)） |
+| `replay_traces`, `replay_times` | 実験的、Android のみ：エージェントなし。リポジトリのフォルダに保存したトレースを、各ペルソナの端末でそれぞれ `replay_times` 回（既定は 20 回）モデルなしで再生（[docs/replay.md](../../../docs/replay.md#replay-kept-traces-many-times)） |
 | `map` | 実験的、Android のみ：まずすべての画面を回る。`robot`：モデルなしのロボット、無料。`robot+agent`：ロボットのあと、ロボットが通過できなかったフォームだけをエージェントが担当。ペルソナは1人で十分（[docs/dashboard.md](../../../docs/dashboard.md)） |
 
 **そのまま使えるもの**（自動検出）：

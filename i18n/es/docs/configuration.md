@@ -21,6 +21,7 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
 | `block_hosts` | Hosts de analítica bloqueados durante las pruebas |
 | `record_video` | Grabación de pantalla de cada teléfono, cifrada con los informes |
 | `replay_path` | Experimental, Android: después de cada agente, su recorrido se repite en el mismo teléfono sin modelo ([docs/replay.md](../../../docs/replay.md)) |
+| `replay_traces`, `replay_times` | Experimental, Android: sin agente. Las trazas guardadas en una carpeta del repo se repiten `replay_times` veces cada una (20 por defecto) en el teléfono de cada persona, sin modelo ([docs/replay.md](../../../docs/replay.md#replay-kept-traces-many-times)) |
 | `map` | Experimental, Android: primero se recorren todas las pantallas. `robot`: un robot sin modelo, gratis. `robot+agent`: el robot y después un agente solo para los formularios que no pudo pasar. Usa una sola persona ([docs/dashboard.md](../../../docs/dashboard.md)) |
 
 **Compatibles de serie** (detección automática):

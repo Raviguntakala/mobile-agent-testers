@@ -34,6 +34,14 @@ fi
 adb emu geo fix "${GEO#*,}" "${GEO%,*}" >/dev/null 2>&1   # longitude first
 adb shell monkey -p "$APP_ID" -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1
 adb logcat -c; sleep 5
+# Replays only (replay_traces): the traces kept in that folder for this persona are replayed on this
+# phone, several times, with no agent and no model key (scripts/replay_set.py, docs/replay.md)
+if [ -n "${REPLAY_TRACES:-}" ]; then
+  python3 scripts/replay_set.py "$REPLAY_TRACES" --persona "$PERSONA" --ecr .ecr --out "results/$PERSONA" \
+    --times "${REPLAY_TIMES:-20}" --closed-group "${REPLAY_CLOSED_GROUP:-}" --apk app.apk || true   # never fails the run
+  echo "Replays finished, $(find "results/$PERSONA" -type f | wc -l) files"
+  exit 0
+fi
 # 4. Optional screen recording, kept in results/ (encrypted like the rest)
 REC=""
 if [ "${RECORD_VIDEO:-false}" = true ]; then

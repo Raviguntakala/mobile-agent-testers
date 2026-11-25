@@ -21,6 +21,7 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
 | `block_hosts` | Testler sırasında engellenen analitik host'ları |
 | `record_video` | Her telefonun ekran kaydı, raporlarla birlikte şifrelenir |
 | `replay_path` | Deneysel, Android: her ajandan sonra izlediği yol aynı telefonda modelsiz olarak yeniden oynatılır ([docs/replay.md](../../../docs/replay.md)) |
+| `replay_traces`, `replay_times` | Deneysel, Android: ajan yok. Deponun bir klasöründe tutulan izler, her personanın telefonunda her biri `replay_times` kez (varsayılan 20) modelsiz olarak yeniden oynatılır ([docs/replay.md](../../../docs/replay.md#replay-kept-traces-many-times)) |
 | `map` | Deneysel, Android: önce tüm ekranlar gezilir. `robot`: modelsiz bir robot, ücretsiz. `robot+agent`: önce robot, ardından yalnızca robotun geçemediği formlar için bir ajan. Tek persona yeterli ([docs/dashboard.md](../../../docs/dashboard.md)) |
 
 **Hazır desteklenen framework'ler** (otomatik algılanır):
