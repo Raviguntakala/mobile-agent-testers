@@ -24,8 +24,8 @@
 
 </div>
 
-<p align="center"><a href="../../assets/localsend-20.mp4"><img src="../../assets/localsend-20.gif" alt="LocalSend'i aynı anda kullanan 20 yapay zekâ tester'ın gerçek ekran kayıtları: 14 dilde 10 Android emülatörü ve 10 iOS Simulator, küçük bir Pixel'den 13 inç bir iPad'e kadar. Her tester işini bitirdiğinde telefonunda kaç sorun bulduğu görünür. Tıklayınca video açılır." width="100%"></a><br>
-<sub>LocalSend çalıştırmasının gerçek ekran kayıtları; bekleme süreleri kırpıldı. <a href="../../assets/localsend-20.mp4">Videonun tamamı (MP4)</a> · <a href="../../docs/runs/localsend-20.md">Cihaz cihaz çalıştırma sonuçları</a></sub></p>
+<p align="center"><a href="../../assets/launch-video.mp4"><img src="../../assets/launch-video.gif" alt="Tanıtım videosu, 26 saniye. Önce LocalSend'i aynı anda kullanan 20 yapay zekâ tester'ın gerçek ekran kayıtları: 14 dilde 10 Android emülatörü ve 10 iOS Simulator; her telefon bildirdiği sorun sayısını gösteriyor, toplam 103. Ardından dashboard'daki demo uygulamanın haritası: tüm ekranlar, her tester için renkli bir şerit, teste dönüşen bir hata ve modelsiz yeniden oynatılan bir yol. Tıklayınca sesli video açılır." width="100%"></a><br>
+<sub>Telefonlar LocalSend çalıştırmasının gerçek ekran kayıtları; harita dashboard'un demosu. <a href="../../assets/launch-video.mp4">Sesli video (MP4)</a> · <a href="../../assets/localsend-20.mp4">20 telefonun kaydının tamamı</a> · <a href="../../docs/runs/localsend-20.md">Cihaz cihaz çalıştırma sonuçları</a></sub></p>
 
 Test script'i yazmanıza gerek yok. Her tester, GitHub Actions üzerinde kendi iOS
 Simulator'ı ya da Android emülatörü bulunan bir Claude Code ajanıdır. Ajan bir kullanıcı
@@ -36,9 +36,6 @@ Flutter, React Native, Expo, native Kotlin ve Swift, Kotlin Multiplatform, Capac
 
 GitHub runner'ları public repolarda ücretsizdir. Yalnızca model kullanımı için,
 Claude aboneliğiniz ya da API anahtarınız üzerinden ödeme yaparsınız: [bu çalıştırmalarda](../../docs/runs/) telefon başına yaklaşık 0,15–0,55 $.
-
-<p align="center"><a href="https://github.com/pierridotite/explore-compile-replay"><img src="../../assets/ecr-now-building.svg" alt="Next: every bug becomes a free test. Explore-Compile-Replay" width="340" height="54"></a><br>
-<sub>Şu an üzerinde çalıştığım proje: <a href="https://github.com/pierridotite/explore-compile-replay">Explore-Compile-Replay</a>, bir ajan hata bulduğunda izlediği yolu her PR'da model kullanmadan yeniden çalışan bir teste dönüştürüyor. Henüz erken aşamada.</sub></p>
 
 ## Hızlı başlangıç
 
@@ -83,11 +80,28 @@ Her çalıştırmada tek bir kullanım; yukarıdaki parametrelerle seçilir.
 | **Bir hatayı her telefonda yeniden üretme** | Bir issue ya da adımları verirsiniz; her ajan ekran görüntüleriyle "evet", "hayır" ya da "belirsiz" diye cevap verir ([briefs/reproduce.md](../../briefs/reproduce.md)). |
 | **İyileştirme raporu** | Her persona uygulamayı bir kez kullanır; ardından nerede tereddüt ettiğini, ne beklediğini ve öncelikle neyin değişmesi gerektiğini, alana ve etkiye göre sıralayarak anlatır ([briefs/improve.md](../../briefs/improve.md)). |
 | **İki sürümü karşılaştırma** | Aynı personalar iki farklı branch ya da build üzerinde çalışır, sonuçlar tek bir tabloda toplanır: ulaşılan hedefler, eylem sayıları, puanlar ve yalnızca bir sürümde görülen sorunlar ([docs/compare-versions.md](../../docs/compare-versions.md)). Bu, gerçek bir A/B testinin yerini tutmaz; ondan önce yapılacak bir ön kontroldür. |
-| **Tüm ekranları tek haritada görmek** | Uygulamanızın tüm ekranlarını tek bir haritada, test edenlerin yolları ve her ekranda bir ısı haritasıyla görmek ve her ekrana yorum eklemek için: `python3 scripts/dashboard.py runs/<id>` ([docs/dashboard.md](../../docs/dashboard.md)). [Demoyu deneyin](https://pierridotite.github.io/mobile-agent-testers/) veya [videoyu izleyin](../../assets/dashboard-demo.mp4). |
 
 **Daha ucuz bir model kullanma.** Claude Haiku ya da Anthropic uyumlu herhangi bir API'yi (OpenRouter, DeepSeek, Kimi, GLM, MiniMax, Qwen) kullanabilirsiniz. Bulguların kalitesi, modelin ekran görüntülerini ne kadar iyi okuyup akıl yürütebildiğine bağlıdır ([docs/cheaper-models.md](../../docs/cheaper-models.md)).
 
 Maestro ya da Appium sizin yazdığınız testleri çalıştırır. Bu ajanlar ise kimsenin test etmeyi düşünmediği şeyleri arar: [Karşılaştırmanın tamamı](../../docs/compare.md).
+
+## Tüm ekranları tek haritada görün
+
+<a href="https://pierridotite.github.io/mobile-agent-testers/"><img src="../../assets/dashboard.png" alt="Dashboard: uygulamanın tüm ekranları bir haritada, her okta test eden başına renkli bir şerit, her ekranda bir ısı haritası, sağda seçili ekran" width="100%"></a>
+
+Test edenlerin ulaştığı tüm ekranlar; her birinin yolu kendi renginde, dokundukları yerler bir ısı haritasında. Device menüsünden bir cihaz seçerek ekranları onun biçiminde (telefon veya tablet) ve kendi ısı haritasıyla görün. Bir ekrana yorum ekleyin ya da o ekrandaki hatayı bir kontrole dönüştürün.
+
+<p align="center"><a href="https://pierridotite.github.io/mobile-agent-testers/"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/demo-try-dark.svg"><img src="../../assets/demo-try-light.svg" alt="Demoyu tarayıcınızda deneyin" width="190" height="54"></picture></a></p>
+
+Kendi çalıştırmanızda: `python3 scripts/dashboard.py runs/<id>`. Kendi makinenizde çalışır ve sonuçlar makinenizden hiç çıkmaz ([docs/dashboard.md](../../docs/dashboard.md)).
+
+## Her hata bir teste dönüşür
+
+Bir hata bulan test eden, hiçbir betiğin yazmayacağı bir yol izlemiştir. Her Android test edeni bu yolu bir iz olarak saklar; her dokunuş, parmağın altındaki öğenin adıyla kaydedilir. `-f replay_path=true` ile yol, ajan biter bitmez aynı telefonda modelsiz yeniden oynatılır. Haritada eklenen bir kontrol hatayı testin parçası yapar: hata durdukça yeniden oynatma `bug`, düzeldiğinde `fixed` der ([docs/replay.md](../../docs/replay.md)).
+
+İzler, bir ajanın yolunu bir [Maestro](https://maestro.dev) akışına derleyen açık formatım Explore-Compile-Replay'i izler. Şimdilik yalnızca Android; ECR erken bir taslak.
+
+<p align="center"><a href="https://github.com/pierridotite/explore-compile-replay"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/ecr-button-dark.svg"><img src="../../assets/ecr-button-light.svg" alt="Explore-Compile-Replay: her hata bir teste dönüşür" width="320" height="54"></picture></a></p>
 
 ## Gerçek çalıştırmalar
 
@@ -103,22 +117,7 @@ LocalSend'de bulunan 46 hatanın 34'ünün yazı boyutu ya da erişilebilirlikle
 
 ## Katkıda bulunun
 
-Aynı işi iki kişi yapmasın diye, başlamadan önce hangisini üstlendiğinizi bir issue ile bildirin. Her birine nereden başlanacağı ve çevrim dışı nasıl test edileceği [CONTRIBUTING.md](../../CONTRIBUTING.md) dosyasında anlatılıyor. Sorular için: [Discord](https://discord.gg/WuaCANscr8).
-
-<details>
-<summary>Yardım beklediğimiz fikirler</summary>
-
-- **Diğer ajan CLI'ları**: OpenCode, Codex CLI, Gemini CLI, Goose. Araçlar sade script'lerden, görev de bir Markdown brief'inden oluştuğu için ajanı değiştirmek platform başına tek bir komut demek.
-- **Web uygulamaları**: aynı personaları Playwright ile bir mobil tarayıcıda çalıştırmak; PWA'lar ve mobil siteler için.
-- **Fiziksel Android telefonlar**: testleri self-hosted bir runner üzerinden, adb ile gerçek telefonlarda çalıştırmak.
-- **Yeni personalar**: renk körlüğü filtreleri, yavaş ya da kesintili ağ.
-- **Bulgulardan issue'lara**: özeti, ekran görüntüleriyle birlikte taslak GitHub issue'larına ya da bir Slack veya Discord mesajına dönüştürmek.
-- **Diğer CI sistemleri**: GitLab CI, Bitrise, Codemagic.
-- **Daha fazla build sistemi**: NativeScript, Unity, Godot; her biri `scripts/build/` içinde bir case olarak.
-- README ve dokümanlar için **çeviriler**.
-- **Model karşılaştırması**: demo uygulamadaki 11 yerleştirilmiş hata küçük bir benchmark işlevi görür. Her modelin hangi hataları bulduğunu ve maliyetini gösteren bir tablo.
-
-</details>
+[Alınmaya hazır 11 issue var](https://github.com/pierridotite/mobile-agent-testers/issues/9), beşi [good first issue](https://github.com/pierridotite/mobile-agent-testers/labels/good%20first%20issue): yeni personalar, Slack veya Discord özeti, başka bir ajan CLI'ı, web uygulamaları, GitLab CI, çeviriler. İki kişi aynı şeyi yapmasın diye aldığınız issue'ya yorum yazın. [CONTRIBUTING.md](../../CONTRIBUTING.md) her birinin nereden başladığını ve çevrimdışı nasıl test edileceğini anlatır. Sorular: [Discord](https://discord.gg/WuaCANscr8).
 
 ## Ekipler için barındırılan sürüm (araştırılıyor)
 

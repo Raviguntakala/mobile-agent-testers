@@ -24,8 +24,8 @@
 
 </div>
 
-<p align="center"><a href="../../assets/localsend-20.mp4"><img src="../../assets/localsend-20.gif" alt="Grabaciones de pantalla reales de 20 testers con IA usando LocalSend a la vez: 10 emuladores de Android y 10 simuladores de iOS en 14 idiomas, desde un Pixel pequeño hasta un iPad de 13 pulgadas. Cuando un tester termina, su teléfono muestra cuántos problemas encontró. Abre el vídeo." width="100%"></a><br>
-<sub>Grabaciones de pantalla reales de la ejecución en LocalSend, sin los tiempos muertos. <a href="../../assets/localsend-20.mp4">Vídeo completo (MP4)</a> · <a href="../../docs/runs/localsend-20.md">La ejecución, dispositivo por dispositivo</a></sub></p>
+<p align="center"><a href="../../assets/launch-video.mp4"><img src="../../assets/launch-video.gif" alt="Vídeo de lanzamiento, 26 segundos. Primero, grabaciones de pantalla reales de 20 testers con IA usando LocalSend a la vez: 10 emuladores de Android y 10 simuladores de iOS en 14 idiomas; cada teléfono muestra cuántos problemas reportó, 103 en total. Después, el mapa del dashboard con la app de demo: todas las pantallas, un carril de color por tester, un error que se convierte en test y un recorrido repetido sin modelo. Abre el vídeo con sonido." width="100%"></a><br>
+<sub>Los teléfonos son grabaciones de pantalla reales de la ejecución en LocalSend; el mapa es la demo del dashboard. <a href="../../assets/launch-video.mp4">Vídeo con sonido (MP4)</a> · <a href="../../assets/localsend-20.mp4">Los 20 teléfonos, grabación completa</a> · <a href="../../docs/runs/localsend-20.md">La ejecución, dispositivo por dispositivo</a></sub></p>
 
 Sin scripts de prueba que escribir. Cada tester es un agente de Claude Code con su propio simulador de iOS
 o emulador de Android en GitHub Actions. Interpreta una persona (iPhone SE en sueco con el texto más grande,
@@ -35,9 +35,6 @@ Multiplatform, Capacitor y .NET MAUI.
 
 Los runners de GitHub son gratuitos para repos públicos. Solo pagas el modelo, con tu suscripción de Claude
 o tu clave de API: entre 0,15 y 0,55 $ por teléfono en [estas ejecuciones](../../docs/runs/).
-
-<p align="center"><a href="https://github.com/pierridotite/explore-compile-replay"><img src="../../assets/ecr-now-building.svg" alt="Next: every bug becomes a free test. Explore-Compile-Replay" width="340" height="54"></a><br>
-<sub>Lo que construyo ahora: cuando un agente encuentra un error, Explore-Compile-Replay convierte su recorrido en un test que se vuelve a ejecutar en cada PR, sin modelo. Borrador inicial.</sub></p>
 
 ## Inicio rápido
 
@@ -82,11 +79,28 @@ Un uso por ejecución, elegido con los parámetros de arriba.
 | **Reproducir un informe de error** | En cada teléfono: das un issue o los pasos, y cada agente responde sí, no o no está claro, con capturas ([briefs/reproduce.md](../../briefs/reproduce.md)). |
 | **Obtener un informe de mejoras** | Cada persona usa la app una vez y luego dice dónde dudó, qué esperaba y qué cambiaría primero, por área e impacto ([briefs/improve.md](../../briefs/improve.md)). |
 | **Comparar dos versiones** | Las mismas personas en dos ramas o builds, y luego una tabla: objetivos alcanzados, acciones, puntuaciones, errores vistos en una sola versión ([docs/compare-versions.md](../../docs/compare-versions.md)). Una comprobación antes de un test A/B real, no un sustituto. |
-| **Ver todas las pantallas en un mapa** | Para ver todas las pantallas de tu app en un mapa, con los recorridos de los testers y un mapa de calor en cada pantalla, y comentar cada pantalla: `python3 scripts/dashboard.py runs/<id>` ([docs/dashboard.md](../../docs/dashboard.md)). [Prueba la demo](https://pierridotite.github.io/mobile-agent-testers/) o [mira el vídeo](../../assets/dashboard-demo.mp4). |
 
 **Usar un modelo más barato**: Claude Haiku, o cualquier API compatible con Anthropic (OpenRouter, DeepSeek, Kimi, GLM, MiniMax, Qwen). Los hallazgos dependen de lo bien que el modelo lea las capturas y razone ([docs/cheaper-models.md](../../docs/cheaper-models.md)).
 
 Maestro o Appium ejecutan las pruebas que tú escribes. Estos agentes buscan lo que nadie pensó en probar: [comparativa](../../docs/compare.md).
+
+## Ver todas las pantallas en un mapa
+
+<a href="https://pierridotite.github.io/mobile-agent-testers/"><img src="../../assets/dashboard.png" alt="El dashboard: todas las pantallas de la app en un mapa, un carril de color por tester en cada flecha, un mapa de calor en cada pantalla y la pantalla seleccionada a la derecha" width="100%"></a>
+
+Todas las pantallas a las que llegaron los testers, con el recorrido de cada uno en su propio color y un mapa de calor de dónde tocaron. Elige un dispositivo en el menú Device para ver las pantallas con su forma (teléfono o tableta) y su propio mapa de calor. Comenta una pantalla o convierte lo que falla en ella en una comprobación.
+
+<p align="center"><a href="https://pierridotite.github.io/mobile-agent-testers/"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/demo-try-dark.svg"><img src="../../assets/demo-try-light.svg" alt="Prueba la demo en tu navegador" width="190" height="54"></picture></a></p>
+
+En tu propia ejecución: `python3 scripts/dashboard.py runs/<id>`. Funciona en tu máquina y los resultados nunca salen de ella ([docs/dashboard.md](../../docs/dashboard.md)).
+
+## Cada bug se convierte en un test
+
+Un tester que encuentra un bug siguió un recorrido que ningún script habría escrito. Cada tester de Android guarda ese recorrido como una traza, con cada toque nombrado según el elemento que estaba bajo el dedo. Con `-f replay_path=true`, el recorrido se reproduce en el mismo teléfono justo después del agente, sin modelo. Una comprobación añadida en el mapa hace que el bug forme parte del test: la reproducción dice `bug` mientras sigue ahí y `fixed` cuando desaparece ([docs/replay.md](../../docs/replay.md)).
+
+Las trazas siguen Explore-Compile-Replay, mi formato abierto que compila el recorrido de un agente en un flujo de [Maestro](https://maestro.dev). Solo Android por ahora; ECR es un primer borrador.
+
+<p align="center"><a href="https://github.com/pierridotite/explore-compile-replay"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/ecr-button-dark.svg"><img src="../../assets/ecr-button-light.svg" alt="Explore-Compile-Replay: cada bug se convierte en un test" width="320" height="54"></picture></a></p>
 
 ## Ejecuciones reales
 
@@ -102,22 +116,7 @@ En LocalSend, 34 de los 46 errores no tenían nada que ver con el tamaño del te
 
 ## Contribuir
 
-Abre primero un issue para decir cuál tomas, así dos personas no construyen lo mismo. [CONTRIBUTING.md](../../CONTRIBUTING.md) explica por dónde empieza cada una y cómo probarla sin conexión. Preguntas: [Discord](https://discord.gg/WuaCANscr8).
-
-<details>
-<summary>Ideas en las que se agradece ayuda</summary>
-
-- **Otros CLI de agentes**: OpenCode, Codex CLI, Gemini CLI, Goose. Las herramientas son scripts normales y la misión es un brief en Markdown, así que el agente es un solo comando por plataforma.
-- **Apps web**: las mismas personas en un navegador móvil con Playwright, para PWA y sitios móviles.
-- **Teléfonos Android físicos** por adb, en un runner propio.
-- **Nuevas personas**: filtros de daltonismo, una red lenta o inestable.
-- **De hallazgos a issues**: convertir el resumen en borradores de issues de GitHub con sus capturas, o en un mensaje de Slack o Discord.
-- **Otros CI**: GitLab CI, Bitrise, Codemagic.
-- **Más sistemas de compilación**: NativeScript, Unity, Godot, cada uno un caso en `scripts/build/`.
-- **Traducciones** del README y de la documentación.
-- **Comparar modelos**: los 11 bugs plantados en la app de demo forman un pequeño benchmark. Una tabla de lo que encuentra y cuesta cada modelo.
-
-</details>
+[11 issues están listas para tomar](https://github.com/pierridotite/mobile-agent-testers/issues/9), cinco de ellas [good first issues](https://github.com/pierridotite/mobile-agent-testers/labels/good%20first%20issue): nuevas personas, un resumen en Slack o Discord, otro CLI de agente, apps web, GitLab CI, traducciones. Comenta en la que tomes para que dos personas no hagan lo mismo. [CONTRIBUTING.md](../../CONTRIBUTING.md) dice por dónde empieza cada una y cómo probarla sin conexión. Preguntas: [Discord](https://discord.gg/WuaCANscr8).
 
 ## Versión alojada para equipos (en estudio)
 

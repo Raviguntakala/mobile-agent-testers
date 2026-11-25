@@ -24,8 +24,8 @@
 
 </div>
 
-<p align="center"><a href="../../assets/localsend-20.mp4"><img src="../../assets/localsend-20.gif" alt="20 个 AI 测试员同时使用 LocalSend 的真实录屏：10 台 Android 模拟器和 10 台 iOS 模拟器，14 种语言，从小屏 Pixel 到 13 英寸 iPad。测试员完成后，手机上会显示它发现的问题数量。点击打开视频。" width="100%"></a><br>
-<sub>LocalSend 那次运行的真实录屏，已剪掉空闲时间。<a href="../../assets/localsend-20.mp4">完整视频（MP4）</a> · <a href="../../docs/runs/localsend-20.md">逐台设备查看这次运行</a></sub></p>
+<p align="center"><a href="../../assets/launch-video.mp4"><img src="../../assets/launch-video.gif" alt="发布视频，26 秒。先是 20 个 AI 测试员同时使用 LocalSend 的真实录屏：10 台 Android 模拟器和 10 台 iOS 模拟器，14 种语言，每台手机显示它报告的问题数量，共 103 个。然后是仪表盘中演示应用的地图：所有页面，每位测试者一条彩色车道，一个变成测试的缺陷，以及一条无需模型的回放路径。点击打开带声音的视频。" width="100%"></a><br>
+<sub>手机画面是 LocalSend 那次运行的真实录屏，地图是仪表盘的演示。 <a href="../../assets/launch-video.mp4">带声音的视频（MP4）</a> · <a href="../../assets/localsend-20.mp4">20 台手机的完整录屏</a> · <a href="../../docs/runs/localsend-20.md">逐台设备查看这次运行</a></sub></p>
 
 无需编写测试脚本。每个测试员都是一个 Claude Code 智能体，在 GitHub Actions 上拥有自己的 iOS
 模拟器或 Android 模拟器。它扮演一个角色（瑞典语、最大字号的 iPhone SE，字体 200% 的 Pixel 7，
@@ -34,9 +34,6 @@
 
 公开仓库使用 GitHub 的运行器是免费的。你只需要为模型付费，用你的 Claude 订阅或 API key：
 在[这几次运行](../../docs/runs/)中，每台手机大约 0.15 到 0.55 美元。
-
-<p align="center"><a href="https://github.com/pierridotite/explore-compile-replay"><img src="../../assets/ecr-now-building.svg" alt="Next: every bug becomes a free test. Explore-Compile-Replay" width="340" height="54"></a><br>
-<sub>我接下来在做的项目：当智能体发现缺陷时，Explore-Compile-Replay 会把它走过的路径变成每个 PR 都会重跑、无需模型的测试。早期草稿。</sub></p>
 
 ## 快速开始
 
@@ -81,11 +78,28 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
 | **在每台手机上复现一个缺陷报告** | 给出一个 issue 或复现步骤，每个智能体回答“是 / 否 / 不确定”，并附上截图（[briefs/reproduce.md](../../briefs/reproduce.md)）。 |
 | **生成改进报告** | 每个角色把应用用一遍，然后说出在哪里犹豫、原本期待什么、最该先改什么，并标出领域和影响（[briefs/improve.md](../../briefs/improve.md)）。 |
 | **对比两个版本** | 同一批角色分别使用两个分支或构建，最后得到一张表：目标是否达成、操作次数、评分、只在一个版本出现的问题（[docs/compare-versions.md](../../docs/compare-versions.md)）。适合在真正的 A/B 测试之前做检查，但不能代替 A/B 测试。 |
-| **在一张地图上查看所有页面** | 在一张地图上查看应用的所有页面、测试者的操作路径和每个页面的热力图，并为每个页面添加评论：`python3 scripts/dashboard.py runs/<id>`（[docs/dashboard.md](../../docs/dashboard.md)）。[试用演示](https://pierridotite.github.io/mobile-agent-testers/)，或[观看视频](../../assets/dashboard-demo.mp4)。 |
 
 **使用更便宜的模型**：Claude Haiku，或任何兼容 Anthropic 接口的 API（OpenRouter、DeepSeek、Kimi、GLM、MiniMax、通义千问）。发现的质量取决于模型读截图的能力和推理能力（[docs/cheaper-models.md](../../docs/cheaper-models.md)）。
 
 Maestro、Appium 运行你写好的测试。这些智能体寻找没人想到要测的东西：[对比](../../docs/compare.md)。
+
+## 在一张地图上查看所有页面
+
+<a href="https://pierridotite.github.io/mobile-agent-testers/"><img src="../../assets/dashboard.png" alt="仪表盘：应用的所有页面画在一张地图上，每个箭头上每位测试者一条彩色车道，每个页面一张热力图，右侧是选中的页面" width="100%"></a>
+
+测试者到达过的所有页面，每位测试者的路径用各自的颜色显示，热力图显示他们点击的位置。在 Device 菜单中选择一台设备，即可按它的外形（手机或平板）查看页面和它自己的热力图。可以为页面添加评论，或把页面上的问题变成一项检查。
+
+<p align="center"><a href="https://pierridotite.github.io/mobile-agent-testers/"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/demo-try-dark.svg"><img src="../../assets/demo-try-light.svg" alt="在浏览器中试用演示" width="190" height="54"></picture></a></p>
+
+在你自己的运行结果上：`python3 scripts/dashboard.py runs/<id>`。它在你的机器上运行，结果不会离开你的机器（[docs/dashboard.md](../../docs/dashboard.md)）。
+
+## 每个 bug 都变成一个测试
+
+发现 bug 的测试者走过的路径，是任何脚本都不会写出来的。每个 Android 测试者都会把这条路径保存为一条轨迹，每次点击都以手指下的元素命名。加上 `-f replay_path=true`，智能体结束后会立即在同一部手机上无模型重放这条路径。在地图上添加的检查会让这个 bug 成为测试的一部分：bug 还在时重放显示 `bug`，修复后显示 `fixed`（[docs/replay.md](../../docs/replay.md)）。
+
+轨迹遵循 Explore-Compile-Replay，这是我做的开放格式，把智能体的路径编译成 [Maestro](https://maestro.dev) 流程。目前仅支持 Android；ECR 还是早期草稿。
+
+<p align="center"><a href="https://github.com/pierridotite/explore-compile-replay"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/ecr-button-dark.svg"><img src="../../assets/ecr-button-light.svg" alt="Explore-Compile-Replay：每个 bug 都变成一个测试" width="320" height="54"></picture></a></p>
 
 ## 真实运行
 
@@ -101,22 +115,7 @@ Maestro、Appium 运行你写好的测试。这些智能体寻找没人想到要
 
 ## 参与贡献
 
-动手前先开一个 issue 说明你要做哪一项，避免两个人做同一件事。[CONTRIBUTING.md](../../CONTRIBUTING.md) 写明了每一项从哪里入手，以及如何离线测试。 有问题请到 [Discord](https://discord.gg/WuaCANscr8)。
-
-<details>
-<summary>欢迎帮忙的方向</summary>
-
-- **其他智能体 CLI**：OpenCode、Codex CLI、Gemini CLI、Goose。工具都是普通脚本，任务是一份 Markdown 说明，所以每个平台只需换一条命令。
-- **Web 应用**：用 Playwright 在手机浏览器里跑同样的角色，覆盖 PWA 和移动网站。
-- **真实 Android 手机**：在自托管 runner 上通过 adb 连接。
-- **新角色**：色盲滤镜、慢速或不稳定的网络。
-- **把发现变成 issue**：把汇总转成带截图的 GitHub issue 草稿，或发到 Slack、Discord。
-- **其他 CI**：GitLab CI、Bitrise、Codemagic。
-- **更多构建系统**：NativeScript、Unity、Godot，每种在 `scripts/build/` 里加一个分支。
-- **翻译** README 和文档。
-- **模型对比**：演示应用里预埋的 11 个 bug 就是一个小基准。做一张表，列出每个模型找到多少、花多少钱。
-
-</details>
+[有 11 个 issue 等人认领](https://github.com/pierridotite/mobile-agent-testers/issues/9)，其中 5 个是 [good first issue](https://github.com/pierridotite/mobile-agent-testers/labels/good%20first%20issue)：新的人物角色、发送到 Slack 或 Discord 的摘要、其他智能体 CLI、Web 应用、GitLab CI、翻译。认领时请在 issue 下留言，避免两个人做同一件事。[CONTRIBUTING.md](../../CONTRIBUTING.md) 说明了每项从哪里开始以及如何离线测试。有问题请到 [Discord](https://discord.gg/WuaCANscr8)。
 
 ## 团队托管版（探索中）
 

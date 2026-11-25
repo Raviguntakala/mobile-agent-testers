@@ -372,6 +372,10 @@ function estimatedPoints(key, nn) {
 const firstVisit = (n) => n.visits.find((v) => !persona(v.key).mapper) || n.visits[0];
 const personaKeys = () => S.data.personas.filter((p) => !p.mapper).map((p) => p.key);
 
+// ---------- one color per tester, in the order of the run (the first three match the launch video) ----------
+const PALETTE = ["#5aa2ff", "#b98aff", "#ff7aa8", "#4fd1a5", "#ffb84d", "#5ad1e6", "#e6d95a", "#ff8a5a", "#9ad15a", "#d18aff"];
+const colorOf = (key) => { const i = personaKeys().indexOf(key); return i < 0 ? "#6b7686" : PALETTE[i % PALETTE.length]; };
+
 // ---------- devices: each tester's phone or tablet, and its shape on the map ----------
 const deviceOf = (key) => { const c = (traceOf(key).persona || {}).context || {}; const [w, h] = runSize(key); return c.device || `${w} × ${h}`; };
 const devices = () => [...new Set(personaKeys().map(deviceOf))];
@@ -405,7 +409,7 @@ function renderMap() {
   // edges
   const svg = svgEl("svg", { width: box.width, height: box.height, class: "map-edges" });
   const defs = svgEl("defs");
-  for (const [id, color] of [["map-arrow", "#6b7686"], ["map-arrow-on", "#7aa7ff"]]) {
+  for (const [id, color] of [["map-arrow", "#6b7686"], ...personaKeys().map((k, i) => [`map-arrow-${i}`, colorOf(k)])]) {
     const marker = svgEl("marker", { id, viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 12, markerHeight: 12, markerUnits: "userSpaceOnUse", orient: "auto" });
     marker.append(svgEl("path", { d: "M0,0 L10,5 L0,10 z", fill: color }));
     defs.append(marker);
@@ -435,11 +439,27 @@ function renderMap() {
       d = `M${x1},${y1} C${x1},${dip} ${x2},${dip} ${x2},${y2}`; lx = (x1 + x2) / 2; ly = (y1 + y2) / 8 + 0.75 * dip;
     }
     const title = (e.testers.size ? `${e.testers.size} tester${e.testers.size > 1 ? "s" : ""}, ${e.count} time${e.count > 1 ? "s" : ""}` : "Only the map maker went this way") + "\n" + [...e.actions].map(([k, v]) => `${k} (${v})`).join("\n");
-    const path = svgEl("path", { d, fill: "none", stroke: on ? "#7aa7ff" : "#4a5361", "stroke-width": e.testers.size ? 1.5 + 4 * (e.testers.size / maxCount) : 1.5,
-      ...(e.testers.size ? {} : { "stroke-dasharray": "6 6" }), "marker-end": on ? "url(#map-arrow-on)" : "url(#map-arrow)", opacity: on ? 1 : trail ? 0.15 : 0.45 });
-    const t = svgEl("title"); t.textContent = title; path.append(t);
-    svg.append(path);
-    if (e.testers.size) labels.push(h("div", { class: `edge-label${on ? " on" : ""}`, style: `left:${lx}px;top:${ly}px`, title }, String(e.testers.size)));
+    if (!e.testers.size) {   // only the map maker: dashed gray
+      const path = svgEl("path", { d, fill: "none", stroke: "#4a5361", "stroke-width": 1.5, "stroke-dasharray": "6 6", "marker-end": "url(#map-arrow)", opacity: trail ? 0.15 : on ? 0.9 : 0.45 });
+      const t = svgEl("title"); t.textContent = title; path.append(t);
+      svg.append(path);
+      continue;
+    }
+    // one lane per tester, in its color, side by side: 7.5 px apart, centred on the edge
+    const lanes = personaKeys().filter((k) => e.testers.has(k));
+    const pts = d.match(/-?\d+(\.\d+)?/g).map(Number);
+    const [sx, sy, ex, ey] = [pts[0], pts[1], pts[6], pts[7]];
+    const len = Math.hypot(ex - sx, ey - sy) || 1, nx = -(ey - sy) / len, ny = (ex - sx) / len;
+    lanes.forEach((k, li) => {
+      const off = (li - (lanes.length - 1) / 2) * 7.5;
+      const q = pts.map((v, vi) => v + off * (vi % 2 ? ny : nx));
+      const dl = `M${q[0]},${q[1]} C${q[2]},${q[3]} ${q[4]},${q[5]} ${q[6]},${q[7]}`;
+      const mine = trail ? k === S.mapPath : true;
+      const path = svgEl("path", { d: dl, fill: "none", stroke: colorOf(k), "stroke-width": 5, "stroke-linecap": "round",
+        "marker-end": `url(#map-arrow-${personaKeys().indexOf(k)})`, opacity: trail ? (mine && on ? 1 : 0.1) : on ? 1 : 0.7 });
+      const t = svgEl("title"); t.textContent = `${traceOf(k).persona.id}\n${title}`; path.append(t);
+      svg.append(path);
+    });
   }
 
   // nodes
@@ -455,7 +475,8 @@ function renderMap() {
       onclick: (ev) => { if (S.mapDragged) return; S.mapSel = n.g; S.mapShot = null; renderMap(); ev.stopPropagation(); } },
       h("div", { class: "thumb", style: `height:${n.h - 64}px` }, h("img", { src: screenUrl(rep.key, rep.nn), alt: "", class: matched ? "" : "other" }), canvas),
       h("span", { class: "t" }, screenTitle(info, rep.nn)),
-      h("span", { class: "m" }, n.testers.size ? `${n.testers.size} tester${n.testers.size > 1 ? "s" : ""} · ${taps} taps` : h("span", { class: "chip warn" }, "No persona came here"),
+      h("span", { class: "m" }, n.testers.size ? h("span", { class: "dots", title: personaKeys().filter((k) => n.testers.has(k)).map((k) => traceOf(k).persona.id).join(", ") },
+          ...personaKeys().filter((k) => n.testers.has(k)).map((k) => h("i", { style: `background:${colorOf(k)}` })), ` ${taps} taps`) : h("span", { class: "chip warn" }, "No persona came here"),
         !matched ? h("span", { class: "chip" }, S.mapPath ? `Not seen by ${traceOf(S.mapPath).persona.id}` : "Not seen on this device") : null,
         fnd.length ? h("span", { class: "chip bad", title: fnd.map((f) => f.title).join("\n") }, `${fnd.length} finding${fnd.length > 1 ? "s" : ""}`) : null,
         com.length ? h("span", { class: "chip", title: com.map((x) => x.c.text).join("\n") }, `✎ ${com.length}`) : null));
@@ -475,6 +496,8 @@ function renderMap() {
     const n = personaKeys().filter((k) => deviceOf(k) === d).length;
     return h("option", { value: d, selected: d === S.mapDevice }, `${d} (${n} tester${n > 1 ? "s" : ""})`);
   }));
+  $("#map-testers").replaceChildren(...personaKeys().map((k) => h("button", { class: `tester-chip${S.mapPath === k ? " on" : ""}`, title: "Show this tester's path",
+    onclick: () => { S.mapPath = S.mapPath === k ? null : k; renderMap(); } }, h("i", { style: `background:${colorOf(k)}` }), traceOf(k).persona.id)));
   $("#map-summary").textContent = (S.mapDevice ? `On ${S.mapDevice}: ` : "") + `${screens.length} screens${hasMapper ? ", mapped by the map maker" : ", as far as the testers went"}` +
     (hasMapper ? ` · ${unreached} reached by no persona` : " · run briefs/map.md to find every screen");
   applyPan(box);

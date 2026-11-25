@@ -162,6 +162,11 @@ button.link:hover { text-decoration: underline; background: none; }
 .map-node.unreached { border-style: dashed; border-color: var(--warn); }
 .chip.warn { background: rgba(245,165,36,.18); color: #ffc66b; }
 .map-legend b { color: var(--text); font-weight: 600; }
+#map-testers { display: inline-flex; gap: 6px; margin-right: 10px; vertical-align: middle; }
+.tester-chip { display: inline-flex; align-items: center; gap: 5px; background: #20252c; color: var(--text); border: 1px solid transparent; border-radius: 10px; padding: 1px 8px; font-size: 12px; cursor: pointer; }
+.tester-chip.on { border-color: var(--text); }
+.tester-chip i, .map-node .dots i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.map-node .dots { display: inline-flex; align-items: center; gap: 3px; }
 .map-node.faded { opacity: .3; }
 .fit.on { background: var(--accent-2); border-color: var(--accent-2); color: #fff; }
 .path { margin: 0; padding-left: 20px; display: grid; gap: 3px; }
