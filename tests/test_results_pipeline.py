@@ -13,7 +13,8 @@ FAKE_GH = """#!/usr/bin/env bash
 # Stands in for the GitHub CLI: the run's artifacts are already in $FAKE_ARTIFACTS
 case "$1 $2" in
   "repo view") echo "someone/app" ;;
-  "run download") mkdir -p "$5" && cp -R "$FAKE_ARTIFACTS"/. "$5"/ ;;
+  "api repos/someone/app/actions/runs/123/artifacts") ls "$FAKE_ARTIFACTS" ;;
+  "run download") mkdir -p "$7" && cp -R "$FAKE_ARTIFACTS/$5"/. "$7"/ ;;   # run download <run> -n <artifact> -D <dir>
   *) echo "unexpected gh call: $*" >&2; exit 1 ;;
 esac
 """
