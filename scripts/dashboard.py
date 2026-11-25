@@ -394,15 +394,19 @@ def main(argv=None):
     parser.add_argument("run", nargs="*", help="collected runs (runs/<run id>), or results dirs. Several: a map run with persona runs")
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--ecr", help="a clone of explore-compile-replay: each save of checks must pass `ecr validate`")
-    parser.add_argument("--demo", action="store_true", help="open a made-up run, to try the page")
+    parser.add_argument("--demo", action="store_true", help="open the demo: dashboard/demo-data if it holds runs of a public app, else a made-up run")
     parser.add_argument("--no-browser", action="store_true")
     parser.add_argument("--export", metavar="DIR", help="write a static copy for the online demo instead of serving")
     args = parser.parse_args(argv)
 
     if args.demo:
         sys.path.insert(0, str(Path(__file__).resolve().parent))
-        import dashboard_demo
-        roots = [dashboard_demo.write(Path(tempfile.mkdtemp(prefix="dashboard-demo-")))]
+        packed = Path(__file__).resolve().parent.parent / "dashboard" / "demo-data"
+        if find_traces(packed):   # runs of a public app (scripts/demo_pack.py): a copy, so edits never touch the repo
+            roots = [Path(shutil.copytree(packed, Path(tempfile.mkdtemp(prefix="dashboard-demo-")) / "run"))]
+        else:
+            import dashboard_demo
+            roots = [dashboard_demo.write(Path(tempfile.mkdtemp(prefix="dashboard-demo-")))]
     elif args.run:
         roots = [Path(r) for r in args.run]
     else:

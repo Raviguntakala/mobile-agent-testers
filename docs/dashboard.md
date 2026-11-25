@@ -62,7 +62,9 @@ A save is then refused if `ecr validate` finds the trace invalid. Use a clone of
 
 ## The online demo
 
-`python3 scripts/dashboard.py --demo --export site/` writes the page and the made-up run as static files that any web host can serve. With no server, edits stay in the page and Save downloads the edited files. Only the demo can be exported: a real run is private.
+`python3 scripts/dashboard.py --demo --export site/` writes the page and the made-up run as static files that any web host can serve. With no server, edits stay in the page and Save downloads the edited files. Only the demo can be exported: a real run is private. The demo is static files only: no model is ever called and its workflow reads no key or secret.
+
+To show a public app instead of the made-up one, pack its collected runs with `python3 scripts/demo_pack.py runs/<run id> --app <public source URL>`. It writes `dashboard/demo-data/` with only the screenshots, screen trees, traces and short findings (never the typed texts, the reports or the agent's output); `--demo` and the online demo then open those runs. Look at every screenshot before you push it.
 
 ## Limits
 

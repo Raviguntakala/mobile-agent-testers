@@ -1,4 +1,5 @@
-# Publishes the online demo of the dashboard (made-up data only) to GitHub Pages.
+# Publishes the online demo of the dashboard to GitHub Pages: the made-up app, or the runs of a
+# public app packed in dashboard/demo-data by scripts/demo_pack.py.
 name: Dashboard demo
 on:
   push:
