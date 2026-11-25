@@ -7,7 +7,7 @@ Each Android tester now leaves two more files in its results, next to `report.md
 - `trace.json`: what the agent did, step by step. A tap is stored with the name of the element that was under the finger, not with its coordinates, so the path still replays when the layout moves. It also names the model that explored, when the run says it.
 - `trace.params.json`: every text the agent typed (an e-mail, a password). The trace only holds their names, `TEXT_1`, `TEXT_2`. **Do not commit this file.**
 
-Nothing changes for the agent: same tools, same brief. The taps are noted by a pass-through in front of `adb` ([scripts/android/shim/adb](../scripts/android/shim/adb)), and [scripts/ecr_trace.py](../scripts/ecr_trace.py) writes the trace when the agent is done.
+Nothing changes for the agent: same tools, same brief. The taps are noted by a pass-through in front of `adb` ([scripts/android/shim/adb](../scripts/android/shim/adb)), and [scripts/ecr_trace.py](../scripts/ecr_trace.py) writes the trace when the agent is done. An agent often taps several times after one screenshot: the pass-through then saves the screen tree again just before the tap (`tree-N.xml`), so each tap is named after what was under the finger at that moment. It costs a second or two per tap.
 
 To watch, comment and edit these paths before compiling them: [docs/dashboard.md](dashboard.md).
 
@@ -38,10 +38,12 @@ When a replay stops, the app may have shown something else the second time (an a
 
 ## What it is today
 
-- **Experimental.** The trace is written and compiles to a flow that Maestro accepts. Flows compiled from traces written by hand replay on an Android 11 emulator, on Tiny Todo, the demo app ([the device run of Explore-Compile-Replay](https://github.com/pierridotite/explore-compile-replay/actions/workflows/device.yml)). The path of a real agent has not been replayed yet: `replay_path` is there to find out.
+- **Experimental.** A path of 23 steps on Tiny Todo, the demo app, followed by a script with the tools of an agent, is written as a trace and replays from end to end on an Android 11 emulator with no model: the [Replay check](../.github/workflows/replay-check.yml) workflow, started by hand, free. The first path of a real agent (72 steps) stopped at step 12, because the trace did not count elements that share a name the way Maestro does. That is fixed, and the check replays the old count to show where it stopped. No path of a real agent has replayed from end to end yet.
 - The agent's waits are not in the trace. Maestro waits for each element by itself, which may not be enough on a slow screen.
 - **A path, not yet a test of the bug.** The flow has no checks: it fails when a step no longer finds its target. Turning a finding of the report into a check is the next step.
 - **Android only.** iOS comes next.
 - An element with no name and no id is stored as a point on the screen, in percent. It breaks on another screen size.
-- When several elements share a name, the trace keeps the position of the one that was tapped among them.
+- When several elements share a name, the trace says which one was tapped, counted as Maestro counts them: only the deepest element of each (a button and its label are one), from the top of the screen, then from the left.
+- A swipe keeps its direction, not its length: on a long list the replay may not scroll as far as the agent did.
+- A command the trace cannot hold (a key outside Back, Enter, Home and Backspace, a drag) is left out and counted on the `trace:` line of the run, with its kind.
 - Typed texts stay out of the trace, also when the agent taps one: a tap on a task it just added is stored as `TEXT_1`. When the name only holds a typed text (its e-mail in a greeting), the tap is stored by the id of the element, or as a point.
