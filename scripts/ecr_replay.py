@@ -24,6 +24,9 @@ import sys
 import time
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import device_state  # noqa: E402
+
 ADAPTER = "packages/adapter-maestro/src/index.ts"
 CLI = "packages/cli/src/main.ts"
 # Names of environment variables the tools do not get: model keys and every other secret of the run
@@ -138,6 +141,9 @@ def replay(results, ecr, env, timeout=1200, run=run_tool):
     code, _ = ecr_command("compile", "--out", str(results.resolve()))
     if code != 0:
         return {"status": "not_compiled"}, steps, "\n".join(printed)
+    app_id = str((steps[0].get("action") or {}).get("appId", "")) if steps else ""
+    phone = {name: value for name, value in env.items() if not SECRET.search(name) and name != "REPLAY_PARAMS"}   # for adb
+    since = device_state.phone_time(run, phone)
     started = time.time()
     code, output = ecr_command("replay", limit=timeout)
     result = read_result(output)
@@ -145,6 +151,10 @@ def replay(results, ecr, env, timeout=1200, run=run_tool):
         result = {"status": "timeout", "ms": round(1000 * (time.time() - started))}
     elif result is None:
         result = {"status": "not_run"}
+    # What the phone showed: the start time of the app, and the cause of a replay that did not pass (device_state.py)
+    device = device_state.after_replay(run, phone, since, app_id, look=result["status"] in ("fail", "timeout", "not_run"))
+    if device:
+        result["device"] = device
     return result, steps, "\n".join(printed)
 
 
@@ -163,6 +173,8 @@ def main(argv=None, run=run_tool):
         result, steps, printed = {"status": "not_run"}, [], f"{type(error).__name__}: {error}\n"
     step_ids = [step.get("id") for step in steps]
     line = summary(result, step_ids, steps)
+    if result.get("device") and result["status"] in ("fail", "timeout", "not_run"):
+        line += f"; {device_state.words(result['device'])}"
     if result["status"] != "no_trace":
         (results / "replay.txt").write_text(printed, encoding="utf-8")
         kept = dict(result, steps=len(step_ids))

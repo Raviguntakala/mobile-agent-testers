@@ -14,12 +14,15 @@ processes cannot leave this machine, the last replay of each trace runs in that 
 that compile and replay then reach the phone, and nothing else.
 
 Writes in the results dir:
-- replays.json: every replay of every trace: result, time, the type and the step of a stop.
-  It holds no text of the app and no typed text, so it can be published.
+- replays.json: every replay of every trace: result, time, the type and the step of a stop, and
+  what the phone showed (device_state.py). It holds no text of the app and no typed text, so it can
+  be published.
 - replays.txt: everything the tools printed (private)
 - replays-debug/: what Maestro kept (private)
 
-Prints one line per trace with counts only: the logs of a public repo are public. It never fails the run.
+Prints one line per trace with counts only, and one line for each replay that does not give what
+its trace recorded, with its cause in words of the format: the logs of a public repo are public.
+It never fails the run.
 """
 import argparse
 import hashlib
@@ -30,9 +33,11 @@ import shlex
 import statistics
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import device_state  # noqa: E402
 import ecr_replay  # noqa: E402
 
 SCHEMA = "mat.replay-set/0"
@@ -43,7 +48,8 @@ PROBE = ("import socket,sys\n"
          "        socket.create_connection((host, port), 4).close(); sys.exit(1)\n"
          "    except OSError:\n"
          "        pass\n")
-LABEL = {"pass": "pass", "known_bug": "bug", "fixed": "fixed", "fail": "FAIL"}
+LABEL = {"pass": "pass", "known_bug": "bug", "fixed": "fixed", "fail": "FAIL", "timeout": "too long", "not_run": "not run"}
+NOT_RUN = ("timeout", "not_run")   # the tools gave no result: a fault of the harness, not a result of the replay
 
 
 def sha256(path):
@@ -110,21 +116,31 @@ def replay_trace(trace_path, ecr, env, out, times, closed_group, run):
 
     if ecr_command("validate") != 0:
         return dict(entry, status="invalid"), "\n".join(printed)
+    app_id = str(first.get("appId", ""))
+    phone = {name: value for name, value in env.items() if not ecr_replay.SECRET.search(name) and name != "REPLAY_PARAMS"}   # for adb
     replays = []
-    for internet, count, group in (("open", times - 1 if closed_group else times, None), ("cut", 1 if closed_group else 0, closed_group)):
-        if count < 1:
-            continue
-        report = out / f".{trace_path.stem}.{internet}.json"
+    # One replay at a time, so that what the phone did can be read after each one (device_state.py)
+    for internet, group in [("open", None)] * (times - 1 if closed_group else times) + ([("cut", closed_group)] if closed_group else []):
+        report = out / f".{trace_path.stem}.json"
         report.unlink(missing_ok=True)
-        code = ecr_command("replay", "--times", str(count), "--report", str(report.resolve()), limit=300 * count, group=group)
+        since = device_state.phone_time(run, phone)
+        started = time.time()
+        code = ecr_command("replay", "--times", "1", "--report", str(report.resolve()), limit=300, group=group)
         try:
             kept = json.loads(report.read_text(encoding="utf-8"))["traces"][0]
+            one = kept["replays"][0]
             report.unlink()
-        except (OSError, ValueError, KeyError, IndexError):
-            return dict(entry, status="timeout" if code == 124 else "not_run", replays=replays), "\n".join(printed)
-        entry.update(oracles=kept.get("oracles"), recorded=kept.get("recorded"), artifactSha256=kept.get("artifact", {}).get("sha256"))
-        replays += [{"index": len(replays) + i + 1, "internet": internet, "outcome": one.get("outcome"), "durationMs": one.get("durationMs"),
-                     "divergences": one.get("divergences", [])} for i, one in enumerate(kept.get("replays", []))]
+        except (OSError, ValueError, KeyError, IndexError, TypeError):
+            kept, one = None, {"outcome": "timeout" if code == 124 else "not_run", "durationMs": round(1000 * (time.time() - started))}
+        if kept:
+            entry.update(oracles=kept.get("oracles"), recorded=kept.get("recorded"), artifactSha256=kept.get("artifact", {}).get("sha256"))
+        replay = {"index": len(replays) + 1, "internet": internet, "outcome": one.get("outcome"), "durationMs": one.get("durationMs"),
+                  "divergences": one.get("divergences", [])}
+        replay["device"] = device_state.after_replay(run, phone, since, app_id, look=kept is None or replay["outcome"] != entry.get("recorded"))
+        replays.append(replay)
+    if not any(r["outcome"] not in NOT_RUN for r in replays):
+        timeout = any(r["outcome"] == "timeout" for r in replays)
+        return dict(entry, status="timeout" if timeout else "not_run", replays=replays), "\n".join(printed)
     return dict(entry, status="replayed", replays=replays), "\n".join(printed)
 
 
@@ -142,10 +158,33 @@ def line_of(entry):
     closed = f", {len(cut)} with the network of the tools closed ({', '.join(LABEL.get(r['outcome'], '?') for r in cut)})" if cut else ", none with the network closed"
     stops = sorted({f"{d.get('type')} at step {d.get('stepId')}" for r in replays if r["outcome"] == "fail" for d in r["divergences"][:1]})
     where = f"; stops: {', '.join(stops[:4])}" if stops else ""
-    seconds = round(statistics.median(r["durationMs"] for r in replays) / 1000) if replays else 0
+    seconds = round(statistics.median(r["durationMs"] or 0 for r in replays) / 1000) if replays else 0
     taps = entry["taps"]
+    starts = [r["device"]["appStartSeconds"][0] for r in replays if (r.get("device") or {}).get("appStartSeconds")]
+    start = f", app start median {statistics.median(starts):g} s, slowest {max(starts):g} s" if starts else ""
     return (f"{name}: {as_recorded} of {len(replays)} replays give what the trace recorded ({counts}){closed}, median {seconds} s, "
-            f"{entry['steps']} steps, taps {taps['name']} by name, {taps['id']} by id, {taps['point']} by position, trace {entry['sha256'][:12]}{where}")
+            f"{entry['steps']} steps, taps {taps['name']} by name, {taps['id']} by id, {taps['point']} by position, trace {entry['sha256'][:12]}{start}{where}")
+
+
+def details_of(entry, most=10):
+    """One public line for each replay that does not give what the trace recorded: where it stopped, and what the phone showed then."""
+    if entry.get("status") != "replayed":
+        return []
+    name = re.sub(r"[^\w.-]", "", str(entry.get("id", ""))) or entry["sha256"][:12]
+    safe = lambda value: re.sub(r"[^\w.-]", "", str(value))[:40]   # noqa: E731
+    odd = [r for r in entry["replays"] if r["outcome"] != entry.get("recorded")]
+    lines = []
+    for r in odd[:most]:
+        first = (r.get("divergences") or [{}])[0]
+        where = f", {safe(first['type'])}" if first.get("type") else ""
+        where += f" at step {safe(first['stepId'])}" if first.get("type") and first.get("stepId") else ""
+        where += f" (oracle {safe(first['oracleId'])})" if first.get("type") and first.get("oracleId") else ""
+        cut = " (network of the tools closed)" if r["internet"] == "cut" else ""
+        lines.append(f"{name} replay {r['index']} of {len(entry['replays'])}{cut}: {LABEL.get(r['outcome'], '?')}{where}, "
+                     f"after {round((r.get('durationMs') or 0) / 1000)} s; {device_state.words(r.get('device'))}")
+    if len(odd) > most:
+        lines.append(f"{name}: {len(odd) - most} more replays like these, in replays.json")
+    return lines
 
 
 def main(argv=None, run=ecr_replay.run_tool):
@@ -189,12 +228,15 @@ def main(argv=None, run=ecr_replay.run_tool):
         result["traces"].append(entry)
         printed.append(said)
         print(f"replays: {line_of(entry)}")
+        for detail in details_of(entry):
+            print(f"replays:   {detail}")
         (out / "replays.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")   # kept after each trace
     (out / "replays.txt").write_text("\n".join(printed), encoding="utf-8")
     report = os.environ.get("GITHUB_STEP_SUMMARY")
     if report and os.environ.get("GITHUB_ACTIONS") == "true":
         with open(report, "a", encoding="utf-8") as f:
-            f.writelines(f"Replays on the phone of {persona}: {line_of(entry)}\n\n" for entry in result["traces"])
+            f.writelines(f"Replays on the phone of {persona}: {line_of(entry)}\n\n" + "".join(f"- {detail}\n" for detail in details_of(entry))
+                         + ("\n" if details_of(entry) else "") for entry in result["traces"])
     return 0
 
 

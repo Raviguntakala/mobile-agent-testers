@@ -76,22 +76,44 @@ class Run(unittest.TestCase):
         self.results.mkdir()
         (self.results / "trace.json").write_text(json.dumps(TRACE), encoding="utf-8")
         (self.results / "trace.params.json").write_text(json.dumps({"TEXT_1": TYPED}), encoding="utf-8")
-        self.calls = []
+        self.calls, self.phone_calls = [], []
 
-    def tool(self, answers):
+    def tool(self, answers, phone=None):
         def run(args, cwd, env, timeout):
+            if args[0] == "adb":   # the phone: silent unless a test gives it answers
+                self.phone_calls.append((args, env))
+                return next((answer for word, answer in (phone or {}).items() if word in args), (1, "no device\n"))
             self.calls.append((args, cwd, env))
             return answers[args[2]]
         return run
 
-    def main(self, answers, summary_file=None):
+    def main(self, answers, summary_file=None, phone=None):
         env = {"PATH": os.environ.get("PATH", ""), "CLAUDE_CODE_OAUTH_TOKEN": "secret-token"}
         if summary_file:
             env.update(GITHUB_ACTIONS="true", GITHUB_STEP_SUMMARY=str(summary_file))
         out = io.StringIO()
         with mock.patch.dict(os.environ, env, clear=True), contextlib.redirect_stdout(out):
-            code = replayer.main([str(self.results), "--ecr", "/ecr", "--persona", "anna"], run=self.tool(answers))
+            code = replayer.main([str(self.results), "--ecr", "/ecr", "--persona", "anna"], run=self.tool(answers, phone))
         return code, out.getvalue()
+
+    def test_a_replay_that_does_not_pass_says_what_the_phone_showed(self):
+        phone = {"date": (0, "1764100800\n"), "pidof": (1, ""), "/proc/loadavg": (0, "7.91 5.02 3.00 4/310 999\n"),
+                 "logcat": (0, "I ActivityTaskManager: Displayed com.example.todo/.MainActivity for user 0: +21s40ms\n"
+                               "E ActivityManager: ANR in com.android.systemui\n"),
+                 "dumpsys": (0, "mCurrentFocus=Window{77 u0 Application Not Responding: com.android.systemui}\n")}
+        code, printed = self.main({"validate": (0, "ok\n"), "compile": (0, "wrote\n"), "replay": (1, FAIL)}, phone=phone)
+        self.assertEqual(0, code)
+        self.assertIn("after 38 s; on screen: a window that does not respond, of the system, the app not running; app start 21 s; "
+                      "not responding: the system; no crash; load 7.9 on the phone", printed)
+        kept = json.loads((self.results / "replay.json").read_text())
+        self.assertEqual(kept["device"]["inFront"], "a window that does not respond, of the system")
+        self.assertNotIn("CLAUDE_CODE_OAUTH_TOKEN", self.phone_calls[0][1])
+
+    def test_a_replay_that_passes_keeps_only_the_start_time_of_the_app(self):
+        phone = {"date": (0, "1764100800\n"), "logcat": (0, "I ActivityTaskManager: Displayed com.example.todo/.MainActivity: +1s200ms\n")}
+        code, printed = self.main({"validate": (0, "ok\n"), "compile": (0, "wrote\n"), "replay": (0, PASS)}, phone=phone)
+        self.assertEqual((0, "replay: pass, 3 steps with no model in 41 s\n"), (code, printed))
+        self.assertEqual({"appStartSeconds": [1.2]}, json.loads((self.results / "replay.json").read_text())["device"])
 
     def test_pass(self):
         code, printed = self.main({"validate": (0, "ok\n"), "compile": (0, "wrote\n"), "replay": (0, PASS)})

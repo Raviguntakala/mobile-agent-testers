@@ -20,16 +20,31 @@ TRACE = {"schema": "ecr.trace/0", "id": "anna-20261125T120000", "adapter": {"id"
 TYPED = "A text that must stay out of every public file"
 
 
-class Tools:
-    """Stands in for node, sg, git: writes the report `ecr replay --report` would write."""
+WINDOW = "mCurrentFocus=Window{1a2b3c u0 com.example.todo/com.example.todo.MainActivity}\n  mFocusedApp=ActivityRecord{9f u0 com.example.todo/.MainActivity t12}\n"
+LOG = ("11-25 20:00:01.000   500   520 I ActivityTaskManager: Displayed com.example.todo/.MainActivity for user 0: +1s534ms\n"
+       f"11-25 20:00:02.000  1234  1234 I ReactNativeJS: {TYPED}\n")
 
-    def __init__(self, closed=True, outcomes=None, validates=True, writes=True):
+
+class Tools:
+    """Stands in for node, sg, git and adb: writes the report `ecr replay --report` would write."""
+
+    def __init__(self, closed=True, outcomes=None, validates=True, writes=True, window=WINDOW, log=LOG, phone=True):
         self.calls, self.envs = [], []
         self.closed, self.outcomes, self.validates, self.writes = closed, outcomes or {}, validates, writes
+        self.window, self.log, self.phone = window, log, phone
+
+    def adb(self, args):
+        if not self.phone:
+            return 1, "adb: no devices/emulators found\n"
+        answers = {"date": (0, "1764100800\n"), "logcat": (0, self.log), "dumpsys": (0, self.window), "pidof": (0, "1234\n"),
+                   "cat": (0, "3.52 2.10 1.00 2/300 1234\n")}
+        return answers[next(word for word in args[1:] if word in answers)]
 
     def __call__(self, args, cwd, env, timeout):
         self.calls.append(args)
         self.envs.append(env)
+        if args[0] == "adb":
+            return self.adb(args)
         if args[0] == "git":
             return 0, "5b4d9f2aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
         inside = args[0] == "sg"
@@ -115,6 +130,54 @@ class ReplaySet(unittest.TestCase):
         self.assertIn("1 of 3 replays give what the trace recorded (1 pass, 2 FAIL)", printed)
         self.assertIn("stops: target_not_found at step s3", printed)
         self.assertEqual(kept["traces"][0]["replays"][0]["divergences"], [{"type": "target_not_found", "stepId": "s3"}])
+
+    def test_each_replay_that_does_not_give_what_was_recorded_says_what_the_phone_showed(self):
+        tools = Tools(outcomes={"open": "fail"})
+        printed, kept = self.run_it(tools, "--times", "3", "--closed-group", "noinet")
+        self.assertIn("replays:   anna-20261125T120000 replay 1 of 3: FAIL, target_not_found at step s3, after 60 s; "
+                      "on screen: the app, the app running; app start 1.5 s; nothing stopped responding; no crash; load 3.5 on the phone", printed)
+        self.assertIn("replay 2 of 3: FAIL", printed)
+        self.assertNotIn("replay 3 of 3", printed)   # the third gave what the trace recorded
+        self.assertIn("app start median 1.5 s, slowest 1.5 s", printed)
+        replays = kept["traces"][0]["replays"]
+        self.assertEqual(replays[0]["device"]["inFront"], "the app")
+        self.assertEqual(replays[2]["device"], {"appStartSeconds": [1.5]})   # as recorded: only the start time is read
+        self.assertIn(["adb", "logcat", "-d", "-T", "1764100800.000"], tools.calls)
+        public = printed + (self.out / "replays.json").read_text()
+        for private in (TYPED, "MainActivity", "ReactNativeJS"):
+            self.assertNotIn(private, public)
+
+    def test_a_phone_that_does_not_answer_never_stops_the_replays(self):
+        printed, kept = self.run_it(Tools(outcomes={"open": "fail"}, phone=False), "--times", "2")
+        self.assertIn("replay 1 of 2: FAIL, target_not_found at step s3, after 60 s; the phone did not answer", printed)
+        self.assertEqual(kept["traces"][0]["status"], "replayed")
+        self.assertNotIn("app start median", printed)
+
+    def test_the_kind_of_window_in_front_is_said_never_its_title(self):
+        front = replay_set.device_state.in_front
+        self.assertEqual(front("mCurrentFocus=Window{4d u0 Application Not Responding: com.android.systemui}", "com.example.todo"),
+                         "a window that does not respond, of the system")
+        self.assertEqual(front("mCurrentFocus=Window{4d u0 Application Not Responding: com.example.todo}", "com.example.todo"),
+                         "a window that does not respond, of the app")
+        self.assertEqual(front("mCurrentFocus=Window{4d u0 com.google.android.apps.nexuslauncher/.NexusLauncherActivity}", "com.example.todo"), "the home screen")
+        self.assertEqual(front("mCurrentFocus=null", "com.example.todo"), "no window")
+        self.assertEqual(front("mCurrentFocus=Window{4d u0 Delete the file of Bob?}", "com.example.todo"), "another window of the system")
+
+    def test_start_times_of_the_app_are_read_from_the_log_of_android_11_and_14(self):
+        starts = replay_set.device_state.app_starts
+        log = ("I ActivityTaskManager: Displayed com.example.todo/.MainActivity: +812ms\n"
+               "I ActivityTaskManager: Displayed com.example.todo/.MainActivity for user 0: +24s310ms\n"
+               "I ActivityTaskManager: Displayed com.other.app/.Main: +1s2ms\n")
+        self.assertEqual(starts(log, "com.example.todo"), [0.8, 24.3])
+
+    def test_not_responding_and_crashes_are_counted_for_the_app_and_the_system(self):
+        log = ("E ActivityManager: ANR in com.android.systemui\nE ActivityManager: ANR in com.example.todo:remote\n"
+               "E AndroidRuntime: FATAL EXCEPTION: main\nE AndroidRuntime: Process: com.example.todo, PID: 4321\n"
+               "E AndroidRuntime: Process: com.other.app, PID: 99\n")
+        facts = replay_set.device_state.after_replay(Tools(log=log), {}, "1764100800", "com.example.todo", look=True)
+        self.assertEqual(facts["notResponding"], ["the app", "the system"])
+        self.assertEqual(facts["appCrashes"], 1)
+        self.assertIn("not responding: the app and the system; 1 crash of the app", replay_set.device_state.words(facts))
 
     def test_a_trace_the_tools_refuse_or_cannot_run_never_fails_the_run(self):
         printed, kept = self.run_it(Tools(validates=False))
