@@ -114,8 +114,45 @@ def target_at(nodes, x, y, width, height, typed=None):
                 target["index"] = found.index(chosen[0])
             return target, list(nodes[chosen[0]]["bounds"])
     if width > 0 and height > 0:
-        return {"point": f"{min(100, max(0, round(100 * x / width)))}%,{min(100, max(0, round(100 * y / height)))}%"}, None
+        return {"point": percent(x, y, width, height)}, None
     return None, None
+
+
+RIGHT_TO_LEFT = {"ar", "fa", "he", "iw", "ur"}   # languages whose text ends on the left of a field
+
+
+def end_of(nodes, bounds, x, y, right_to_left=False):
+    """Where a tap in this element puts the cursor after its text: "97%,90%" of its box, None when unknown.
+    A replay erases before the cursor, the agent's tool erases from the end: before a field is
+    emptied, the tap of the replay must land where the text ends. A place is not used when it is
+    covered by something that was not under the finger (the cross that empties a field)."""
+    if not bounds or bounds[2] <= bounds[0] or bounds[3] <= bounds[1]:
+        return None
+    tapped = {i for i, node in enumerate(nodes) if node["bounds"][0] <= x <= node["bounds"][2] and node["bounds"][1] <= y <= node["bounds"][3]}
+    for side in (97, 90, 80, 70, 60):
+        across = 100 - side if right_to_left else side
+        px = bounds[0] + (bounds[2] - bounds[0]) * across / 100
+        py = bounds[1] + (bounds[3] - bounds[1]) * 0.9
+        covered = any(i not in tapped and node["bounds"][0] <= px <= node["bounds"][2] and node["bounds"][1] <= py <= node["bounds"][3]
+                      for i, node in enumerate(nodes))
+        if not covered:
+            return f"{across}%,90%"
+    return None
+
+
+def percent(x, y, width, height):
+    return f"{min(100, max(0, round(100 * x / width)))}%,{min(100, max(0, round(100 * y / height)))}%"
+
+
+def ends_of(direction, x1, y1, x2, y2, width, height):
+    """The two ends of a swipe in percent of the screen, {} when the screen size is unknown
+    or when, in percent, the finger no longer moves in its direction (a very short swipe)."""
+    if width <= 0 or height <= 0:
+        return {}
+    start, stop = percent(x1, y1, width, height), percent(x2, y2, width, height)
+    (a1, b1), (a2, b2) = ([int(part.rstrip("%")) for part in point.split(",")] for point in (start, stop))
+    moves = {"UP": b2 < b1, "DOWN": b2 > b1, "LEFT": a2 < a1, "RIGHT": a2 > a1}[direction]
+    return {"from": start, "to": stop} if moves else {}
 
 
 COMMANDS = {"tap", "swipe", "text", "keyevent", "draganddrop", "press", "roll", "motionevent", "keycombination"}
@@ -179,6 +216,12 @@ def build(log_lines, persona, app_id, now, model=None):
     nodes, width, height, screen, last_screen = [], 0, 0, None, None
 
     at_end = None   # the note of a "cursor to the end" key that nothing has used yet
+    right_to_left = str(persona.get("locale") or "").replace("_", "-").split("-")[0].lower() in RIGHT_TO_LEFT
+
+    def erase_from_the_end():
+        """The agent is about to erase a field from its end: the tap that opened it must land where its text ends."""
+        if steps and steps[-1]["action"].get("kind") == "tapOn" and steps[-1].get("endAt"):
+            steps[-1]["action"]["at"] = steps[-1]["endAt"]
 
     def add(action, **seen):
         """seen: what a tool needs to show the step (screenshot, finger, screen size). Never used to replay."""
@@ -217,6 +260,7 @@ def build(log_lines, persona, app_id, now, model=None):
         elif kind == "tree":   # saved by the pass-through adb just before a tap that follows no screenshot
             nodes = read_screen(fields[2]) or nodes
         elif kind == "type":
+            erase_from_the_end()
             add({"kind": "eraseText"})   # type.py replaces what the field holds: typing nothing empties it
             if fields[2]:
                 add({"kind": "inputText", "text": {"param": named(fields[2])}})
@@ -227,6 +271,7 @@ def build(log_lines, persona, app_id, now, model=None):
                 target, bounds = target_at(nodes, x, y, width, height, values)
                 if target:
                     add({"kind": "tapOn", "target": target}, point=[x, y], bounds=bounds)
+                    steps[-1]["endAt"] = end_of(nodes, bounds, x, y, right_to_left)
                 else:
                     skipped.append(line.strip())
             elif args[:1] == ["swipe"] and len(args) >= 5 and all(a.lstrip("-").isdigit() for a in args[1:5]):
@@ -242,7 +287,8 @@ def build(log_lines, persona, app_id, now, model=None):
                     direction = "LEFT" if x2 < x1 else "RIGHT"
                 else:
                     direction = "UP" if y2 < y1 else "DOWN"
-                add({"kind": "swipe", "direction": direction}, **{"from": [x1, y1], "to": [x2, y2]})
+                add({"kind": "swipe", "direction": direction, **ends_of(direction, x1, y1, x2, y2, width, height)},
+                    **{"from": [x1, y1], "to": [x2, y2]})
             elif args[:1] == ["keyevent"] and len(args) >= 2 and all(key in KEYS or key in END for key in args[1:]):
                 for key in args[1:]:   # `input keyevent 67 67 67` presses three keys
                     erasing = bool(steps) and steps[-1]["action"].get("kind") == "eraseText" and steps[-1].get("fromEnd")
@@ -253,6 +299,7 @@ def build(log_lines, persona, app_id, now, model=None):
                         steps[-1]["action"]["characters"] += 1
                     elif KEYS[key] == "Backspace" and at_end:   # to the end, then deletes: the end of the text is erased
                         at_end = None
+                        erase_from_the_end()
                         add({"kind": "eraseText", "characters": 1})
                         steps[-1]["fromEnd"] = True
                     else:
@@ -266,6 +313,7 @@ def build(log_lines, persona, app_id, now, model=None):
         skipped.append(at_end)
     for step in steps:
         step.pop("fromEnd", None)   # only used while reading the notes
+        step.pop("endAt", None)
 
     device = persona.get("device") or {}
     context = {"platform": "android"}

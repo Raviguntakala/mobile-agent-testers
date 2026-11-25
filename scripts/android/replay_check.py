@@ -46,6 +46,12 @@ STEPS = [
     ("keys", "KEYCODE_MOVE_END", 0), ("keys", "67 67 67 67", 0),   # emptied by hand: to the end, then four deletes
     ("hide", "", 0),
     ("tap", "Pay the rent", 0),
+    ("tap", "New task", 0), ("type", "Water the plants on the balcony", 0),
+    ("tap", "New task", 0),              # at its centre, so in the middle of the long text: type.py still erases all of it
+    ("type", "Feed the cat", 0),
+    ("tap", "Add", 0),
+    ("hide", "", 0),
+    ("tap", "Feed the cat", 0),          # the task has this name only if the replay erased the whole long text too
 ]
 SEEN = re.compile(r'^- (\w+) "(.*)" centre=\((\d+),(\d+)\)$')
 
@@ -88,13 +94,25 @@ def follow(results):
             sys.exit(f'check: "{value}" is not on screen {screens:02d}')
         run("adb", "shell", "input", "tap", str(named[which][0]), str(named[which][1]))
     left = [name for name, _, _ in look(results, screens + 1)]
-    if "Call the plumber" in left or "Buy milk" not in left:
+    if "Call the plumber" in left or "Buy milk" not in left or "Feed the cat" not in left:
         sys.exit("check: the path did not do what was planned (a task added, another one deleted)")
 
 
+def replayed_otherwise(results, trace, ecr, folder, change):
+    """Replays the same path with one thing written as it once was, and returns the line of the replay.
+    For the record only: it never fails the check."""
+    other = results / folder
+    other.mkdir(exist_ok=True)
+    changed = json.loads(json.dumps(trace))
+    change(changed)
+    (other / "trace.json").write_text(json.dumps(changed, indent=2) + "\n", encoding="utf-8")
+    (other / "trace.params.json").write_text((results / "trace.params.json").read_text(encoding="utf-8"), encoding="utf-8")
+    return run(sys.executable, "scripts/ecr_replay.py", str(other), "--ecr", ecr)[1].strip()
+
+
 def counted_the_old_way(results, trace, ecr):
-    """For the record: the trace once counted every element with the name, in the order of the file.
-    Replays the same path with that count for "Continue" and says where it stops. Never fails the check."""
+    """The trace once counted every element with the name, in the order of the file.
+    Replays the same path with that count for "Continue" and says where it stops."""
     sys.path.insert(0, str(ROOT / "scripts"))
     import ecr_trace
     step = next((s for s in trace["steps"] if s["action"].get("target") == {"text": "Continue"}), None)
@@ -106,14 +124,19 @@ def counted_the_old_way(results, trace, ecr):
     print(f'check: "Continue" names {len(every)} elements of the tree, {len(ecr_trace.found_by(tree, "text", "Continue"))} for the replay')
     if len(every) < 2:
         return
-    old = results / "old-count"
-    old.mkdir(exist_ok=True)
-    changed = json.loads(json.dumps(trace))
-    next(s for s in changed["steps"] if s["id"] == step["id"])["action"]["target"]["index"] = len(every) - 1
-    (old / "trace.json").write_text(json.dumps(changed, indent=2) + "\n", encoding="utf-8")
-    (old / "trace.params.json").write_text((results / "trace.params.json").read_text(encoding="utf-8"), encoding="utf-8")
-    _, printed = run(sys.executable, "scripts/ecr_replay.py", str(old), "--ecr", ecr)
-    print(f"check: counted the old way, {printed.strip()}")
+
+    def change(changed):
+        next(s for s in changed["steps"] if s["id"] == step["id"])["action"]["target"]["index"] = len(every) - 1
+    print(f"check: counted the old way, {replayed_otherwise(results, trace, ecr, 'old-count', change)}")
+
+
+def tapped_at_the_centre(results, trace, ecr):
+    """The trace once let every tap of the replay land on the centre of its element.
+    Replays the same path that way: the long text is then erased from its middle."""
+    def change(changed):
+        for step in changed["steps"]:
+            step["action"].pop("at", None)
+    print(f"check: every tap at the centre, {replayed_otherwise(results, trace, ecr, 'at-the-centre', change)}")
 
 
 def taps(trace, **target):
@@ -148,8 +171,16 @@ def main(argv=None):
         problems.append('the tap on "Continue" is not stored by its name alone')
     if not taps(trace, text="x", index=1):
         problems.append('the tap on the second "x" is not stored as the second one')
-    if len([step for step in trace["steps"] if isinstance(step["action"].get("target", {}).get("text"), dict)]) != 2:
-        problems.append("the two taps on the typed text are not stored under its name")
+    by_typed_text = [step for step in trace["steps"] if isinstance(step["action"].get("target", {}).get("text"), dict)]
+    if len(by_typed_text) != 4:
+        problems.append("the four taps on a typed text are not stored under its name")
+    before_an_erase = [before for before, step in zip(trace["steps"], trace["steps"][1:])
+                       if step["action"]["kind"] == "eraseText" and before["action"]["kind"] == "tapOn"]
+    planned = sum(1 for (before, _, _), (kind, _, _) in zip(STEPS, STEPS[1:]) if before == "tap" and kind == "type")
+    if len(before_an_erase) != planned or not all(step["action"].get("at") for step in before_an_erase):
+        problems.append(f"the {planned} taps that open a field before it is emptied do not say where its text ends")
+    if sum(1 for step in trace["steps"] if "at" in step["action"]) != len(before_an_erase):
+        problems.append("a tap that opens no field says where in its element it lands")
     if "\ttree\t" not in (results / "actions.tsv").read_text(encoding="utf-8"):
         problems.append("no tree was saved before a tap that followed no screenshot")
     if "Buy milk" in json.dumps(trace) or "only-for-this-test" in json.dumps(trace):
@@ -169,6 +200,7 @@ def main(argv=None):
             pass
     else:
         counted_the_old_way(results, trace, str(Path(args.ecr).resolve()))
+        tapped_at_the_centre(results, trace, str(Path(args.ecr).resolve()))
     for problem in problems:
         print(f"check: {problem}")
     print("check: FAILED" if problems else f"check: ok, {len(trace['steps'])} steps written from the taps and replayed with no model")

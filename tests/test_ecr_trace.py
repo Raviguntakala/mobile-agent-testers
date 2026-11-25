@@ -127,9 +127,43 @@ class Build(unittest.TestCase):
             "1\tadb\tshell\tinput\tswipe\t500\t1800\t500\t600\t400", "1\tadb\tshell\tinput\tswipe\t900\t1000\t100\t1010\t400",
             "1\tadb\tshell\tinput\tkeyevent\tKEYCODE_BACK", "1\tadb\tshell\tinput\tkeyevent\t66",
             "1\tadb\tshell\tinput\tkeyevent\tKEYCODE_VOLUME_UP")
-        self.assertEqual(actions, [{"kind": "swipe", "direction": "UP"}, {"kind": "swipe", "direction": "LEFT"},
+        self.assertEqual(actions, [{"kind": "swipe", "direction": "UP", "from": "46%,75%", "to": "46%,25%"},   # the two ends, in percent of the screen
+                                   {"kind": "swipe", "direction": "LEFT", "from": "83%,42%", "to": "9%,42%"},
                                    {"kind": "pressKey", "key": "Back"}, {"kind": "pressKey", "key": "Enter"}])
         self.assertEqual(len(skipped), 1)
+
+    def test_a_swipe_keeps_its_ends_only_when_they_still_say_its_direction(self):
+        actions, _, _ = self.actions("1\tadb\tshell\tinput\tswipe\t500\t1000\t500\t1011")   # 11 pixels: the same percent
+        self.assertEqual(actions, [{"kind": "swipe", "direction": "DOWN"}])
+        trace, _, _ = tracer.build(["1\tadb\tshell\tinput\tswipe\t500\t1800\t500\t600"], PERSONA, "com.example.todo", NOW)
+        self.assertEqual(trace["steps"][1]["action"], {"kind": "swipe", "direction": "UP"})          # no screen size known
+
+    def test_a_tap_before_a_field_is_emptied_lands_where_its_text_ends(self):
+        field, help_ = "1\tadb\tshell\tinput\ttap\t500\t460", "1\tadb\tshell\tinput\ttap\t990\t90"
+        at_end = {"kind": "tapOn", "target": {"id": "app:id/password"}, "at": "97%,90%"}
+        actions, _, _ = self.actions(field, "1\ttype\tS3cret-pass", field, help_, field, self.screen, "1\ttype\t",
+                                     field, "1\tadb\tshell\tinput\tkeyevent\t123\t67\t67")
+        self.assertEqual(actions, [
+            at_end, {"kind": "eraseText"}, {"kind": "inputText", "text": {"param": "TEXT_1"}},
+            {"kind": "tapOn", "target": {"id": "app:id/password"}},      # nothing is erased after it: the centre, as before
+            {"kind": "tapOn", "target": {"text": "Help"}},
+            at_end, {"kind": "eraseText"},                               # a screenshot in between changes nothing
+            at_end, {"kind": "eraseText", "characters": 2},              # to the end then deletes, by hand
+        ])
+        actions, _, _ = self.actions("1\tadb\tshell\tinput tap 540 1800", "1\ttype\tx")
+        self.assertEqual(actions[0], {"kind": "tapOn", "target": {"point": "50%,75%"}})   # a point has no inside
+
+    def test_the_end_of_a_field_is_on_the_left_for_a_text_written_from_right_to_left_and_avoids_what_covers_it(self):
+        lines = [self.screen, "1\tadb\tshell\tinput\ttap\t500\t460", "1\ttype\tx"]
+        trace, _, _ = tracer.build(lines, dict(PERSONA, locale="ar-EG"), "com.example.todo", NOW)
+        self.assertEqual(trace["steps"][1]["action"]["at"], "3%,90%")
+        (self.dir / "01.xml").write_text(LOGIN.replace(   # a cross over the right end of the field
+            '<node text="Costs', '<node text="" content-desc="Clear" resource-id="" class="android.widget.ImageButton" bounds="[940,400][1040,520]" />\n    <node text="Costs'), encoding="utf-8")
+        trace, _, _ = tracer.build(lines, PERSONA, "com.example.todo", NOW)
+        self.assertEqual(trace["steps"][1]["action"]["at"], "80%,90%")
+        nodes = tracer.read_screen(self.dir / "01.xml")
+        self.assertIsNone(tracer.end_of(nodes, None, 500, 460))
+        self.assertIsNone(tracer.end_of(nodes, [40, 400, 40, 520], 500, 460))
 
     def test_a_tree_saved_just_before_a_tap_names_it_and_keeps_the_screenshot(self):
         (self.dir / "tree-3.xml").write_text(LOGIN.replace('text="Sign in" resource-id="app:id/submit"', 'text="Try again" resource-id="app:id/submit"'),
