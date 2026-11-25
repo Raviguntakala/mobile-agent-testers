@@ -74,11 +74,11 @@ def read_view(xml_text):
     def label_of(node):
         own = (node.get("text") or "").strip() or (node.get("content-desc") or "").strip()
         if own:
-            return own
+            return own.replace("\n", " ")   # a Flutter tab, "Send\nTab 2 of 3", read on one line as Maestro does
         for child in node.iter("node"):
             inner = (child.get("text") or "").strip() or (child.get("content-desc") or "").strip()
             if inner:
-                return inner
+                return inner.replace("\n", " ")
         return ""
 
     for node in root.iter("node"):

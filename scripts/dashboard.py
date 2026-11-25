@@ -65,7 +65,8 @@ def screen_elements(xml_path):
         if (n.get("package") or "") == "com.android.systemui":
             continue
         b = re.findall(r"-?\d+", n.get("bounds", ""))
-        label = (n.get("text") or "").strip() or (n.get("content-desc") or "").strip()
+        # a name on several lines (a Flutter tab: "Send\nTab 2 of 3") on one line, as Maestro and ecr_trace.py read it
+        label = ((n.get("text") or "").strip() or (n.get("content-desc") or "").strip()).replace("\n", " ")
         rid = (n.get("resource-id") or "").strip()
         if len(b) != 4 or not (label or rid):
             continue

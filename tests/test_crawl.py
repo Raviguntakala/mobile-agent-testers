@@ -181,6 +181,18 @@ if __name__ == "__main__":
     unittest.main()
 
 
+class OneLineNamesTest(unittest.TestCase):
+    def test_a_name_on_two_lines_is_read_on_one_as_maestro_does(self):
+        sys.path.insert(0, str(ROOT / "scripts"))
+        import dashboard
+        xml = ('<?xml version="1.0"?><hierarchy><node class="android.view.View" package="x" text="" '
+               'content-desc="Send&#10;Tab 2 of 3" resource-id="" clickable="true" bounds="[0,0][100,100]"/></hierarchy>')
+        self.assertEqual(crawl.read_view(xml)[2][0]["label"], "Send Tab 2 of 3")
+        path = Path(tempfile.mkdtemp()) / "01.xml"
+        path.write_text(xml, encoding="utf-8")
+        self.assertEqual(dashboard.screen_elements(path)[0]["label"], "Send Tab 2 of 3")
+
+
 class MapStatsTest(unittest.TestCase):
     def test_screens_the_agent_adds_and_what_each_one_cost(self):
         sys.path.insert(0, str(ROOT / "scripts"))
