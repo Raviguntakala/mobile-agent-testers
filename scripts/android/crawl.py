@@ -14,8 +14,8 @@ Each start of the app is one folder, map-01, map-02... with its screens and its 
 every trace starts with launchApp (clean state), so each one replays with no model.
 At the top: findings.json ({"mode": "map", "robot": true, "screens_found": [...],
 "blocked": [...]}) and report.md. "blocked" lists the screens with fields from which no
-tap led anywhere: a form the robot could not pass (scripts/android/run_agent.sh can hand
-those to an agent, map=robot+agent).
+tap led anywhere and which answered only with an error, or not at all: a form the robot
+could not pass (scripts/android/run_agent.sh can hand those to an agent, map=robot+agent).
 
 It never taps a control whose name says it deletes, pays, buys or signs out, and it does
 not scroll: a control below the fold is not opened (the agent can go further).
@@ -42,6 +42,7 @@ DANGER = re.compile(
 DANGER_EXACT = {"x", "×", "✕", "✖", "🗑"}
 SKIP_FIELD = re.compile(r"search|recherch|find|filter|filtr", re.I)
 SYSTEM = {"com.android.systemui"}
+ERROR = re.compile(r"error|invalid|wrong|required|failed|incorrect|erreur|invalide|obligatoire|[ée]chec|incorrect", re.I)
 
 
 def value_for(field):
@@ -204,7 +205,8 @@ class Crawler:
         if "ERRORS SINCE LAST SCREENSHOT" in printed:
             self.issues.append({"title": "An error or a crash was logged", "severity": "major",
                                 "screens": [f"{self.folder.name}/{number}"], "folder": self.folder.name})
-        self.view = {"number": number, "packages": packages, "fields": fields, "controls": controls,
+        texts = set(re.findall(r'text="([^"]+)"', xml_text))
+        self.view = {"number": number, "packages": packages, "fields": fields, "controls": controls, "texts": texts,
                      "signature": signature(fields, controls), "xml": xml_path}
         return self.view
 
@@ -229,7 +231,7 @@ class Crawler:
             name = f"{name} ({len(self.screens) + 1})"
         screen = {"index": len(self.screens), "name": name, "signature": view["signature"], "parent": parent,
                   "path": (parent["path"] + [step]) if parent else [], "tried": set(), "done": False,
-                  "fields": len(view["fields"]), "leads": set(), "pending": None, "seen": [f"{self.folder.name}/{view['number']}"]}
+                  "fields": len(view["fields"]), "leads": set(), "pending": None, "answered": False, "seen": [f"{self.folder.name}/{view['number']}"]}
         self.screens.append(screen)
         return screen
 
@@ -375,8 +377,12 @@ class Crawler:
             screen["tried"].add(key)
             screen["pending"] = sum(1 for c in self.view["controls"] if control_key(c) not in screen["tried"] and not dangerous(c))
             step = {"key": key, "label": control["label"], "id": control["id"]}
+            before = self.view["texts"]
             self.tap(control)
             self.look()
+            appeared = self.view["texts"] - before
+            if appeared and not any(ERROR.search(t) for t in appeared):
+                screen["answered"] = True   # the screen took the tap (a task added, a message sent): not a dead end
             if not self.in_app():
                 self.left_app.append({"screen": screen["name"], "control": control["label"] or control["id"] or "unnamed"})
                 self.phone.back()
@@ -394,7 +400,8 @@ class Crawler:
                 s = s["parent"]
             return " > ".join(reversed(names)) or "(launch)"
 
-        blocked = [s for s in self.screens if s["fields"] and not s["leads"]]
+        # a form the robot could not pass: no tap led anywhere, and the screen only answered with errors, or not at all
+        blocked = [s for s in self.screens if s["fields"] and not s["leads"] and not s["answered"]]
         found = [{"name": s["name"], "screens": s["seen"], "path": path_of(s)} for s in self.screens]
         summary = {"mode": "map", "robot": True, "issues": self.issues, "screens_found": found,
                    "blocked": [{"name": s["name"], "path": path_of(s), "screens": s["seen"]} for s in blocked],

@@ -29,7 +29,8 @@ class FakeShop:
         "terms": ("Terms of use", [], []),
         "home": ("Your tasks", ["Search"], ["Settings", "x", "Delete all", "Open the website"]),
         "settings": ("Settings", [], ["Help", "Log out"]),
-        "help": ("Help", [], ["Contact us"]),
+        "help": ("Help", [], ["Contact us", "Notes"]),
+        "notes": ("Your notes", ["Note"], ["Save"]),
         "contact": ("Write to us", ["Message"], ["Send"]),
     }
 
@@ -39,7 +40,7 @@ class FakeShop:
 
     def restart(self):
         self.restarts += 1
-        self.stack, self.values, self.focus, self.outside = ["signup"], {}, None, False
+        self.stack, self.values, self.focus, self.outside, self.said = ["signup"], {}, None, False, {}
 
     def layout(self):
         if self.outside:
@@ -56,6 +57,8 @@ class FakeShop:
             title = self.SCREENS[self.stack[-1]][0]
             fields, controls = self.layout()
             body = node("android.widget.TextView", title, (0, 50, 1000, 120))
+            if self.stack[-1] in self.said:
+                body += node("android.widget.TextView", self.said[self.stack[-1]], (0, 130, 1000, 190))
             body += "".join(node("android.widget.EditText", self.values.get((self.stack[-1], f), f), b, True,
                                  password=f == "Password") for f, b in fields)
             body += "".join(node("android.view.ViewGroup", "", b, True, children=node("android.widget.TextView", c, b))
@@ -86,6 +89,12 @@ class FakeShop:
             self.stack.append("help")
         elif hit == "Contact us":
             self.stack.append("contact")
+        elif hit == "Notes":
+            self.stack.append("notes")
+        elif hit == "Save":
+            self.said["notes"] = "Saved"
+        elif hit == "Send":
+            self.said["contact"] = "Something went wrong"
         elif hit == "Open the website":
             self.outside = True
 
@@ -117,12 +126,13 @@ class CrawlTest(unittest.TestCase):
     def test_every_screen_is_found_without_a_dangerous_tap(self):
         phone, folder, crawler, summary = self.crawl()
         names = [s["name"] for s in summary["screens_found"]]
-        self.assertEqual(names, ["Create your account", "Your tasks", "Settings", "Help", "Write to us", "Terms of use"])
+        self.assertEqual(names, ["Create your account", "Your tasks", "Settings", "Help", "Write to us", "Your notes", "Terms of use"])
         self.assertTrue(summary["finished"])
         self.assertEqual(summary["screens_found"][4]["path"], "Create your account > Your tasks > Settings > Help")
         self.assertNotIn("Search", phone.taps)   # a search field is left empty
 
-    def test_a_form_that_leads_nowhere_is_blocked(self):
+    def test_a_form_that_answers_only_with_an_error_is_blocked(self):
+        # "Your notes" leads nowhere either, but it answers "Saved": the robot passed it
         _, _, _, summary = self.crawl()
         self.assertEqual([b["name"] for b in summary["blocked"]], ["Write to us"])
 

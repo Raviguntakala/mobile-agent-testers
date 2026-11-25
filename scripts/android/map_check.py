@@ -41,7 +41,7 @@ def main(argv=None):
         problems.append(f"Tiny Todo has two screens, the robot found {len(names)}")
     if summary["blocked"]:
         problems.append("the robot says it could not pass a form")
-    last = sorted(results.glob("map-*/*.xml"))
+    last = sorted(results.glob("map-*/[0-9]*.xml"))   # the screenshots, not the trees the shim saves before a tap
     if last and "Call the plumber" not in last[-1].read_text(encoding="utf-8", errors="replace") \
             and any("tasks" in n.lower() for n in names):
         problems.append('a task was deleted ("x" must never be tapped)')
