@@ -103,12 +103,36 @@ class Run(unittest.TestCase):
                  "dumpsys": (0, "mCurrentFocus=Window{77 u0 Application Not Responding: com.android.systemui}\n")}
         code, printed = self.main({"validate": (0, "ok\n"), "compile": (0, "wrote\n"), "replay": (1, FAIL)}, phone=phone)
         self.assertEqual(0, code)
-        self.assertIn("after 38 s; on screen: a window that does not respond, of the system, the app not running; app start 21 s; "
+        self.assertIn("after 38 s; on screen: a window that does not respond, of the system, the app not running; "
+                      "the screen tree could not be read; app start 21 s; "   # this phone gives no tree
                       "in the log the app was cleared 0, stopped 0 and launched 0 times; not responding: the system; no crash; load 7.9 on the phone", printed)
         kept = json.loads((self.results / "replay.json").read_text())
         self.assertNotIn("freshStart", kept)   # the trace does not ask for a fresh state: the app is not cleared
         self.assertEqual(kept["device"]["inFront"], "a window that does not respond, of the system")
         self.assertNotIn("CLAUDE_CODE_OAUTH_TOKEN", self.phone_calls[0][1])
+
+    def test_a_step_that_finds_nothing_says_what_is_now_where_its_element_was(self):
+        trace = json.loads((self.results / "trace.json").read_text())
+        trace["steps"][1]["action"]["target"] = {"text": "Smart Banana"}   # a name the app draws at random on each first start
+        trace["steps"][1]["evidence"] = {"point": [540, 660], "bounds": [40, 600, 1040, 720], "size": [1080, 2400]}
+        (self.results / "trace.json").write_text(json.dumps(trace))
+        now = ("<?xml version='1.0' encoding='UTF-8' standalone='yes' ?><hierarchy rotation=\"0\">"
+               '<node text="" package="com.example.todo" bounds="[0,0][1080,2400]">'
+               '<node text="" content-desc="Brave Apple" package="com.example.todo" clickable="true" bounds="[40,604][1040,722]" />'
+               '<node text="Settings" package="com.example.todo" bounds="[0,2200][1080,2400]" /></node></hierarchy>')
+        phone = {"date": (0, "1764100800\n"), "pidof": (0, "4242\n"), "logcat": (0, ""), "exec-out": (0, now),
+                 "input_method": (0, "  mShowRequested=false mShowExplicitlyRequested=false mShowForced=false mInputShown=false\n"),
+                 "dumpsys": (0, "mCurrentFocus=Window{77 u0 com.example.todo/com.example.todo.MainActivity}\n")}
+        code, printed = self.main({"validate": (0, "ok\n"), "compile": (0, "wrote\n"), "replay": (1, FAIL)}, phone=phone)
+        self.assertEqual(0, code)
+        self.assertIn("; keyboard closed; the element the step looked for: not on the screen, and where it was when explored, "
+                      "an element of the same size with another name;", printed)
+        self.assertNotIn("Banana", printed)
+        self.assertNotIn("Apple", printed)
+        kept = json.loads((self.results / "replay.json").read_text())
+        self.assertEqual({"name": "not on the screen", "place": "an element of the same size with another name"}, kept["device"]["target"])
+        self.assertIs(False, kept["device"]["keyboard"])
+        self.assertNotIn("Apple", (self.results / "replay.json").read_text())
 
     def test_a_replay_that_passes_keeps_only_the_start_time_of_the_app(self):
         phone = {"date": (0, "1764100800\n"), "logcat": (0, "I ActivityTaskManager: Displayed com.example.todo/.MainActivity: +1s200ms\n")}

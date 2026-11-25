@@ -16,7 +16,9 @@ and the screen trees screen.py saved, and writes in the results dir:
   (TEXT_1, TEXT_2...), so it can be committed. This file must not be.
 
 The trace is a path, with no checks yet: replayed, it fails when a step no longer
-finds its target. Android only for now.
+finds its target. When the agent leaves the app and opens it again with adb
+(`monkey -p`, `am start`), the trace opens it again too (launchApp, its data kept).
+Android only for now.
 """
 import argparse
 import datetime
@@ -32,13 +34,19 @@ END = {"KEYCODE_MOVE_END", "123"}   # the cursor to the end of the field: no key
 
 
 def read_screen(path):
-    """Elements of a saved screen tree, in document order. Each one is a dict:
-    label (its text, else its description), names (every text Maestro can match it by),
-    id, bounds [x1, y1, x2, y2] and parent (its place in the list, None at the top)."""
+    """Elements of a saved screen tree, in document order (see read_tree)."""
     try:
         root = ET.parse(path).getroot()
     except (ET.ParseError, OSError):
         return []
+    return read_tree(root)
+
+
+def read_tree(root):
+    """Elements of a screen tree, in document order. Each one is a dict:
+    label (its text, else its description), names (every text Maestro can match it by),
+    id, bounds [x1, y1, x2, y2], parent (its place in the list, None at the top) and
+    package (the app that draws it: the home screen is another app)."""
     nodes = []
     todo = [(child, None) for child in reversed(list(root))]
     while todo:   # no recursion: a screen tree can be deep
@@ -51,7 +59,7 @@ def read_screen(path):
             names = [value.replace("\r\n", "\n").replace("\n", " ")
                      for value in (element.get(key) or "" for key in ("text", "content-desc", "hint")) if value.strip()]
             nodes.append({"label": names[0] if names else "", "names": names, "id": (element.get("resource-id") or "").strip(),
-                          "bounds": [int(b) for b in bounds], "parent": parent})
+                          "bounds": [int(b) for b in bounds], "parent": parent, "package": (element.get("package") or "").strip()})
             here = len(nodes) - 1
         todo.extend((child, here) for child in reversed(list(element)))
     return nodes
@@ -200,6 +208,24 @@ def input_args(fields):
     return words
 
 
+AM_COMMANDS = {"start", "start-activity", "startservice", "start-service", "start-foreground-service", "stopservice", "stop-service",
+               "force-stop", "kill", "kill-all", "broadcast", "instrument", "stack", "task", "crash", "hang", "restart", "monitor"}
+
+
+def launch_of(fields, app_id):
+    """What a noted `adb shell monkey ...` or `adb shell am ...` does, in words of adb only: "launch" when it
+    opens the app, else its command ("monkey", "am force-stop"). None for any other command."""
+    words = " ".join(fields[1:]).split() if fields[:1] == ["shell"] else []
+    if not words or words[0] not in ("monkey", "am"):
+        return None
+    if words[0] == "monkey":
+        return "launch" if app_id and app_id in [words[i + 1] for i, word in enumerate(words[:-1]) if word == "-p"] else "monkey"
+    command = words[1] if len(words) > 1 and words[1] in AM_COMMANDS else "other" if len(words) > 1 else ""
+    if app_id and command in ("start", "start-activity") and any(w == app_id or w.startswith(app_id + "/") for w in words[2:]):
+        return "launch"
+    return f"am {command}".strip()
+
+
 def text_typed_with_adb(fields):
     """The text of `adb shell input text ...`, as the phone got it: %s is a space, quotes and backslashes are the shell's."""
     raw = " ".join(fields[1:])
@@ -215,7 +241,7 @@ def left_out(lines):
     kinds = []
     for line in lines:
         args = input_args(line.split("\t")[2:])
-        kind = args[0] if args and args[0] in COMMANDS else "other"
+        kind = args[0] if args and args[0] in COMMANDS else (launch_of(line.split("\t")[2:], None) or "other")
         if kind == "keyevent":
             keys = [a for a in args[1:] if a not in KEYS and re.fullmatch(r"KEYCODE_[A-Z0-9_]{1,30}|\d{1,3}", a)]
             kind += f" {keys[0]}" if keys else ""
@@ -243,6 +269,7 @@ def model_of(path):
 def build(log_lines, persona, app_id, now, model=None):
     steps, params, values, skipped = [], [], {}, []
     nodes, width, height, screen, last_screen = [], 0, 0, None, None
+    front = None   # the app that drew the last screen tree read: another one when the agent left the app
 
     at_end = None   # the note of a "cursor to the end" key that nothing has used yet
     right_to_left = str(persona.get("locale") or "").replace("_", "-").split("-")[0].lower() in RIGHT_TO_LEFT
@@ -283,11 +310,13 @@ def build(log_lines, persona, app_id, now, model=None):
         kind = fields[1]
         if kind == "screen":
             nodes = read_screen(fields[2])
+            front = nodes[0]["package"] if nodes else None
             screen = last_screen = Path(fields[2]).stem
             if len(fields) >= 5 and fields[3].isdigit() and fields[4].isdigit():
                 width, height = int(fields[3]), int(fields[4])
-        elif kind == "tree":   # saved by the pass-through adb just before a tap that follows no screenshot
-            nodes = read_screen(fields[2]) or nodes
+        elif kind == "tree":   # saved by the pass-through adb just before a tap or a launch that follows no screenshot
+            seen = read_screen(fields[2])
+            nodes, front = (seen, seen[0]["package"]) if seen else (nodes, front)
         elif kind == "type":
             erase_from_the_end()
             add({"kind": "eraseText"})   # type.py replaces what the field holds: typing nothing empties it
@@ -295,7 +324,16 @@ def build(log_lines, persona, app_id, now, model=None):
                 add({"kind": "inputText", "text": {"param": named(fields[2])}})
         elif kind == "adb":
             args = input_args(fields[2:])
-            if args[:1] == ["tap"] and len(args) >= 3 and args[1].lstrip("-").isdigit() and args[2].lstrip("-").isdigit():
+            launch = None if args else launch_of(fields[2:], app_id)
+            if launch == "launch":
+                # The agent comes back to the app it left (Back on its first screen, Home): the replay must open it
+                # again too. A launch while the app is in front changes nothing on the screen, so it is not a step.
+                if front != app_id:
+                    add({"kind": "launchApp", "appId": app_id})
+                    front = app_id
+            elif launch:
+                skipped.append(line.strip())
+            elif args[:1] == ["tap"] and len(args) >= 3 and args[1].lstrip("-").isdigit() and args[2].lstrip("-").isdigit():
                 x, y = int(args[1]), int(args[2])
                 target, bounds, inside_it = target_at(nodes, x, y, width, height, values)
                 if target:
@@ -398,7 +436,9 @@ def main(argv=None):
     (results / "trace.json").write_text(json.dumps(trace, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     (results / "trace.params.json").write_text(json.dumps(values, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     what = f" ({left_out(skipped)})" if skipped else ""
-    print(f"trace: {len(trace['steps'])} steps, {len(values)} typed texts kept apart, {len(skipped)} commands left out{what}")
+    again = sum(1 for step in trace["steps"][1:] if step["action"].get("kind") == "launchApp")
+    again = f", the app opened again {again} time{'s' if again > 1 else ''} after the agent left it" if again else ""
+    print(f"trace: {len(trace['steps'])} steps, {len(values)} typed texts kept apart, {len(skipped)} commands left out{what}{again}")
     print(f"trace: {found_how(trace['steps'])}")
     return 0
 

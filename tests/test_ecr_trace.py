@@ -23,6 +23,14 @@ LOGIN = """<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
   </node>
 </hierarchy>
 """
+APP = LOGIN.replace("<node ", '<node package="com.example.todo" ')   # what a real phone writes: the app of each element
+LAUNCHER = """<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<hierarchy rotation="0">
+  <node text="" package="com.google.android.apps.nexuslauncher" class="android.widget.FrameLayout" bounds="[0,0][1080,2400]">
+    <node text="Phone" package="com.google.android.apps.nexuslauncher" clickable="true" bounds="[40,2000][240,2200]" />
+  </node>
+</hierarchy>
+"""
 PERSONA = {"id": "anna", "profile": "Retired teacher.", "goal": "Create an account.", "locale": "en-GB",
            "device": {"name": "Small phone, Android 11", "font_scale": 1.3, "theme": "light"}}
 NOW = "2026-11-25T12:00:00Z"
@@ -179,6 +187,34 @@ class Build(unittest.TestCase):
         nodes = tracer.read_screen(self.dir / "03.xml")
         self.assertEqual(len(tracer.found_by(nodes, "id", "row-delete")), 2)       # an id also matches without its prefix
         self.assertEqual(len(tracer.found_by(nodes, "id", "app:id/row-delete")), 1)
+
+    def test_coming_back_to_the_app_with_adb_opens_it_again_in_the_trace(self):
+        (self.dir / "01.xml").write_text(APP, encoding="utf-8")
+        (self.dir / "02.xml").write_text(LAUNCHER, encoding="utf-8")
+        trace, _, skipped = tracer.build([
+            self.screen, "1\tadb\tshell\tinput\tkeyevent\tKEYCODE_BACK", f"2\tscreen\t{self.dir / '02.xml'}\t1080\t2400",
+            "3\tadb\tshell\tmonkey\t-p\tcom.example.todo\t-c\tandroid.intent.category.LAUNCHER\t1",   # the agent comes back
+            self.screen, "5\tadb\tshell\tinput\ttap\t990\t90",
+            "6\tadb\tshell\tam start -n com.example.todo/.MainActivity",   # the app is in front: nothing changes
+            "7\tadb\tshell\tam\tforce-stop\tcom.example.todo", "8\tadb\tshell\tmonkey\t-p\tcom.other.app\t1"], PERSONA, "com.example.todo", NOW)
+        self.assertEqual([s["action"] for s in trace["steps"][1:]], [
+            {"kind": "pressKey", "key": "Back"},
+            {"kind": "launchApp", "appId": "com.example.todo"},   # its data is kept: no clearState
+            {"kind": "tapOn", "target": {"text": "Help"}}])
+        self.assertEqual(tracer.left_out(skipped), "am force-stop, monkey")
+
+    def test_a_launch_is_named_in_words_of_adb_only(self):
+        launch = lambda line: tracer.launch_of(line.split("\t"), "com.example.todo")  # noqa: E731
+        self.assertEqual(launch("shell\tam\tstart\t-a\tandroid.intent.action.MAIN\t-p\tcom.example.todo"), "launch")
+        self.assertEqual(launch("shell\tam start-activity com.example.todo/.Main"), "launch")
+        self.assertEqual(launch("shell\tam\tstart\t-n\tcom.example.todos/.Main"), "am start")   # another app
+        self.assertEqual(launch("shell\tam\tbroadcast\t-a\tA secret text"), "am broadcast")
+        self.assertEqual(launch("shell\tam\tA secret text"), "am other")
+        self.assertEqual(launch("shell\tam\tsecret"), "am other")   # only known commands are named
+        self.assertEqual(launch("shell\tam"), "am")
+        self.assertEqual(launch("shell\tmonkey\t-p"), "monkey")
+        self.assertIsNone(launch("shell\tinput\ttap\t1\t2"))
+        self.assertIsNone(launch("logcat\t-d"))
 
     def test_swipes_and_keys(self):
         actions, _, skipped = self.actions(
@@ -397,6 +433,39 @@ class EndToEnd(unittest.TestCase):
         run("adb", "shell", "input", "tap", "500", "660")
         self.assertEqual([line.split("\t")[1] for line in log.read_text().splitlines()][-1], "adb")
         self.assertEqual(list(results.glob("tree-*.xml")), [results / "tree-2.xml"])
+
+    def test_a_launch_by_adb_is_noted_with_the_screen_it_left(self):
+        work = Path(tempfile.mkdtemp())
+        results = work / "results" / "kenji"
+        results.mkdir(parents=True)
+        (results / "01.xml").write_text(APP, encoding="utf-8")
+        home = work / "home.xml"
+        home.write_text(LAUNCHER, encoding="utf-8")
+        real = work / "real-adb"
+        real.write_text('#!/usr/bin/env bash\necho "$*" >> "$FAKE_ADB_CALLS"\n'
+                        'case "$*" in "exec-out cat /sdcard/ecr-tree.xml") cat "$FAKE_TREE" ;; esac\n')
+        real.chmod(0o755)
+        log = results / "actions.tsv"
+        log.write_text(f"0\tscreen\t{results / '01.xml'}\t1080\t2400\n", encoding="utf-8")
+        env = dict(os.environ, PATH=f"{ROOT / 'scripts/android/shim'}:{os.environ['PATH']}", ECR_REAL_ADB=str(real),
+                   ECR_ACTION_LOG=str(log), FAKE_ADB_CALLS=str(work / "calls"), FAKE_TREE=str(home))
+        run = lambda *cmd: subprocess.run(cmd, env=env, cwd=ROOT, check=True, capture_output=True, text=True)  # noqa: E731
+        run("adb", "shell", "input", "keyevent", "KEYCODE_BACK")   # Back on the first screen: the app closes
+        run("adb", "shell", "monkey", "-p", "com.example.todo", "-c", "android.intent.category.LAUNCHER", "1")   # no screenshot since
+        run("adb", "shell", "input", "text", "I am back")          # a text is no launch: no tree is saved
+        run("adb", "shell", "dumpsys", "window")                   # neither an input nor a launch: not noted
+
+        kinds = [line.split("\t")[1] for line in log.read_text().splitlines()]
+        self.assertEqual(kinds, ["screen", "adb", "tree", "adb", "adb"])
+        calls = (work / "calls").read_text().splitlines()
+        self.assertIn("shell monkey -p com.example.todo -c android.intent.category.LAUNCHER 1", calls)
+        self.assertIn("shell dumpsys window", calls)
+        (work / "personas.json").write_text(json.dumps([PERSONA]))
+        out = run("python3", "scripts/ecr_trace.py", str(results), "--persona", "anna", "--app-id", "com.example.todo",
+                  "--personas", str(work / "personas.json"), "--now", NOW).stdout
+        self.assertIn("4 steps, 1 typed texts kept apart, 0 commands left out, the app opened again 1 time after the agent left it", out)
+        trace = json.loads((results / "trace.json").read_text())
+        self.assertEqual([s["action"]["kind"] for s in trace["steps"]], ["launchApp", "pressKey", "launchApp", "inputText"])
 
     def test_no_notes_writes_nothing_and_does_not_fail(self):
         work = Path(tempfile.mkdtemp())

@@ -102,7 +102,8 @@ def replay_trace(trace_path, ecr, env, out, times, closed_group, run):
     first = steps[0].get("action", {}) if steps else {}
     entry.update(id=trace_id, steps=len(steps), taps=found_how(steps),
                  freshState=first.get("kind") == "launchApp" and first.get("clearState") is True)
-    tools = ecr_replay.tool_env(env, typed_texts(trace_path, trace_id, env), out / "replays-debug" / trace_path.stem)
+    values = typed_texts(trace_path, trace_id, env)
+    tools = ecr_replay.tool_env(env, values, out / "replays-debug" / trace_path.stem)
     tools.pop("REPLAY_PARAMS", None)
     printed = []
 
@@ -137,7 +138,11 @@ def replay_trace(trace_path, ecr, env, out, times, closed_group, run):
             entry.update(oracles=kept.get("oracles"), recorded=kept.get("recorded"), artifactSha256=kept.get("artifact", {}).get("sha256"))
         replay = {"index": len(replays) + 1, "internet": internet, "outcome": one.get("outcome"), "durationMs": one.get("durationMs"),
                   "divergences": one.get("divergences", [])}
-        replay["device"] = device_state.after_replay(run, phone, since, app_id, look=kept is None or replay["outcome"] != entry.get("recorded"))
+        stop = (replay["divergences"] or [{}])[0] if isinstance(replay["divergences"], list) else {}
+        stop = stop if isinstance(stop, dict) else {}
+        step = next((s for s in steps if s.get("id") == stop.get("stepId")), None)
+        replay["device"] = device_state.after_replay(run, phone, since, app_id, look=kept is None or replay["outcome"] != entry.get("recorded"),
+                                                     step=step, divergence=stop, values=values)
         if fresh is not None:
             replay["freshStart"] = fresh
         replays.append(replay)

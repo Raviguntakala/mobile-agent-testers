@@ -5,6 +5,7 @@ import json
 import sys
 import tempfile
 import unittest
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -28,22 +29,36 @@ LOG = ("11-25 20:00:00.500   500   520 I ActivityManager: Force stopping com.exa
        "11-25 20:00:01.000   500   520 I ActivityTaskManager: Displayed com.example.todo/.MainActivity for user 0: +1s534ms\n"
        f"11-25 20:00:02.000  1234  1234 I ReactNativeJS: {TYPED}\n")
 STAT = "500.00 900.00\n1234 (com.example.todo) S 1 1 0 0 -1 4194560 100 0 0 0 10 5 0 0 20 0 30 0 47000 123456 789\n"   # started at 470 s
+SCREEN = """<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<hierarchy rotation="0">
+  <node text="" package="com.example.todo" bounds="[0,0][1080,2400]">
+    <node text="" resource-id="app:id/password" package="com.example.todo" bounds="[40,400][1040,520]" />
+    <node text="" content-desc="Smart Pear" resource-id="" package="com.example.todo" bounds="[40,600][1040,720]">
+      <node text="Sign in" resource-id="app:id/submit" package="com.example.todo" bounds="[40,600][1040,720]" />
+    </node>
+    <node text="Milk" package="com.example.todo" bounds="[40,800][1040,900]" />
+    <node text="" content-desc="Send
+Tab 2 of 3" package="com.example.todo" bounds="[0,2200][540,2400]" />
+  </node>
+</hierarchy>
+"""
 
 
 class Tools:
     """Stands in for node, sg, git and adb: writes the report `ecr replay --report` would write."""
 
-    def __init__(self, closed=True, outcomes=None, validates=True, writes=True, window=WINDOW, log=LOG, phone=True):
+    def __init__(self, closed=True, outcomes=None, validates=True, writes=True, window=WINDOW, log=LOG, phone=True, stop="s3", tree="", keyboard=""):
         self.calls, self.envs = [], []
         self.closed, self.outcomes, self.validates, self.writes = closed, outcomes or {}, validates, writes
-        self.window, self.log, self.phone = window, log, phone
+        self.window, self.log, self.phone, self.stop, self.tree, self.keyboard = window, log, phone, stop, tree, keyboard
 
     def adb(self, args):
         if not self.phone:
             return 1, "adb: no devices/emulators found\n"
         answers = {"/proc/uptime": (0, STAT), "/proc/loadavg": (0, "3.52 2.10 1.00 2/300 1234\n"), "date": (0, "1764100800\n"),
-                   "logcat": (0, self.log), "dumpsys": (0, self.window), "pidof": (0, "1234\n"), "force-stop": (0, ""), "clear": (0, "Success\n")}
-        return next(answer for word, answer in answers.items() if word in args)
+                   "logcat": (0, self.log), "input_method": (0, self.keyboard), "dumpsys": (0, self.window), "pidof": (0, "1234\n"),
+                   "force-stop": (0, ""), "clear": (0, "Success\n"), "exec-out": (0 if self.tree else 1, self.tree or "No such file\n")}
+        return next((answer for word, answer in answers.items() if word in args), (0, ""))
 
     def __call__(self, args, cwd, env, timeout):
         self.calls.append(args)
@@ -61,7 +76,7 @@ class Tools:
         times = int(words[words.index("--times") + 1])
         outcome = self.outcomes.get("cut" if inside else "open", "pass")
         one = {"outcome": outcome, "durationMs": 60000,
-               "divergences": [] if outcome == "pass" else [{"type": "target_not_found", "stepId": "s3"}]}
+               "divergences": [] if outcome == "pass" else [{"type": "target_not_found", "stepId": self.stop}]}
         if self.writes:
             Path(words[words.index("--report") + 1]).write_text(json.dumps({"schema": "ecr.replays/0", "traces": [{
                 "id": TRACE["id"], "steps": 4, "oracles": 0, "recorded": "pass", "artifact": {"sha256": "a" * 64}, "replays": [one] * times}]}))
@@ -190,6 +205,63 @@ class ReplaySet(unittest.TestCase):
         self.assertEqual(facts["notResponding"], ["the app", "the system"])
         self.assertEqual(facts["appCrashes"], 1)
         self.assertIn("not responding: the app and the system; 1 crash of the app", replay_set.device_state.words(facts))
+
+    def test_a_stop_on_a_name_says_whether_the_name_is_on_the_screen_and_whether_the_keyboard_is_open(self):
+        tree = SCREEN.replace('content-desc="Send\nTab 2 of 3"', 'content-desc="Receive\nTab 1 of 3"')   # the tab is gone
+        tools = Tools(outcomes={"open": "fail"}, stop="s2", tree=tree, keyboard="  mInputShown=true\n  mIsInputViewShown=true\n")
+        printed, kept = self.run_it(tools, "--times", "1")
+        self.assertIn("replay 1 of 1: FAIL, target_not_found at step s2, after 60 s; on screen: the app, the app running, started 30 s before; "
+                      "keyboard open; the element the step looked for: not on the screen; app start 1.5 s", printed)
+        device = kept["traces"][0]["replays"][0]["device"]
+        self.assertEqual(device["target"], {"name": "not on the screen"})   # this step has no place recorded
+        self.assertIs(device["keyboard"], True)
+        self.assertNotIn("Receive", printed + (self.out / "replays.json").read_text())
+
+    def test_where_an_element_stood_when_explored_and_what_stands_there_now(self):
+        where = replay_set.device_state.where_is
+        nodes = replay_set.device_state.ecr_trace.read_tree(ET.fromstring(SCREEN.encode()))
+        self.assertEqual(where(nodes, {"text": "Sign in"}, None, {}), {"name": "on the screen"})
+        self.assertEqual(where(nodes, {"text": "sign  IN"}, None, {}), {"name": "on the screen, written differently"})
+        self.assertEqual(where(nodes, {"text": "Sign"}, None, {}), {"name": "its name is part of a longer name on the screen"})
+        self.assertEqual(where(nodes, {"text": "Sign in", "index": 1}, None, {}), {"name": "on the screen fewer times than the trace counts"})
+        self.assertEqual(where(nodes, {"text": "Send Tab 2 of 3"}, None, {}), {"name": "on the screen"})   # a name on two lines
+        self.assertEqual(where(nodes, {"text": {"param": "TEXT_1"}}, None, {"TEXT_1": "Milk"}), {"name": "on the screen"})
+        self.assertEqual(where(nodes, {"text": {"param": "TEXT_1"}}, None, {"TEXT_1": "Bread"}), {"name": "not on the screen"})
+        self.assertEqual(where(nodes, {"id": "submit"}, None, {}), {"name": "on the screen"})
+        self.assertEqual(where(nodes, {"id": "app:id/gone"}, None, {}), {"name": "not on the screen"})
+        place = lambda box: where(nodes, {"text": "Smart Banana"}, {"bounds": box}, {})["place"]  # noqa: E731
+        self.assertEqual(place([40, 590, 1030, 730]), "an element of the same size with another name")   # the button moved a little
+        self.assertEqual(place([40, 400, 1040, 520]), "an element of the same size with no name")
+        self.assertEqual(place([300, 1500, 700, 1600]), "nothing")   # only the window is there
+        self.assertEqual(place([0, 2150, 540, 2400]), "a smaller or larger element")
+        self.assertEqual(where(nodes, {"text": "Sign in"}, {"bounds": [40, 600, 1040, 720]}, {})["place"], "an element of the same size with the same name")
+
+    def test_a_check_that_failed_is_looked_for_by_its_own_target(self):
+        looked_for = replay_set.device_state.looked_for
+        step = {"id": "s3", "action": {"kind": "tapOn", "target": {"text": "Add"}}, "evidence": {"bounds": [0, 0, 10, 10]},
+                "checkpoints": [{"id": "counter", "check": {"kind": "visible", "target": {"text": "1 task"}}}]}
+        self.assertEqual(looked_for(step, {"type": "oracle_failed", "stepId": "s3", "oracleId": "counter"}), ({"text": "1 task"}, None))
+        self.assertEqual(looked_for(step, {"type": "target_not_found", "stepId": "s3"}), ({"text": "Add"}, {"bounds": [0, 0, 10, 10]}))
+        self.assertEqual(looked_for({"id": "s4", "action": {"kind": "inputText"}}, {}), (None, None))
+        self.assertEqual(looked_for(None, {}), (None, None))
+
+    def test_the_keyboard_and_the_tree_are_read_even_when_maestro_left_its_driver_on_the_phone(self):
+        state = replay_set.device_state
+        said = lambda answer: lambda args, cwd, env, timeout: answer  # noqa: E731
+        self.assertIs(state.keyboard_shown(said((0, "mShowRequested=true mInputShown=true\n")), {}), True)
+        self.assertIs(state.keyboard_shown(said((0, "mInputShown=false\n")), {}), False)
+        self.assertIsNone(state.keyboard_shown(said((0, "nothing about it\n")), {}))
+        self.assertIsNone(state.keyboard_shown(said((1, "error: no devices\n")), {}))
+        calls = []
+
+        def phone(args, cwd, env, timeout):
+            calls.append(args)
+            stopped = any(a[-1] == "dev.mobile.maestro" for a in calls if "force-stop" in a)
+            return (0, SCREEN) if args[1] == "exec-out" and stopped else (1, "ERROR: could not get idle state.\n")
+        nodes = state.screen_tree(phone, {})
+        self.assertIn("Sign in", nodes[3]["names"])
+        self.assertIn(["adb", "shell", "am", "force-stop", "dev.mobile.maestro.test"], calls)
+        self.assertIsNone(state.screen_tree(said((1, "")), {}))
 
     def test_a_trace_the_tools_refuse_or_cannot_run_never_fails_the_run(self):
         printed, kept = self.run_it(Tools(validates=False))

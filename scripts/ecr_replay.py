@@ -154,7 +154,9 @@ def replay(results, ecr, env, timeout=1200, run=run_tool):
     elif result is None:
         result = {"status": "not_run"}
     # What the phone showed: the start time of the app, and the cause of a replay that did not pass (device_state.py)
-    device = device_state.after_replay(run, phone, since, app_id, look=result["status"] in ("fail", "timeout", "not_run"))
+    step = next((s for s in steps if s.get("id") == result.get("step")), None)
+    device = device_state.after_replay(run, phone, since, app_id, look=result["status"] in ("fail", "timeout", "not_run"),
+                                       step=step, divergence={"stepId": result.get("step"), "oracleId": result.get("oracle")}, values=values)
     if device:
         result["device"] = device
     if fresh is not None:
