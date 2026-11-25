@@ -1,10 +1,11 @@
 """Merges every results/<persona>/findings.json of a collected run into one
 Markdown summary, most severe first, with how many personas hit each issue.
 
-Reports that describe the same bug in other words, or in another language, are
-grouped by Claude when the `claude` CLI is installed (your own login, like the
-testers). Only the report titles, screens and severities are sent. Without the
-CLI, or with SUMMARY_GROUPING=0, only identical titles are merged.
+By default only identical titles are merged, and no model is called. With
+SUMMARY_GROUPING=1 and the `claude` CLI installed, Claude also groups the reports
+that describe the same bug in other words or in another language: one call on
+your own Claude login (Sonnet, a few cents for about 50 reports). Only the report
+titles, screens and severities are sent.
 A reproduction run (bug_report input, briefs/reproduce.md) starts with a table:
 which devices reproduced the reported bug, which did not, and the evidence.
 An improvement run (briefs/improve.md) adds a walkthrough table (goal reached,
@@ -198,16 +199,16 @@ def as_id(x):
 def group_with_claude(findings):
     """Groups the reports with `claude -p`. None when the CLI is missing or its answer is unusable."""
     exe = shutil.which("claude")
-    if not exe or os.environ.get("SUMMARY_GROUPING", "1") == "0" or len(findings) < 2:
+    if not exe or os.environ.get("SUMMARY_GROUPING", "0") != "1" or len(findings) < 2:
         return None
     reports = "\n".join(f'{f["id"]}. [{f["persona"]}, {f["severity"]}, {f["screen"]}] {f["title"]}'
                         for f in findings)
-    print(f"Grouping {len(findings)} reports with Claude...", file=sys.stderr)
+    print(f"Grouping {len(findings)} reports with Claude (SUMMARY_GROUPING=1, on your Claude login)...", file=sys.stderr)
     try:
         out = subprocess.run([exe, "-p", "--output-format", "json",
                               "--model", os.environ.get("SUMMARY_MODEL", "sonnet")],
                              input=PROMPT.format(classes=", ".join(CLASSES), reports=reports),
-                             capture_output=True, text=True, timeout=600)
+                             capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=600)
         text = json.loads(out.stdout).get("result", "")
         groups = json.loads(re.search(r"\{.*\}", text, re.S).group(0))["groups"]
     except Exception as e:  # no login, usage limit, timeout, not JSON...
@@ -261,7 +262,8 @@ def render(findings, scores, groups, by_claude, repro=None, walk=None):
         lines.append(f"Claude grouped them into {len(rows)} distinct issues: {alone} found by one persona "
                      f"only, {len(rows) - alone} by several. Open the screenshots before you trust a group.")
     elif findings:
-        lines.append("Only identical titles are merged: install the claude CLI to group the reports "
+        lines.append("Only identical titles are merged: run again with SUMMARY_GROUPING=1 and the claude CLI "
+                     "(one call on your Claude login, a few cents) to group the reports "
                      "that describe the same bug.")
     extra = (" Class |", "---|") if by_claude else ("", "")
     lines += ["", "| Severity | Issue | Personas | Screen |" + extra[0], "|---|---|---|---|" + extra[1]]
@@ -289,6 +291,8 @@ def render(findings, scores, groups, by_claude, repro=None, walk=None):
 def main():
     if len(sys.argv) != 2:
         sys.exit(__doc__)
+    if hasattr(sys.stdout, "reconfigure"):   # Windows writes cp1252 by default: titles in Arabic, Turkish... need UTF-8
+        sys.stdout.reconfigure(encoding="utf-8")
     findings, scores = load(sys.argv[1])
     groups = group_with_claude(findings)
     print(render(findings, scores, groups or group_by_title(findings), groups is not None,

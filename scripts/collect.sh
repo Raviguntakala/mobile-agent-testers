@@ -3,6 +3,7 @@
 # Usage: bash scripts/collect.sh <run_id> [private_key.pem] [out_dir]
 # Default key: the one setup.sh created in ~/.mobile-agent-testers/
 set -euo pipefail
+export PYTHONUTF8=1   # Python on Windows writes cp1252 otherwise: titles in Arabic or Turkish would stop it
 RUN=$1
 REPO=$(gh repo view --json nameWithOwner -q .nameWithOwner)
 PRIV=${2:-$HOME/.mobile-agent-testers/${REPO//\//_}.pem}; OUT=${3:-runs/$1}

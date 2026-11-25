@@ -46,4 +46,4 @@ Then open that persona's screenshots and report. Did it see the screen? Did it g
 
 - Fewer phones: pick the devices that matter to you (`-f android_personas=anna,malik`).
 - Shorter sessions: your brief can lower the budget of about 30 actions.
-- The summary groups duplicates with your local `claude` CLI: `SUMMARY_MODEL=haiku bash scripts/collect.sh <run id>` makes that cheaper too, and `SUMMARY_GROUPING=0` skips it.
+- The summary calls no model by default. With `SUMMARY_GROUPING=1` it groups duplicates with your local `claude` CLI, and `SUMMARY_MODEL=haiku` makes that call cheaper.
