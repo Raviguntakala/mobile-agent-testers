@@ -9,7 +9,7 @@ Each Android tester now leaves two more files in its results, next to `report.md
 
 Nothing changes for the agent: same tools, same brief. The taps are noted by a pass-through in front of `adb` ([scripts/android/shim/adb](../scripts/android/shim/adb)), and [scripts/ecr_trace.py](../scripts/ecr_trace.py) writes the trace when the agent is done. An agent often taps several times after one screenshot: the pass-through then saves the screen tree again just before the tap (`tree-N.xml`), so each tap is named after what was under the finger at that moment. It costs a second or two per tap.
 
-To watch, comment and edit these paths before compiling them: [docs/dashboard.md](dashboard.md).
+To see these paths on a map of the app, comment each screen and add checks before compiling: [docs/dashboard.md](dashboard.md).
 
 ## From a trace to a test that reruns with no model
 
@@ -40,7 +40,7 @@ When a replay stops, the app may have shown something else the second time (an a
 
 - **Experimental.** A path of 23 steps on Tiny Todo, the demo app, followed by a script with the tools of an agent, is written as a trace and replays from end to end on an Android 11 emulator with no model: the [Replay check](../.github/workflows/replay-check.yml) workflow, started by hand, free. The first path of a real agent (72 steps) stopped at step 12, because the trace did not count elements that share a name the way Maestro does. That is fixed, and the check replays the old count to show where it stopped. No path of a real agent has replayed from end to end yet.
 - The agent's waits are not in the trace. Maestro waits for each element by itself, which may not be enough on a slow screen.
-- **A path, not yet a test of the bug.** The flow has no checks: it fails when a step no longer finds its target. Turning a finding of the report into a check is the next step.
+- **A path, with no check of its own.** The trace of an agent has no checks: replayed as it is, it only fails when a step no longer finds its target. The checks are added by a person in the [dashboard](dashboard.md), on a screen or from a finding of the report, where a finding becomes a check recorded as a known bug.
 - **Android only.** iOS comes next.
 - An element with no name and no id is stored as a point on the screen, in percent. It breaks on another screen size.
 - When several elements share a name, the trace says which one was tapped, counted as Maestro counts them: only the deepest element of each (a button and its label are one), from the top of the screen, then from the left.
