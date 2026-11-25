@@ -18,6 +18,8 @@ and the screen trees screen.py saved, and writes in the results dir:
 The trace is a path, with no checks yet: replayed, it fails when a step no longer
 finds its target. When the agent leaves the app and opens it again with adb
 (`monkey -p`, `am start`), the trace opens it again too (launchApp, its data kept).
+A Back pressed while the keyboard was open is written as hideKeyboard: the replay
+closes the keyboard only if it is open, and never leaves the screen for it.
 Android only for now.
 """
 import argparse
@@ -272,6 +274,7 @@ def build(log_lines, persona, app_id, now, model=None):
     front = None   # the app that drew the last screen tree read: another one when the agent left the app
 
     at_end = None   # the note of a "cursor to the end" key that nothing has used yet
+    keyboard = None   # "shown": the keyboard was open just before the next command (noted before a Back)
     right_to_left = str(persona.get("locale") or "").replace("_", "-").split("-")[0].lower() in RIGHT_TO_LEFT
 
     def erase_from_the_end():
@@ -322,7 +325,10 @@ def build(log_lines, persona, app_id, now, model=None):
             add({"kind": "eraseText"})   # type.py replaces what the field holds: typing nothing empties it
             if fields[2]:
                 add({"kind": "inputText", "text": {"param": named(fields[2])}})
+        elif kind == "keyboard":   # noted by the pass-through adb just before a Back
+            keyboard = fields[2]
         elif kind == "adb":
+            shown, keyboard = keyboard == "shown", None   # the note only tells about this command
             args = input_args(fields[2:])
             launch = None if args else launch_of(fields[2:], app_id)
             if launch == "launch":
@@ -369,6 +375,11 @@ def build(log_lines, persona, app_id, now, model=None):
                         erase_from_the_end()
                         add({"kind": "eraseText", "characters": 1})
                         steps[-1]["fromEnd"] = True
+                    elif KEYS[key] == "Back" and shown:
+                        # Back only closed the keyboard. After typing, the keyboard of a replay may be closed
+                        # already, and Back would leave the screen: hideKeyboard closes it only if it is open.
+                        shown = False   # a second Back in the same command leaves the screen
+                        add({"kind": "hideKeyboard"})
                     else:
                         add({"kind": "pressKey", "key": KEYS[key]})
             elif args[:1] == ["text"] and text_typed_with_adb(fields[2:]):

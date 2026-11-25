@@ -226,6 +226,23 @@ class Build(unittest.TestCase):
                                    {"kind": "pressKey", "key": "Back"}, {"kind": "pressKey", "key": "Enter"}])
         self.assertEqual(len(skipped), 1)
 
+    def test_a_back_that_closed_the_keyboard_is_written_as_hide_keyboard(self):
+        actions, _, _ = self.actions(
+            "1\ttype\tAnna",
+            "1\tkeyboard\tshown", "1\tadb\tshell\tinput\tkeyevent\tKEYCODE_BACK",    # it only closed the keyboard
+            "1\tkeyboard\thidden", "1\tadb\tshell\tinput\tkeyevent\t4",              # it left the screen
+            "1\tkeyboard\tshown", "1\tadb\tshell\tinput keyevent 4 4",                 # the second one left the screen
+            "1\tkeyboard\tshown", "1\tadb\tshell\tinput\tkeyevent\t66",              # not a Back
+            "1\tadb\tshell\tinput\tkeyevent\t4")                                      # the note was for the command before
+        self.assertEqual(actions, [
+            {"kind": "eraseText"}, {"kind": "inputText", "text": {"param": "TEXT_1"}},
+            {"kind": "hideKeyboard"},
+            {"kind": "pressKey", "key": "Back"},
+            {"kind": "hideKeyboard"}, {"kind": "pressKey", "key": "Back"},
+            {"kind": "pressKey", "key": "Enter"},
+            {"kind": "pressKey", "key": "Back"},
+        ])
+
     def test_a_swipe_keeps_its_ends_only_when_they_still_say_its_direction(self):
         actions, _, _ = self.actions("1\tadb\tshell\tinput\tswipe\t500\t1000\t500\t1011")   # 11 pixels: the same percent
         self.assertEqual(actions, [{"kind": "swipe", "direction": "DOWN"}])
@@ -466,6 +483,34 @@ class EndToEnd(unittest.TestCase):
         self.assertIn("4 steps, 1 typed texts kept apart, 0 commands left out, the app opened again 1 time after the agent left it", out)
         trace = json.loads((results / "trace.json").read_text())
         self.assertEqual([s["action"]["kind"] for s in trace["steps"]], ["launchApp", "pressKey", "launchApp", "inputText"])
+
+    def test_before_a_back_the_pass_through_notes_whether_the_keyboard_was_open(self):
+        work = Path(tempfile.mkdtemp())
+        results = work / "results" / "anna"
+        results.mkdir(parents=True)
+        (results / "01.xml").write_text(LOGIN, encoding="utf-8")
+        real = work / "real-adb"   # answers like `dumpsys input_method` on a phone, with the state in $FAKE_SHOWN
+        real.write_text('#!/usr/bin/env bash\necho "$*" >> "$FAKE_ADB_CALLS"\n'
+                        'case "$*" in "shell dumpsys input_method") echo "  mServedInputConnection=null mInputShown=$FAKE_SHOWN" ;; esac\n')
+        real.chmod(0o755)
+        log = results / "actions.tsv"
+        log.write_text(f"0\tscreen\t{results / '01.xml'}\t1080\t2400\n", encoding="utf-8")
+        env = dict(os.environ, PATH=f"{ROOT / 'scripts/android/shim'}:{os.environ['PATH']}", ECR_REAL_ADB=str(real),
+                   ECR_ACTION_LOG=str(log), FAKE_ADB_CALLS=str(work / "calls"), FAKE_SHOWN="true")
+        run = lambda *cmd: subprocess.run(cmd, env=env, cwd=ROOT, check=True, capture_output=True, text=True)  # noqa: E731
+        run("python3", "scripts/android/type.py", "Anna")
+        run("adb", "shell", "input", "keyevent", "KEYCODE_BACK")   # closes the keyboard
+        env["FAKE_SHOWN"] = "false"
+        run("adb", "shell", "input keyevent 4")                    # leaves the screen
+        run("adb", "shell", "input", "keyevent", "66")             # not a Back: the keyboard is not asked
+
+        kinds = [line.split("\t")[1:3] for line in log.read_text().splitlines()]
+        self.assertEqual(kinds, [["screen", str(results / "01.xml")], ["type", "Anna"], ["keyboard", "shown"], ["adb", "shell"],
+                                 ["keyboard", "hidden"], ["adb", "shell"], ["adb", "shell"]])
+        self.assertIn("shell input keyevent KEYCODE_BACK", (work / "calls").read_text().splitlines())   # the Back itself still runs
+        trace, _, _ = tracer.build(log.read_text().splitlines(), PERSONA, "com.example.todo", NOW)
+        self.assertEqual([s["action"] for s in trace["steps"][3:]],
+                         [{"kind": "hideKeyboard"}, {"kind": "pressKey", "key": "Back"}, {"kind": "pressKey", "key": "Enter"}])
 
     def test_no_notes_writes_nothing_and_does_not_fail(self):
         work = Path(tempfile.mkdtemp())

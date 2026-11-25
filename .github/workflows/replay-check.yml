@@ -24,7 +24,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: pierridotite/explore-compile-replay
-          ref: c35dfed3ef7fe6a5ab7b4e5ad20e3a964e606d38
+          ref: f89aa1343119a0b95d95a9342e558b2d6db847ec
           path: .ecr
           persist-credentials: false
       - uses: actions/setup-node@v4
