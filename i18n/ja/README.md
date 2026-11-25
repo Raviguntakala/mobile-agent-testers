@@ -36,9 +36,6 @@ Swift、Kotlin Multiplatform、Capacitor、.NET MAUI に対応しています。
 公開リポジトリなら GitHub のランナーは無料です。費用はモデルの利用料だけで、Claude のサブスクリプションか
 API キーを使います。[これまでの実行](../../docs/runs/)では 1 台あたり約 0.15〜0.55 ドルでした。
 
-<p align="center"><a href="https://github.com/pierridotite/explore-compile-replay"><img src="../../assets/ecr-now-building.svg" alt="Next: every bug becomes a free test. Explore-Compile-Replay" width="340" height="54"></a><br>
-<sub>次に作っているもの：エージェントがバグを見つけると、Explore-Compile-Replay がその操作手順を、PR ごとにモデルなしで再実行されるテストに変えます。初期ドラフトです。</sub></p>
-
 ## クイックスタート
 
 ```bash
@@ -82,11 +79,28 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
 | **バグ報告をすべての端末で再現** | Issue か手順を渡すと、各エージェントが「再現した / しなかった / はっきりしない」をスクリーンショット付きで答えます（[briefs/reproduce.md](../../briefs/reproduce.md)）。 |
 | **改善レポートを作る** | 各ペルソナがアプリを一度使い、どこで迷ったか、何を期待していたか、まず何を変えるべきかを、領域と影響度つきで挙げます（[briefs/improve.md](../../briefs/improve.md)）。 |
 | **2 つのバージョンを比較する** | 同じペルソナで 2 つのブランチやビルドを試し、目標の達成、操作数、スコア、片方のバージョンだけで見つかった問題を 1 つの表にまとめます（[docs/compare-versions.md](../../docs/compare-versions.md)）。本物の A/B テストの前のチェックであり、その代わりにはなりません。 |
-| **全画面を 1 枚のマップで見る** | アプリの全画面を1枚のマップで表示し、テスターの操作経路と各画面のヒートマップを確認して、画面ごとにコメントできます：`python3 scripts/dashboard.py runs/<id>`（[docs/dashboard.md](../../docs/dashboard.md)）。[デモを試す](https://pierridotite.github.io/mobile-agent-testers/)、または[動画を見る](../../assets/dashboard-demo.mp4)。 |
 
 **安いモデルを使う**：Claude Haiku、または Anthropic 互換の API（OpenRouter、DeepSeek、Kimi、GLM、MiniMax、Qwen）。見つかるものの質は、モデルがスクリーンショットをどれだけ正しく読めるかと推論力で決まります（[docs/cheaper-models.md](../../docs/cheaper-models.md)）。
 
 Maestro や Appium はあなたが書いたテストを実行します。このエージェントたちは、誰もテストしようと思わなかったところを探します（[比較](../../docs/compare.md)）。
+
+## 全画面を 1 枚のマップで見る
+
+<a href="https://pierridotite.github.io/mobile-agent-testers/"><img src="../../assets/dashboard.png" alt="ダッシュボード：アプリの全画面を1枚のマップに表示し、各矢印にテスターごとの色のレーン、各画面にヒートマップ、右側に選択中の画面" width="100%"></a>
+
+テスターがたどり着いたすべての画面を、テスターごとに色分けした経路と、タップした場所のヒートマップ付きで表示します。Device メニューでデバイスを選ぶと、その形（スマートフォンかタブレット）の画面と専用のヒートマップが見られます。画面にコメントしたり、画面上の問題をチェックに変えたりできます。
+
+<p align="center"><a href="https://pierridotite.github.io/mobile-agent-testers/"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/demo-try-dark.svg"><img src="../../assets/demo-try-light.svg" alt="ブラウザでデモを試す" width="190" height="54"></picture></a></p>
+
+自分の実行結果では：`python3 scripts/dashboard.py runs/<id>`。手元のマシンで動き、結果がマシンの外に出ることはありません（[docs/dashboard.md](../../docs/dashboard.md)）。
+
+## 見つけたバグがそのままテストになる
+
+バグを見つけたテスターは、どのスクリプトも書かなかった経路をたどっています。Android の各テスターはその経路をトレースとして残し、各タップは指の下にあった要素の名前で記録されます。`-f replay_path=true` を付けると、エージェントの終了直後に同じ端末でモデルなしで経路を再生します。マップで追加したチェックでバグがテストの一部になり、バグが残っている間は再生結果が `bug`、直ると `fixed` になります（[docs/replay.md](../../docs/replay.md)）。
+
+トレースは Explore-Compile-Replay に従います。エージェントの経路を [Maestro](https://maestro.dev) のフローにコンパイルする、私が作っているオープンな形式です。今は Android のみで、ECR はまだ初期ドラフトです。
+
+<p align="center"><a href="https://github.com/pierridotite/explore-compile-replay"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/ecr-button-dark.svg"><img src="../../assets/ecr-button-light.svg" alt="Explore-Compile-Replay：見つけたバグがそのままテストになる" width="320" height="54"></picture></a></p>
 
 ## 実際の実行
 
@@ -102,22 +116,7 @@ LocalSend では、46 件のバグのうち 34 件が文字サイズともアク
 
 ## コントリビュート
 
-同じものを二人で作らないよう、着手する前に issue でどれをやるか教えてください。それぞれの始め方とオフラインでのテスト方法は [CONTRIBUTING.md](../../CONTRIBUTING.md) にあります。 質問は [Discord](https://discord.gg/WuaCANscr8) へ。
-
-<details>
-<summary>手伝ってほしいアイデア</summary>
-
-- **他のエージェント CLI**：OpenCode、Codex CLI、Gemini CLI、Goose。ツールはただのスクリプトで、ミッションは Markdown の指示書なので、エージェントはプラットフォームごとにコマンド 1 つです。
-- **Web アプリ**：Playwright でモバイルブラウザ上に同じペルソナを走らせ、PWA やモバイルサイトを試す。
-- **実機の Android**：セルフホストランナーから adb で接続。
-- **新しいペルソナ**：色覚フィルター、遅い・不安定なネットワーク。
-- **発見を issue に**：サマリーをスクリーンショット付きの GitHub issue の下書きや、Slack・Discord のメッセージにする。
-- **他の CI**：GitLab CI、Bitrise、Codemagic。
-- **他のビルドシステム**：NativeScript、Unity、Godot。それぞれ `scripts/build/` に case を 1 つ追加。
-- **翻訳**：README とドキュメント。
-- **モデル比較**：デモアプリに仕込んだ 11 個のバグは小さなベンチマークになります。各モデルが見つけた数とコストの表を。
-
-</details>
+[すぐ取り組める issue が 11 件](https://github.com/pierridotite/mobile-agent-testers/issues/9)あり、うち 5 件は [good first issue](https://github.com/pierridotite/mobile-agent-testers/labels/good%20first%20issue) です：新しいペルソナ、Slack や Discord へのサマリー、別のエージェント CLI、Web アプリ、GitLab CI、翻訳。同じものを二人で作らないよう、取り組む issue にコメントしてください。[CONTRIBUTING.md](../../CONTRIBUTING.md) にそれぞれの始め方とオフラインでのテスト方法があります。質問は [Discord](https://discord.gg/WuaCANscr8) へ。
 
 ## チーム向けホスト版（検討中）
 

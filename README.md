@@ -35,9 +35,6 @@ Multiplatform, Capacitor and .NET MAUI.
 GitHub's runners are free for public repos. You only pay for the model, with your
 Claude subscription or API key: about $0.15 to $0.55 per phone in [these runs](docs/runs/).
 
-<p align="center"><a href="https://github.com/pierridotite/explore-compile-replay"><img src="assets/ecr-now-building.svg" alt="Next: every bug becomes a free test. Explore-Compile-Replay" width="340" height="54"></a><br>
-<sub>What I'm building next: when an agent finds a bug, Explore-Compile-Replay turns its path into a test that reruns on every PR, with no model. Early draft.</sub></p>
-
 ## Quick start
 
 ```bash
@@ -76,9 +73,26 @@ One use per run, set with the inputs above.
 | **Reproduce a bug report** | Each phone answers yes, no or unclear, with screenshots ([brief](briefs/reproduce.md)). |
 | **Get an improvement report** | Where each persona hesitated, what it expected, what to change first ([brief](briefs/improve.md)). |
 | **Compare two versions** | The same personas on two branches or builds, then one table of goals, scores and issues ([how](docs/compare-versions.md)). |
-| **See every screen on one map** | The testers' paths and a heat map on each screen, with your comments: `python3 scripts/dashboard.py runs/<id>` ([demo](https://pierridotite.github.io/mobile-agent-testers/), [video](assets/dashboard-demo.mp4)). |
 
 Any Anthropic-compatible model works, from Claude Haiku to OpenRouter, DeepSeek, Kimi, GLM, MiniMax or Qwen; findings are only as good as the model's reading of screenshots ([docs/cheaper-models.md](docs/cheaper-models.md)). Maestro or Appium run the tests you write; these agents look for what nobody thought to test ([how it compares](docs/compare.md)).
+
+## See every screen on one map
+
+<a href="https://pierridotite.github.io/mobile-agent-testers/"><img src="assets/dashboard.png" alt="The dashboard: every screen of the app as a map, one colored lane per tester on each arrow, a heat map on each screen, the selected screen on the right" width="100%"></a>
+
+Every screen the testers reached, with the path of each one in its own color and a heat map of where they tapped. Pick a device in the Device menu to see the screens in its shape (phone or tablet) and its own heat map. Comment a screen, or turn what is wrong on it into a check.
+
+<p align="center"><a href="https://pierridotite.github.io/mobile-agent-testers/"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/demo-try-dark.svg"><img src="assets/demo-try-light.svg" alt="Try the live demo in your browser" width="190" height="54"></picture></a></p>
+
+On your own run: `python3 scripts/dashboard.py runs/<id>`. It runs on your machine and the results never leave it ([docs/dashboard.md](docs/dashboard.md)).
+
+## Every bug becomes a test
+
+A tester that finds a bug took a path no script would have written. Each Android tester keeps that path as a trace, with each tap named after the element under the finger. With `-f replay_path=true`, the path replays on the same phone right after the agent, with no model. A check added on the map makes the bug part of the test: the replay says `bug` while it is there and `fixed` once it is gone ([docs/replay.md](docs/replay.md)).
+
+The traces follow Explore-Compile-Replay, my open format that compiles an agent's path into a [Maestro](https://maestro.dev) flow. Android only for now; ECR is an early draft.
+
+<p align="center"><a href="https://github.com/pierridotite/explore-compile-replay"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/ecr-button-dark.svg"><img src="assets/ecr-button-light.svg" alt="Explore-Compile-Replay: every bug becomes a test" width="320" height="54"></picture></a></p>
 
 ## Real runs
 
@@ -94,22 +108,7 @@ Open-source apps, with nothing planted.
 
 ## Contributing
 
-Open an issue first to say what you take, so two people don't build the same thing. [CONTRIBUTING.md](CONTRIBUTING.md) says where each idea starts and how to test it offline. Questions: [Discord](https://discord.gg/WuaCANscr8).
-
-<details>
-<summary>Ideas where help is welcome</summary>
-
-- **Other agent CLIs**: OpenCode, Codex CLI, Gemini CLI, Goose. The tools are plain scripts and the mission is a Markdown brief, so the agent is one command per platform.
-- **Web apps**: the same personas on a mobile browser with Playwright, for PWAs and mobile sites.
-- **Physical Android phones** over adb, on a self-hosted runner.
-- **New personas**: color blindness filters, a slow or flaky network.
-- **Findings to issues**: turn the summary into draft GitHub issues with their screenshots, or a Slack or Discord message.
-- **Other CI**: GitLab CI, Bitrise, Codemagic.
-- **More build systems**: NativeScript, Unity, Godot, each one case in `scripts/build/`.
-- **Translations** of the README and docs.
-- **Model comparison**: the demo app's 11 planted bugs make a small benchmark. A table of what each model finds and costs.
-
-</details>
+[11 issues are ready to take](https://github.com/pierridotite/mobile-agent-testers/issues/9), five of them [good first issues](https://github.com/pierridotite/mobile-agent-testers/labels/good%20first%20issue): new personas, a Slack or Discord summary, another agent CLI, web apps, GitLab CI, translations. Comment on the one you take so two people don't build the same thing. [CONTRIBUTING.md](CONTRIBUTING.md) says where each one starts and how to test it offline. Questions: [Discord](https://discord.gg/WuaCANscr8).
 
 ## Hosted version for teams (exploring)
 

@@ -37,9 +37,6 @@ Multiplatform, Capacitor và .NET MAUI.
 Runner của GitHub miễn phí cho các repo công khai. Bạn chỉ trả tiền cho model, bằng gói đăng ký
 Claude hoặc API key của bạn: khoảng $0.15 đến $0.55 mỗi điện thoại trong [các lần chạy này](../../docs/runs/).
 
-<p align="center"><a href="https://github.com/pierridotite/explore-compile-replay"><img src="../../assets/ecr-now-building.svg" alt="Next: every bug becomes a free test. Explore-Compile-Replay" width="340" height="54"></a><br>
-<sub>Dự án tiếp theo của tôi: khi một agent tìm thấy một bug, <a href="https://github.com/pierridotite/explore-compile-replay">Explore-Compile-Replay</a> biến đường đi của nó thành một test chạy lại trên mọi PR, không cần model. Bản nháp đầu tiên.</sub></p>
-
 ## Bắt đầu nhanh
 
 ```bash
@@ -83,11 +80,28 @@ Mỗi lần chạy một cách dùng, chọn bằng các tham số ở trên.
 | **Tái hiện một báo cáo bug** | Trên mọi điện thoại: đưa một issue hoặc các bước, và mỗi agent trả lời có, không hoặc không rõ, kèm ảnh chụp màn hình ([briefs/reproduce.md](../../briefs/reproduce.md)). |
 | **Nhận một báo cáo cải tiến** | Mỗi persona dùng ứng dụng một lần, rồi nói nó đã do dự ở đâu, nó mong đợi điều gì và nên thay đổi gì trước, theo khu vực và mức tác động ([briefs/improve.md](../../briefs/improve.md)). |
 | **So sánh hai phiên bản** | Cùng các persona trên hai branch hoặc hai bản build, rồi một bảng: mục tiêu đạt được, số hành động, điểm số, các vấn đề chỉ thấy ở một phiên bản ([docs/compare-versions.md](../../docs/compare-versions.md)). Một bước kiểm tra trước một A/B test thật, không phải thứ thay thế cho nó. |
-| **Xem mọi màn hình trên một bản đồ** | Để xem mọi màn hình của ứng dụng trên một bản đồ, với đường đi của các tester và bản đồ nhiệt trên từng màn hình, và bình luận từng màn hình: `python3 scripts/dashboard.py runs/<id>` ([docs/dashboard.md](../../docs/dashboard.md)). [Thử bản demo](https://pierridotite.github.io/mobile-agent-testers/) hoặc [xem video](../../assets/dashboard-demo.mp4). |
 
 **Dùng một model rẻ hơn**: Claude Haiku, hoặc bất kỳ API tương thích Anthropic nào (OpenRouter, DeepSeek, Kimi, GLM, MiniMax, Qwen). Các phát hiện chỉ tốt bằng khả năng đọc ảnh chụp màn hình và suy luận của model ([docs/cheaper-models.md](../../docs/cheaper-models.md)).
 
 Maestro hay Appium chạy các test bạn viết. Các agent này tìm những gì không ai nghĩ tới để test: [so sánh chi tiết](../../docs/compare.md).
+
+## Xem mọi màn hình trên một bản đồ
+
+<a href="https://pierridotite.github.io/mobile-agent-testers/"><img src="../../assets/dashboard.png" alt="Dashboard: mọi màn hình của ứng dụng trên một bản đồ, mỗi tester một làn màu trên từng mũi tên, bản đồ nhiệt trên từng màn hình, màn hình đang chọn ở bên phải" width="100%"></a>
+
+Mọi màn hình mà các tester đã đến, đường đi của mỗi người một màu riêng và bản đồ nhiệt cho thấy họ đã chạm vào đâu. Chọn một thiết bị trong menu Device để xem các màn hình theo hình dạng của nó (điện thoại hay máy tính bảng) và bản đồ nhiệt riêng. Bình luận một màn hình, hoặc biến điều sai trên đó thành một phép kiểm tra.
+
+<p align="center"><a href="https://pierridotite.github.io/mobile-agent-testers/"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/demo-try-dark.svg"><img src="../../assets/demo-try-light.svg" alt="Thử bản demo ngay trên trình duyệt" width="190" height="54"></picture></a></p>
+
+Trên lần chạy của bạn: `python3 scripts/dashboard.py runs/<id>`. Nó chạy trên máy của bạn và kết quả không bao giờ rời khỏi máy ([docs/dashboard.md](../../docs/dashboard.md)).
+
+## Mỗi lỗi trở thành một bài test
+
+Tester tìm ra lỗi đã đi một đường mà không script nào viết ra. Mỗi tester Android giữ đường đi đó dưới dạng một trace, mỗi lần chạm được đặt tên theo phần tử nằm dưới ngón tay. Với `-f replay_path=true`, đường đi được phát lại trên cùng điện thoại ngay sau agent, không cần mô hình. Một phép kiểm tra thêm trên bản đồ đưa lỗi vào bài test: lần phát lại báo `bug` khi lỗi còn đó và `fixed` khi nó đã hết ([docs/replay.md](../../docs/replay.md)).
+
+Các trace theo Explore-Compile-Replay, định dạng mở của tôi, biên dịch đường đi của agent thành một flow [Maestro](https://maestro.dev). Hiện chỉ có Android; ECR mới là bản nháp đầu tiên.
+
+<p align="center"><a href="https://github.com/pierridotite/explore-compile-replay"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/ecr-button-dark.svg"><img src="../../assets/ecr-button-light.svg" alt="Explore-Compile-Replay: mỗi lỗi trở thành một bài test" width="320" height="54"></picture></a></p>
 
 ## Các lần chạy thật
 
@@ -103,22 +117,7 @@ Các lần chạy thật trên các ứng dụng mã nguồn mở, không gài s
 
 ## Đóng góp
 
-Mở một issue trước để nói bạn nhận ý tưởng nào, để hai người không xây cùng một thứ. [CONTRIBUTING.md](../../CONTRIBUTING.md) nói mỗi ý tưởng bắt đầu ở đâu và cách test nó offline. Câu hỏi: [Discord](https://discord.gg/WuaCANscr8).
-
-<details>
-<summary>Những ý tưởng cần giúp đỡ</summary>
-
-- **Các agent CLI khác**: OpenCode, Codex CLI, Gemini CLI, Goose. Các công cụ là script thuần và nhiệm vụ là một brief Markdown, nên agent là một lệnh cho mỗi nền tảng.
-- **Ứng dụng web**: cùng các persona trên một trình duyệt di động bằng Playwright, cho PWA và các trang web di động.
-- **Điện thoại Android thật** qua adb, trên một self-hosted runner.
-- **Persona mới**: bộ lọc mù màu, một mạng chậm hoặc chập chờn.
-- **Từ phát hiện thành issue**: biến bản tóm tắt thành các GitHub issue nháp kèm ảnh chụp màn hình của chúng, hoặc một tin nhắn Slack hay Discord.
-- **CI khác**: GitLab CI, Bitrise, Codemagic.
-- **Thêm hệ thống build**: NativeScript, Unity, Godot, mỗi cái là một case trong `scripts/build/`.
-- **Bản dịch** của README và tài liệu.
-- **So sánh model**: 11 bug được gài sẵn của ứng dụng demo tạo thành một benchmark nhỏ. Một bảng về những gì mỗi model tìm thấy và chi phí của nó.
-
-</details>
+[11 issue đang chờ người nhận](https://github.com/pierridotite/mobile-agent-testers/issues/9), năm trong số đó là [good first issue](https://github.com/pierridotite/mobile-agent-testers/labels/good%20first%20issue): persona mới, tóm tắt gửi Slack hoặc Discord, một agent CLI khác, ứng dụng web, GitLab CI, bản dịch. Hãy bình luận vào issue bạn nhận để hai người không làm trùng nhau. [CONTRIBUTING.md](../../CONTRIBUTING.md) cho biết mỗi việc bắt đầu từ đâu và cách test ngoại tuyến. Câu hỏi: [Discord](https://discord.gg/WuaCANscr8).
 
 ## Phiên bản hosted cho nhóm (đang thăm dò)
 

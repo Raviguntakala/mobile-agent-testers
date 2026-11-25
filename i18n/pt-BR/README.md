@@ -36,9 +36,6 @@ Multiplatform, Capacitor e .NET MAUI.
 Os runners do GitHub são gratuitos para repositórios públicos. Você paga só o modelo, com sua assinatura do
 Claude ou chave de API: de US$ 0,15 a US$ 0,55 por celular [nestas execuções](../../docs/runs/).
 
-<p align="center"><a href="https://github.com/pierridotite/explore-compile-replay"><img src="../../assets/ecr-now-building.svg" alt="Next: every bug becomes a free test. Explore-Compile-Replay" width="340" height="54"></a><br>
-<sub>O que estou construindo agora: quando um agente encontra um bug, o Explore-Compile-Replay transforma o caminho dele em um teste que roda de novo a cada PR, sem modelo. Rascunho inicial.</sub></p>
-
 ## Começo rápido
 
 ```bash
@@ -82,11 +79,28 @@ Um uso por execução, escolhido com os parâmetros acima.
 | **Reproduzir um relato de bug** | Em cada celular: você passa uma issue ou os passos, e cada agente responde sim, não ou incerto, com capturas ([briefs/reproduce.md](../../briefs/reproduce.md)). |
 | **Gerar um relatório de melhorias** | Cada persona usa o app uma vez e depois diz onde hesitou, o que esperava e o que mudaria primeiro, por área e impacto ([briefs/improve.md](../../briefs/improve.md)). |
 | **Comparar duas versões** | As mesmas personas em dois branches ou builds, e depois uma tabela: objetivos alcançados, ações, notas, problemas vistos em uma versão só ([docs/compare-versions.md](../../docs/compare-versions.md)). Uma checagem antes de um teste A/B de verdade, não um substituto. |
-| **Ver todas as telas num mapa** | Para ver todas as telas do seu app num mapa, com os percursos dos testers e um mapa de calor em cada tela, e comentar cada tela: `python3 scripts/dashboard.py runs/<id>` ([docs/dashboard.md](../../docs/dashboard.md)). [Experimente a demo](https://pierridotite.github.io/mobile-agent-testers/) ou [veja o vídeo](../../assets/dashboard-demo.mp4). |
 
 **Usar um modelo mais barato**: Claude Haiku, ou qualquer API compatível com a Anthropic (OpenRouter, DeepSeek, Kimi, GLM, MiniMax, Qwen). Os achados dependem de quão bem o modelo lê as capturas e raciocina ([docs/cheaper-models.md](../../docs/cheaper-models.md)).
 
 Maestro ou Appium rodam os testes que você escreve. Estes agentes procuram o que ninguém pensou em testar: [comparação](../../docs/compare.md).
+
+## Ver todas as telas num mapa
+
+<a href="https://pierridotite.github.io/mobile-agent-testers/"><img src="../../assets/dashboard.png" alt="O dashboard: todas as telas do app num mapa, uma faixa colorida por tester em cada seta, um mapa de calor em cada tela e a tela selecionada à direita" width="100%"></a>
+
+Todas as telas a que os testers chegaram, com o percurso de cada um na sua própria cor e um mapa de calor de onde tocaram. Escolha um dispositivo no menu Device para ver as telas no formato dele (celular ou tablet) e o seu próprio mapa de calor. Comente uma tela ou transforme o que está errado nela numa verificação.
+
+<p align="center"><a href="https://pierridotite.github.io/mobile-agent-testers/"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/demo-try-dark.svg"><img src="../../assets/demo-try-light.svg" alt="Experimente a demo no seu navegador" width="190" height="54"></picture></a></p>
+
+Na sua própria execução: `python3 scripts/dashboard.py runs/<id>`. Roda na sua máquina e os resultados nunca saem dela ([docs/dashboard.md](../../docs/dashboard.md)).
+
+## Cada bug vira um teste
+
+Um tester que encontra um bug seguiu um percurso que nenhum script teria escrito. Cada tester Android guarda esse percurso como um trace, com cada toque nomeado pelo elemento que estava sob o dedo. Com `-f replay_path=true`, o percurso é reproduzido no mesmo celular logo depois do agente, sem modelo. Uma verificação adicionada no mapa faz o bug entrar no teste: a reprodução diz `bug` enquanto ele está lá e `fixed` quando some ([docs/replay.md](../../docs/replay.md)).
+
+Os traces seguem o Explore-Compile-Replay, meu formato aberto que compila o percurso de um agente num fluxo do [Maestro](https://maestro.dev). Só Android por enquanto; o ECR é um primeiro rascunho.
+
+<p align="center"><a href="https://github.com/pierridotite/explore-compile-replay"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/ecr-button-dark.svg"><img src="../../assets/ecr-button-light.svg" alt="Explore-Compile-Replay: cada bug vira um teste" width="320" height="54"></picture></a></p>
 
 ## Execuções reais
 
@@ -102,22 +116,7 @@ No LocalSend, 34 dos 46 bugs não tinham nada a ver com tamanho de texto nem com
 
 ## Contribuir
 
-Abra uma issue antes para dizer qual você vai pegar, assim duas pessoas não constroem a mesma coisa. O [CONTRIBUTING.md](../../CONTRIBUTING.md) diz por onde cada uma começa e como testar offline. Dúvidas: [Discord](https://discord.gg/WuaCANscr8).
-
-<details>
-<summary>Ideias em que ajuda é bem-vinda</summary>
-
-- **Outros CLIs de agente**: OpenCode, Codex CLI, Gemini CLI, Goose. As ferramentas são scripts comuns e a missão é um brief em Markdown, então o agente é um único comando por plataforma.
-- **Apps web**: as mesmas personas num navegador mobile com Playwright, para PWAs e sites mobile.
-- **Celulares Android físicos** via adb, num runner próprio.
-- **Novas personas**: filtros de daltonismo, rede lenta ou instável.
-- **Achados viram issues**: transformar o resumo em rascunhos de issues do GitHub com as capturas, ou numa mensagem no Slack ou Discord.
-- **Outros CIs**: GitLab CI, Bitrise, Codemagic.
-- **Mais sistemas de build**: NativeScript, Unity, Godot, cada um um caso em `scripts/build/`.
-- **Traduções** do README e da documentação.
-- **Comparar modelos**: os 11 bugs plantados no app de demonstração formam um pequeno benchmark. Uma tabela do que cada modelo encontra e quanto custa.
-
-</details>
+[11 issues estão prontas para pegar](https://github.com/pierridotite/mobile-agent-testers/issues/9), cinco delas [good first issues](https://github.com/pierridotite/mobile-agent-testers/labels/good%20first%20issue): novas personas, um resumo no Slack ou Discord, outro CLI de agente, apps web, GitLab CI, traduções. Comente na que você pegar para que duas pessoas não façam a mesma coisa. O [CONTRIBUTING.md](../../CONTRIBUTING.md) diz por onde cada uma começa e como testá-la offline. Dúvidas: [Discord](https://discord.gg/WuaCANscr8).
 
 ## Versão hospedada para equipes (em estudo)
 
