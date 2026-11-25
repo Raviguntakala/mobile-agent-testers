@@ -42,8 +42,8 @@ class DemoPackTest(unittest.TestCase):
         out = Path(tempfile.mkdtemp())
         dashboard.export([root], out)
         run = json.loads((out / "api" / "run.json").read_text())
-        self.assertTrue(run["run"].startswith("Demo: LocalSend"))
-        self.assertIn("LocalSend", run["demoNote"])
+        self.assertEqual(run["appName"], "LocalSend")
+        self.assertEqual(run["demoNote"], "Run it on your app")
 
 
 if __name__ == "__main__":
