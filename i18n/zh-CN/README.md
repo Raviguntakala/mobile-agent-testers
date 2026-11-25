@@ -1,16 +1,31 @@
-# mobile-agent-testers
+<div align="center">
 
-<a href="https://github.com/pierridotite/explore-compile-replay"><img src="../../assets/ecr-now-building.svg" alt="Next: every bug becomes a free test. Explore-Compile-Replay" width="340" height="54"></a>
-<a href="https://www.linkedin.com/in/pierre-raffalli/"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/linkedin-follow-dark.svg"><img src="../../assets/linkedin-follow-light.svg" alt="Follow Pierre Raffalli on LinkedIn" width="160" height="54"></picture></a>
-<a href="https://trendshift.io/repositories/371956?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-371956" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/371956/daily?language=Python" alt="pierridotite%2Fmobile-agent-testers | Trendshift" width="250" height="55"/></a>
+<img src="../../assets/logo.svg" alt="" width="96" height="96">
+
+# mobile-agent-testers
 
 **20 个 AI 测试员，20 台不同的手机，在 GitHub 的免费运行器上并行测试。**
 
-**[应用实例](docs/examples.md)** · **[对比](../../docs/compare.md)** · **[常见问题](docs/faq.md)** · **[角色](../../personas.json)** · **[参与贡献](../../CONTRIBUTING.md)** · **[版本](https://github.com/pierridotite/mobile-agent-testers/releases)**
+[![Tests](https://github.com/pierridotite/mobile-agent-testers/actions/workflows/tests.yml/badge.svg)](https://github.com/pierridotite/mobile-agent-testers/actions/workflows/tests.yml)
+[![Stars](https://img.shields.io/github/stars/pierridotite/mobile-agent-testers?style=flat)](https://github.com/pierridotite/mobile-agent-testers/stargazers)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](../../LICENSE)
+![iOS + Android](https://img.shields.io/badge/platforms-iOS%20%2B%20Android-blue)
+![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-orange)
 
-[English](../../README.md) · 简体中文 · [日本語](../ja/README.md) · [Español](../es/README.md) · [Português](../pt-BR/README.md) · [Tiếng Việt](../vi/README.md) · [Türkçe](../tr/README.md)
+**[应用实例](docs/examples.md)** · **[仪表盘演示](https://pierridotite.github.io/mobile-agent-testers/)** · **[对比](../../docs/compare.md)** · **[常见问题](docs/faq.md)** · **[角色](../../personas.json)** · **[参与贡献](../../CONTRIBUTING.md)**
+
+<sub>[English](../../README.md) · 简体中文 · [日本語](../ja/README.md) · [Español](../es/README.md) · [Português](../pt-BR/README.md) · [Tiếng Việt](../vi/README.md) · [Türkçe](../tr/README.md)</sub>
+
+<a href="https://www.linkedin.com/in/pierre-raffalli/"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/linkedin-follow-dark.svg"><img src="../../assets/linkedin-follow-light.svg" alt="Follow Pierre Raffalli on LinkedIn" width="160" height="54"></picture></a>
+<a href="https://discord.gg/WuaCANscr8"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/discord-join-dark.svg"><img src="../../assets/discord-join-light.svg" alt="Join us on Discord" width="160" height="54"></picture></a>
+<a href="https://trendshift.io/repositories/371956?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-371956" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/371956/daily?language=Python" alt="pierridotite%2Fmobile-agent-testers | Trendshift" width="250" height="55"/></a>
 
 <sub>本页译自英文版，可能稍有滞后，以 [README.md](../../README.md) 为准。</sub>
+
+</div>
+
+<p align="center"><a href="../../assets/localsend-20.mp4"><img src="../../assets/localsend-20.gif" alt="20 个 AI 测试员同时使用 LocalSend 的真实录屏：10 台 Android 模拟器和 10 台 iOS 模拟器，14 种语言，从小屏 Pixel 到 13 英寸 iPad。测试员完成后，手机上会显示它发现的问题数量。点击打开视频。" width="100%"></a><br>
+<sub>LocalSend 那次运行的真实录屏，已剪掉空闲时间。<a href="../../assets/localsend-20.mp4">完整视频（MP4）</a> · <a href="../../docs/runs/localsend-20.md">逐台设备查看这次运行</a></sub></p>
 
 无需编写测试脚本。每个测试员都是一个 Claude Code 智能体，在 GitHub Actions 上拥有自己的 iOS
 模拟器或 Android 模拟器。它扮演一个角色（瑞典语、最大字号的 iPhone SE，字体 200% 的 Pixel 7，
@@ -20,16 +35,8 @@
 公开仓库使用 GitHub 的运行器是免费的。你只需要为模型付费，用你的 Claude 订阅或 API key：
 在[这几次运行](../../docs/runs/)中，每台手机大约 0.15 到 0.55 美元。
 
-<p align="center"><a href="../../assets/localsend-20.mp4"><img src="../../assets/localsend-20.gif" alt="20 个 AI 测试员同时使用 LocalSend 的真实录屏：10 台 Android 模拟器和 10 台 iOS 模拟器，14 种语言，从小屏 Pixel 到 13 英寸 iPad。测试员完成后，手机上会显示它发现的问题数量。点击打开视频。" width="100%"></a><br>
-<sub>LocalSend 那次运行的真实录屏，已剪掉空闲时间。<a href="../../assets/localsend-20.mp4">完整视频（MP4）</a> · <a href="../../docs/runs/localsend-20.md">逐台设备查看这次运行</a></sub></p>
-
-[![Tests](https://github.com/pierridotite/mobile-agent-testers/actions/workflows/tests.yml/badge.svg)](https://github.com/pierridotite/mobile-agent-testers/actions/workflows/tests.yml)
-[![Stars](https://img.shields.io/github/stars/pierridotite/mobile-agent-testers?style=flat)](https://github.com/pierridotite/mobile-agent-testers/stargazers)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green)](../../LICENSE)
-![iOS + Android](https://img.shields.io/badge/platforms-iOS%20%2B%20Android-blue)
-![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-orange)
-[![Last commit](https://img.shields.io/github/last-commit/pierridotite/mobile-agent-testers)](https://github.com/pierridotite/mobile-agent-testers/commits/main)
-[![Discord](https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white)](https://discord.gg/WuaCANscr8)
+<p align="center"><a href="https://github.com/pierridotite/explore-compile-replay"><img src="../../assets/ecr-now-building.svg" alt="Next: every bug becomes a free test. Explore-Compile-Replay" width="340" height="54"></a><br>
+<sub>我接下来在做的项目：当智能体发现缺陷时，Explore-Compile-Replay 会把它走过的路径变成每个 PR 都会重跑、无需模型的测试。早期草稿。</sub></p>
 
 ## 能做什么
 
@@ -121,4 +128,4 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
 
 <a href="https://github.com/pierridotite/mobile-agent-testers/graphs/contributors"><img src="https://contrib.rocks/image?repo=pierridotite/mobile-agent-testers" alt="Contributors" /></a>
 
-由 [@pierridotite](https://github.com/pierridotite) 制作（[LinkedIn](https://www.linkedin.com/in/pierre-raffalli/)）· MIT 许可证
+由 Pierre Raffalli 制作 · [LinkedIn](https://www.linkedin.com/in/pierre-raffalli/) · [GitHub](https://github.com/pierridotite) · [Discord](https://discord.gg/WuaCANscr8) · MIT 许可证

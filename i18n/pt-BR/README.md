@@ -1,16 +1,31 @@
-# mobile-agent-testers
+<div align="center">
 
-<a href="https://github.com/pierridotite/explore-compile-replay"><img src="../../assets/ecr-now-building.svg" alt="Next: every bug becomes a free test. Explore-Compile-Replay" width="340" height="54"></a>
-<a href="https://www.linkedin.com/in/pierre-raffalli/"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/linkedin-follow-dark.svg"><img src="../../assets/linkedin-follow-light.svg" alt="Follow Pierre Raffalli on LinkedIn" width="160" height="54"></picture></a>
-<a href="https://trendshift.io/repositories/371956?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-371956" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/371956/daily?language=Python" alt="pierridotite%2Fmobile-agent-testers | Trendshift" width="250" height="55"/></a>
+<img src="../../assets/logo.svg" alt="" width="96" height="96">
+
+# mobile-agent-testers
 
 **20 testadores com IA em 20 celulares diferentes, em paralelo, nos runners gratuitos do GitHub.**
 
-**[Exemplos](docs/examples.md)** · **[Comparação](../../docs/compare.md)** · **[Perguntas frequentes](docs/faq.md)** · **[Personas](../../personas.json)** · **[Contribuir](../../CONTRIBUTING.md)** · **[Versões](https://github.com/pierridotite/mobile-agent-testers/releases)**
+[![Tests](https://github.com/pierridotite/mobile-agent-testers/actions/workflows/tests.yml/badge.svg)](https://github.com/pierridotite/mobile-agent-testers/actions/workflows/tests.yml)
+[![Stars](https://img.shields.io/github/stars/pierridotite/mobile-agent-testers?style=flat)](https://github.com/pierridotite/mobile-agent-testers/stargazers)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](../../LICENSE)
+![iOS + Android](https://img.shields.io/badge/platforms-iOS%20%2B%20Android-blue)
+![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-orange)
 
-[English](../../README.md) · [简体中文](../zh-CN/README.md) · [日本語](../ja/README.md) · [Español](../es/README.md) · Português · [Tiếng Việt](../vi/README.md) · [Türkçe](../tr/README.md)
+**[Exemplos](docs/examples.md)** · **[Demo do dashboard](https://pierridotite.github.io/mobile-agent-testers/)** · **[Comparação](../../docs/compare.md)** · **[Perguntas frequentes](docs/faq.md)** · **[Personas](../../personas.json)** · **[Contribuir](../../CONTRIBUTING.md)**
+
+<sub>[English](../../README.md) · [简体中文](../zh-CN/README.md) · [日本語](../ja/README.md) · [Español](../es/README.md) · Português · [Tiếng Việt](../vi/README.md) · [Türkçe](../tr/README.md)</sub>
+
+<a href="https://www.linkedin.com/in/pierre-raffalli/"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/linkedin-follow-dark.svg"><img src="../../assets/linkedin-follow-light.svg" alt="Follow Pierre Raffalli on LinkedIn" width="160" height="54"></picture></a>
+<a href="https://discord.gg/WuaCANscr8"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/discord-join-dark.svg"><img src="../../assets/discord-join-light.svg" alt="Join us on Discord" width="160" height="54"></picture></a>
+<a href="https://trendshift.io/repositories/371956?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-371956" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/371956/daily?language=Python" alt="pierridotite%2Fmobile-agent-testers | Trendshift" width="250" height="55"/></a>
 
 <sub>Tradução do README em inglês: pode estar atrasada, a referência é o [README.md](../../README.md).</sub>
+
+</div>
+
+<p align="center"><a href="../../assets/localsend-20.mp4"><img src="../../assets/localsend-20.gif" alt="Gravações de tela reais de 20 testadores com IA usando o LocalSend ao mesmo tempo: 10 emuladores de Android e 10 simuladores de iOS em 14 idiomas, de um Pixel pequeno a um iPad de 13 polegadas. Quando um testador termina, o celular mostra quantos problemas ele encontrou. Abre o vídeo." width="100%"></a><br>
+<sub>Gravações de tela reais da execução no LocalSend, sem os tempos de espera. <a href="../../assets/localsend-20.mp4">Vídeo completo (MP4)</a> · <a href="../../docs/runs/localsend-20.md">A execução, aparelho por aparelho</a></sub></p>
 
 Nenhum script de teste para escrever. Cada testador é um agente do Claude Code com seu próprio simulador de iOS
 ou emulador de Android no GitHub Actions. Ele interpreta uma persona (iPhone SE em sueco com o maior tamanho de
@@ -21,16 +36,8 @@ Multiplatform, Capacitor e .NET MAUI.
 Os runners do GitHub são gratuitos para repositórios públicos. Você paga só o modelo, com sua assinatura do
 Claude ou chave de API: de US$ 0,15 a US$ 0,55 por celular [nestas execuções](../../docs/runs/).
 
-<p align="center"><a href="../../assets/localsend-20.mp4"><img src="../../assets/localsend-20.gif" alt="Gravações de tela reais de 20 testadores com IA usando o LocalSend ao mesmo tempo: 10 emuladores de Android e 10 simuladores de iOS em 14 idiomas, de um Pixel pequeno a um iPad de 13 polegadas. Quando um testador termina, o celular mostra quantos problemas ele encontrou. Abre o vídeo." width="100%"></a><br>
-<sub>Gravações de tela reais da execução no LocalSend, sem os tempos de espera. <a href="../../assets/localsend-20.mp4">Vídeo completo (MP4)</a> · <a href="../../docs/runs/localsend-20.md">A execução, aparelho por aparelho</a></sub></p>
-
-[![Tests](https://github.com/pierridotite/mobile-agent-testers/actions/workflows/tests.yml/badge.svg)](https://github.com/pierridotite/mobile-agent-testers/actions/workflows/tests.yml)
-[![Stars](https://img.shields.io/github/stars/pierridotite/mobile-agent-testers?style=flat)](https://github.com/pierridotite/mobile-agent-testers/stargazers)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green)](../../LICENSE)
-![iOS + Android](https://img.shields.io/badge/platforms-iOS%20%2B%20Android-blue)
-![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-orange)
-[![Last commit](https://img.shields.io/github/last-commit/pierridotite/mobile-agent-testers)](https://github.com/pierridotite/mobile-agent-testers/commits/main)
-[![Discord](https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white)](https://discord.gg/WuaCANscr8)
+<p align="center"><a href="https://github.com/pierridotite/explore-compile-replay"><img src="../../assets/ecr-now-building.svg" alt="Next: every bug becomes a free test. Explore-Compile-Replay" width="340" height="54"></a><br>
+<sub>O que estou construindo agora: quando um agente encontra um bug, o Explore-Compile-Replay transforma o caminho dele em um teste que roda de novo a cada PR, sem modelo. Rascunho inicial.</sub></p>
 
 ## O que ele faz
 
@@ -122,4 +129,4 @@ Obrigado a todas as pessoas que contribuíram. Quer ajudar? [Comece aqui](../../
 
 <a href="https://github.com/pierridotite/mobile-agent-testers/graphs/contributors"><img src="https://contrib.rocks/image?repo=pierridotite/mobile-agent-testers" alt="Contributors" /></a>
 
-Feito por [@pierridotite](https://github.com/pierridotite) ([LinkedIn](https://www.linkedin.com/in/pierre-raffalli/)) · licença MIT
+Feito por Pierre Raffalli · [LinkedIn](https://www.linkedin.com/in/pierre-raffalli/) · [GitHub](https://github.com/pierridotite) · [Discord](https://discord.gg/WuaCANscr8) · licença MIT

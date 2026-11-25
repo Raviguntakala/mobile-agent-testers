@@ -1,18 +1,31 @@
+<div align="center">
+
+<img src="../../assets/logo.svg" alt="" width="96" height="96">
+
 # mobile-agent-testers
-
-<a href="https://github.com/pierridotite/explore-compile-replay"><img src="../../assets/ecr-now-building.svg" alt="Tiếp theo: mọi bug đều trở thành một test miễn phí. Explore-Compile-Replay" width="340" height="54"></a>
-<a href="https://www.linkedin.com/in/pierre-raffalli/"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/linkedin-follow-dark.svg"><img src="../../assets/linkedin-follow-light.svg" alt="Theo dõi Pierre Raffalli trên LinkedIn" width="160" height="54"></picture></a>
-<a href="https://trendshift.io/repositories/371956?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-371956" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/371956/daily?language=Python" alt="pierridotite%2Fmobile-agent-testers | Trendshift" width="250" height="55"/></a>
-
-<sub>Dự án tiếp theo của tôi: khi một agent tìm thấy một bug, <a href="https://github.com/pierridotite/explore-compile-replay">Explore-Compile-Replay</a> biến đường đi của nó thành một test chạy lại trên mọi PR, không cần model. Bản nháp đầu tiên.</sub>
 
 **20 tester AI trên 20 chiếc điện thoại khác nhau, chạy song song, trên các runner miễn phí của GitHub.**
 
-**[Ví dụ](docs/examples.md)** · **[So sánh](../../docs/compare.md)** · **[FAQ](docs/faq.md)** · **[Personas](../../personas.json)** · **[Đóng góp](../../CONTRIBUTING.md)** · **[Bản phát hành](https://github.com/pierridotite/mobile-agent-testers/releases)**
+[![Tests](https://github.com/pierridotite/mobile-agent-testers/actions/workflows/tests.yml/badge.svg)](https://github.com/pierridotite/mobile-agent-testers/actions/workflows/tests.yml)
+[![Stars](https://img.shields.io/github/stars/pierridotite/mobile-agent-testers?style=flat)](https://github.com/pierridotite/mobile-agent-testers/stargazers)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](../../LICENSE)
+![iOS + Android](https://img.shields.io/badge/platforms-iOS%20%2B%20Android-blue)
+![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-orange)
 
-[English](../../README.md) · [简体中文](../zh-CN/README.md) · [日本語](../ja/README.md) · [Español](../es/README.md) · [Português](../pt-BR/README.md) · Tiếng Việt · [Türkçe](../tr/README.md)
+**[Ví dụ](docs/examples.md)** · **[Demo dashboard](https://pierridotite.github.io/mobile-agent-testers/)** · **[So sánh](../../docs/compare.md)** · **[FAQ](docs/faq.md)** · **[Personas](../../personas.json)** · **[Đóng góp](../../CONTRIBUTING.md)**
+
+<sub>[English](../../README.md) · [简体中文](../zh-CN/README.md) · [日本語](../ja/README.md) · [Español](../es/README.md) · [Português](../pt-BR/README.md) · Tiếng Việt · [Türkçe](../tr/README.md)</sub>
+
+<a href="https://www.linkedin.com/in/pierre-raffalli/"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/linkedin-follow-dark.svg"><img src="../../assets/linkedin-follow-light.svg" alt="Follow Pierre Raffalli on LinkedIn" width="160" height="54"></picture></a>
+<a href="https://discord.gg/WuaCANscr8"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/discord-join-dark.svg"><img src="../../assets/discord-join-light.svg" alt="Join us on Discord" width="160" height="54"></picture></a>
+<a href="https://trendshift.io/repositories/371956?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-371956" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/371956/daily?language=Python" alt="pierridotite%2Fmobile-agent-testers | Trendshift" width="250" height="55"/></a>
 
 <sub>Bản dịch của README tiếng Anh: có thể chậm hơn bản gốc, bản chuẩn là [README.md](../../README.md).</sub>
+
+</div>
+
+<p align="center"><a href="../../assets/localsend-20.mp4"><img src="../../assets/localsend-20.gif" alt="Bản ghi màn hình thật của 20 tester AI dùng LocalSend cùng lúc: 10 Android emulator và 10 iOS Simulator bằng 14 ngôn ngữ, từ một chiếc Pixel nhỏ đến một chiếc iPad 13 inch. Khi một tester chạy xong, điện thoại của nó hiển thị số vấn đề nó đã tìm thấy. Mở video." width="100%"></a><br>
+<sub>Bản ghi màn hình thật của lần chạy LocalSend, đã cắt thời gian chờ. <a href="../../assets/localsend-20.mp4">Video đầy đủ (MP4)</a> · <a href="../../docs/runs/localsend-20.md">Lần chạy, theo từng thiết bị</a></sub></p>
 
 Không cần viết test script. Mỗi tester là một agent Claude Code với iOS
 Simulator hoặc Android emulator riêng trên GitHub Actions. Nó đóng vai một persona (iPhone SE
@@ -24,16 +37,8 @@ Multiplatform, Capacitor và .NET MAUI.
 Runner của GitHub miễn phí cho các repo công khai. Bạn chỉ trả tiền cho model, bằng gói đăng ký
 Claude hoặc API key của bạn: khoảng $0.15 đến $0.55 mỗi điện thoại trong [các lần chạy này](../../docs/runs/).
 
-<p align="center"><a href="../../assets/localsend-20.mp4"><img src="../../assets/localsend-20.gif" alt="Bản ghi màn hình thật của 20 tester AI dùng LocalSend cùng lúc: 10 Android emulator và 10 iOS Simulator bằng 14 ngôn ngữ, từ một chiếc Pixel nhỏ đến một chiếc iPad 13 inch. Khi một tester chạy xong, điện thoại của nó hiển thị số vấn đề nó đã tìm thấy. Mở video." width="100%"></a><br>
-<sub>Bản ghi màn hình thật của lần chạy LocalSend, đã cắt thời gian chờ. <a href="../../assets/localsend-20.mp4">Video đầy đủ (MP4)</a> · <a href="../../docs/runs/localsend-20.md">Lần chạy, theo từng thiết bị</a></sub></p>
-
-[![Tests](https://github.com/pierridotite/mobile-agent-testers/actions/workflows/tests.yml/badge.svg)](https://github.com/pierridotite/mobile-agent-testers/actions/workflows/tests.yml)
-[![Stars](https://img.shields.io/github/stars/pierridotite/mobile-agent-testers?style=flat)](https://github.com/pierridotite/mobile-agent-testers/stargazers)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green)](../../LICENSE)
-![iOS + Android](https://img.shields.io/badge/platforms-iOS%20%2B%20Android-blue)
-![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-orange)
-[![Last commit](https://img.shields.io/github/last-commit/pierridotite/mobile-agent-testers)](https://github.com/pierridotite/mobile-agent-testers/commits/main)
-[![Discord](https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white)](https://discord.gg/WuaCANscr8)
+<p align="center"><a href="https://github.com/pierridotite/explore-compile-replay"><img src="../../assets/ecr-now-building.svg" alt="Next: every bug becomes a free test. Explore-Compile-Replay" width="340" height="54"></a><br>
+<sub>Dự án tiếp theo của tôi: khi một agent tìm thấy một bug, <a href="https://github.com/pierridotite/explore-compile-replay">Explore-Compile-Replay</a> biến đường đi của nó thành một test chạy lại trên mọi PR, không cần model. Bản nháp đầu tiên.</sub></p>
 
 ## Nó làm được gì
 
@@ -125,4 +130,4 @@ Cảm ơn tất cả những người đã đóng góp. Muốn giúp một tay? 
 
 <a href="https://github.com/pierridotite/mobile-agent-testers/graphs/contributors"><img src="https://contrib.rocks/image?repo=pierridotite/mobile-agent-testers" alt="Contributors" /></a>
 
-Được làm bởi [@pierridotite](https://github.com/pierridotite) ([LinkedIn](https://www.linkedin.com/in/pierre-raffalli/)) · Giấy phép MIT
+Được làm bởi Pierre Raffalli · [LinkedIn](https://www.linkedin.com/in/pierre-raffalli/) · [GitHub](https://github.com/pierridotite) · [Discord](https://discord.gg/WuaCANscr8) · Giấy phép MIT

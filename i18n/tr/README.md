@@ -1,18 +1,31 @@
+<div align="center">
+
+<img src="../../assets/logo.svg" alt="" width="96" height="96">
+
 # mobile-agent-testers
-
-<a href="https://github.com/pierridotite/explore-compile-replay"><img src="../../assets/ecr-now-building.svg" alt="Next: every bug becomes a free test. Explore-Compile-Replay" width="340" height="54"></a>
-<a href="https://www.linkedin.com/in/pierre-raffalli/"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/linkedin-follow-dark.svg"><img src="../../assets/linkedin-follow-light.svg" alt="Follow Pierre Raffalli on LinkedIn" width="160" height="54"></picture></a>
-<a href="https://trendshift.io/repositories/371956?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-371956" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/371956/daily?language=Python" alt="pierridotite%2Fmobile-agent-testers | Trendshift" width="250" height="55"/></a>
-
-<sub>Şu an üzerinde çalıştığım proje: <a href="https://github.com/pierridotite/explore-compile-replay">Explore-Compile-Replay</a>, bir ajan hata bulduğunda izlediği yolu her PR'da model kullanmadan yeniden çalışan bir teste dönüştürüyor. Henüz erken aşamada.</sub>
 
 **20 farklı telefonda aynı anda çalışan 20 yapay zekâ tester, GitHub'ın ücretsiz runner'larında.**
 
-**[Örnekler](docs/examples.md)** · **[Karşılaştırma](../../docs/compare.md)** · **[SSS](docs/faq.md)** · **[Personalar](../../personas.json)** · **[Katkıda bulunun](../../CONTRIBUTING.md)** · **[Sürümler](https://github.com/pierridotite/mobile-agent-testers/releases)**
+[![Tests](https://github.com/pierridotite/mobile-agent-testers/actions/workflows/tests.yml/badge.svg)](https://github.com/pierridotite/mobile-agent-testers/actions/workflows/tests.yml)
+[![Stars](https://img.shields.io/github/stars/pierridotite/mobile-agent-testers?style=flat)](https://github.com/pierridotite/mobile-agent-testers/stargazers)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](../../LICENSE)
+![iOS + Android](https://img.shields.io/badge/platforms-iOS%20%2B%20Android-blue)
+![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-orange)
 
-[English](../../README.md) · [简体中文](../zh-CN/README.md) · [日本語](../ja/README.md) · [Español](../es/README.md) · [Português](../pt-BR/README.md) · [Tiếng Việt](../vi/README.md) · Türkçe
+**[Örnekler](docs/examples.md)** · **[Dashboard demosu](https://pierridotite.github.io/mobile-agent-testers/)** · **[Karşılaştırma](../../docs/compare.md)** · **[SSS](docs/faq.md)** · **[Personalar](../../personas.json)** · **[Katkıda bulunun](../../CONTRIBUTING.md)**
+
+<sub>[English](../../README.md) · [简体中文](../zh-CN/README.md) · [日本語](../ja/README.md) · [Español](../es/README.md) · [Português](../pt-BR/README.md) · [Tiếng Việt](../vi/README.md) · Türkçe</sub>
+
+<a href="https://www.linkedin.com/in/pierre-raffalli/"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/linkedin-follow-dark.svg"><img src="../../assets/linkedin-follow-light.svg" alt="Follow Pierre Raffalli on LinkedIn" width="160" height="54"></picture></a>
+<a href="https://discord.gg/WuaCANscr8"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/discord-join-dark.svg"><img src="../../assets/discord-join-light.svg" alt="Join us on Discord" width="160" height="54"></picture></a>
+<a href="https://trendshift.io/repositories/371956?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-371956" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/371956/daily?language=Python" alt="pierridotite%2Fmobile-agent-testers | Trendshift" width="250" height="55"/></a>
 
 <sub>Bu sayfa İngilizce README'nin çevirisidir ve güncel olmayabilir. Esas sürüm [README.md](../../README.md) dosyasıdır.</sub>
+
+</div>
+
+<p align="center"><a href="../../assets/localsend-20.mp4"><img src="../../assets/localsend-20.gif" alt="LocalSend'i aynı anda kullanan 20 yapay zekâ tester'ın gerçek ekran kayıtları: 14 dilde 10 Android emülatörü ve 10 iOS Simulator, küçük bir Pixel'den 13 inç bir iPad'e kadar. Her tester işini bitirdiğinde telefonunda kaç sorun bulduğu görünür. Tıklayınca video açılır." width="100%"></a><br>
+<sub>LocalSend çalıştırmasının gerçek ekran kayıtları; bekleme süreleri kırpıldı. <a href="../../assets/localsend-20.mp4">Videonun tamamı (MP4)</a> · <a href="../../docs/runs/localsend-20.md">Cihaz cihaz çalıştırma sonuçları</a></sub></p>
 
 Test script'i yazmanıza gerek yok. Her tester, GitHub Actions üzerinde kendi iOS
 Simulator'ı ya da Android emülatörü bulunan bir Claude Code ajanıdır. Ajan bir kullanıcı
@@ -24,16 +37,8 @@ Flutter, React Native, Expo, native Kotlin ve Swift, Kotlin Multiplatform, Capac
 GitHub runner'ları public repolarda ücretsizdir. Yalnızca model kullanımı için,
 Claude aboneliğiniz ya da API anahtarınız üzerinden ödeme yaparsınız: [bu çalıştırmalarda](../../docs/runs/) telefon başına yaklaşık 0,15–0,55 $.
 
-<p align="center"><a href="../../assets/localsend-20.mp4"><img src="../../assets/localsend-20.gif" alt="LocalSend'i aynı anda kullanan 20 yapay zekâ tester'ın gerçek ekran kayıtları: 14 dilde 10 Android emülatörü ve 10 iOS Simulator, küçük bir Pixel'den 13 inç bir iPad'e kadar. Her tester işini bitirdiğinde telefonunda kaç sorun bulduğu görünür. Tıklayınca video açılır." width="100%"></a><br>
-<sub>LocalSend çalıştırmasının gerçek ekran kayıtları; bekleme süreleri kırpıldı. <a href="../../assets/localsend-20.mp4">Videonun tamamı (MP4)</a> · <a href="../../docs/runs/localsend-20.md">Cihaz cihaz çalıştırma sonuçları</a></sub></p>
-
-[![Tests](https://github.com/pierridotite/mobile-agent-testers/actions/workflows/tests.yml/badge.svg)](https://github.com/pierridotite/mobile-agent-testers/actions/workflows/tests.yml)
-[![Stars](https://img.shields.io/github/stars/pierridotite/mobile-agent-testers?style=flat)](https://github.com/pierridotite/mobile-agent-testers/stargazers)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green)](../../LICENSE)
-![iOS + Android](https://img.shields.io/badge/platforms-iOS%20%2B%20Android-blue)
-![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-orange)
-[![Last commit](https://img.shields.io/github/last-commit/pierridotite/mobile-agent-testers)](https://github.com/pierridotite/mobile-agent-testers/commits/main)
-[![Discord](https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white)](https://discord.gg/WuaCANscr8)
+<p align="center"><a href="https://github.com/pierridotite/explore-compile-replay"><img src="../../assets/ecr-now-building.svg" alt="Next: every bug becomes a free test. Explore-Compile-Replay" width="340" height="54"></a><br>
+<sub>Şu an üzerinde çalıştığım proje: <a href="https://github.com/pierridotite/explore-compile-replay">Explore-Compile-Replay</a>, bir ajan hata bulduğunda izlediği yolu her PR'da model kullanmadan yeniden çalışan bir teste dönüştürüyor. Henüz erken aşamada.</sub></p>
 
 ## Neler yapabilir
 
@@ -126,4 +131,4 @@ Katkıda bulunan herkese teşekkürler. Siz de yardım etmek ister misiniz? [Bur
 
 <a href="https://github.com/pierridotite/mobile-agent-testers/graphs/contributors"><img src="https://contrib.rocks/image?repo=pierridotite/mobile-agent-testers" alt="Contributors" /></a>
 
-Geliştiren: [@pierridotite](https://github.com/pierridotite) ([LinkedIn](https://www.linkedin.com/in/pierre-raffalli/)) · MIT lisansı
+Geliştiren: Pierre Raffalli · [LinkedIn](https://www.linkedin.com/in/pierre-raffalli/) · [GitHub](https://github.com/pierridotite) · [Discord](https://discord.gg/WuaCANscr8) · MIT lisansı

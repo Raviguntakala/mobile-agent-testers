@@ -1,16 +1,31 @@
-# mobile-agent-testers
+<div align="center">
 
-<a href="https://github.com/pierridotite/explore-compile-replay"><img src="../../assets/ecr-now-building.svg" alt="Next: every bug becomes a free test. Explore-Compile-Replay" width="340" height="54"></a>
-<a href="https://www.linkedin.com/in/pierre-raffalli/"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/linkedin-follow-dark.svg"><img src="../../assets/linkedin-follow-light.svg" alt="Follow Pierre Raffalli on LinkedIn" width="160" height="54"></picture></a>
-<a href="https://trendshift.io/repositories/371956?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-371956" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/371956/daily?language=Python" alt="pierridotite%2Fmobile-agent-testers | Trendshift" width="250" height="55"/></a>
+<img src="../../assets/logo.svg" alt="" width="96" height="96">
+
+# mobile-agent-testers
 
 **20 人の AI テスターが、20 台の異なるスマートフォンで、GitHub の無料ランナー上で同時にテスト。**
 
-**[適用例](docs/examples.md)** · **[比較](../../docs/compare.md)** · **[よくある質問](docs/faq.md)** · **[ペルソナ](../../personas.json)** · **[コントリビュート](../../CONTRIBUTING.md)** · **[リリース](https://github.com/pierridotite/mobile-agent-testers/releases)**
+[![Tests](https://github.com/pierridotite/mobile-agent-testers/actions/workflows/tests.yml/badge.svg)](https://github.com/pierridotite/mobile-agent-testers/actions/workflows/tests.yml)
+[![Stars](https://img.shields.io/github/stars/pierridotite/mobile-agent-testers?style=flat)](https://github.com/pierridotite/mobile-agent-testers/stargazers)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](../../LICENSE)
+![iOS + Android](https://img.shields.io/badge/platforms-iOS%20%2B%20Android-blue)
+![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-orange)
 
-[English](../../README.md) · [简体中文](../zh-CN/README.md) · 日本語 · [Español](../es/README.md) · [Português](../pt-BR/README.md) · [Tiếng Việt](../vi/README.md) · [Türkçe](../tr/README.md)
+**[適用例](docs/examples.md)** · **[ダッシュボードのデモ](https://pierridotite.github.io/mobile-agent-testers/)** · **[比較](../../docs/compare.md)** · **[よくある質問](docs/faq.md)** · **[ペルソナ](../../personas.json)** · **[コントリビュート](../../CONTRIBUTING.md)**
+
+<sub>[English](../../README.md) · [简体中文](../zh-CN/README.md) · 日本語 · [Español](../es/README.md) · [Português](../pt-BR/README.md) · [Tiếng Việt](../vi/README.md) · [Türkçe](../tr/README.md)</sub>
+
+<a href="https://www.linkedin.com/in/pierre-raffalli/"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/linkedin-follow-dark.svg"><img src="../../assets/linkedin-follow-light.svg" alt="Follow Pierre Raffalli on LinkedIn" width="160" height="54"></picture></a>
+<a href="https://discord.gg/WuaCANscr8"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/discord-join-dark.svg"><img src="../../assets/discord-join-light.svg" alt="Join us on Discord" width="160" height="54"></picture></a>
+<a href="https://trendshift.io/repositories/371956?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-371956" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/371956/daily?language=Python" alt="pierridotite%2Fmobile-agent-testers | Trendshift" width="250" height="55"/></a>
 
 <sub>このページは英語版の翻訳です。更新が遅れることがあるため、最新の内容は [README.md](../../README.md) をご覧ください。</sub>
+
+</div>
+
+<p align="center"><a href="../../assets/localsend-20.mp4"><img src="../../assets/localsend-20.gif" alt="20 人の AI テスターが同時に LocalSend を使う実際の画面録画：Android エミュレーター 10 台と iOS シミュレーター 10 台、14 言語、小さな Pixel から 13 インチの iPad まで。テスターが終わると、その端末に見つけた問題の数が表示されます。クリックで動画を開きます。" width="100%"></a><br>
+<sub>LocalSend での実行の実際の画面録画（待ち時間はカット）。<a href="../../assets/localsend-20.mp4">動画全体（MP4）</a> · <a href="../../docs/runs/localsend-20.md">端末ごとの実行記録</a></sub></p>
 
 テストスクリプトを書く必要はありません。各テスターは Claude Code のエージェントで、GitHub Actions 上に
 自分専用の iOS シミュレーターまたは Android エミュレーターを持ちます。ペルソナ（スウェーデン語で文字サイズ最大の
@@ -21,16 +36,8 @@ Swift、Kotlin Multiplatform、Capacitor、.NET MAUI に対応しています。
 公開リポジトリなら GitHub のランナーは無料です。費用はモデルの利用料だけで、Claude のサブスクリプションか
 API キーを使います。[これまでの実行](../../docs/runs/)では 1 台あたり約 0.15〜0.55 ドルでした。
 
-<p align="center"><a href="../../assets/localsend-20.mp4"><img src="../../assets/localsend-20.gif" alt="20 人の AI テスターが同時に LocalSend を使う実際の画面録画：Android エミュレーター 10 台と iOS シミュレーター 10 台、14 言語、小さな Pixel から 13 インチの iPad まで。テスターが終わると、その端末に見つけた問題の数が表示されます。クリックで動画を開きます。" width="100%"></a><br>
-<sub>LocalSend での実行の実際の画面録画（待ち時間はカット）。<a href="../../assets/localsend-20.mp4">動画全体（MP4）</a> · <a href="../../docs/runs/localsend-20.md">端末ごとの実行記録</a></sub></p>
-
-[![Tests](https://github.com/pierridotite/mobile-agent-testers/actions/workflows/tests.yml/badge.svg)](https://github.com/pierridotite/mobile-agent-testers/actions/workflows/tests.yml)
-[![Stars](https://img.shields.io/github/stars/pierridotite/mobile-agent-testers?style=flat)](https://github.com/pierridotite/mobile-agent-testers/stargazers)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green)](../../LICENSE)
-![iOS + Android](https://img.shields.io/badge/platforms-iOS%20%2B%20Android-blue)
-![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-orange)
-[![Last commit](https://img.shields.io/github/last-commit/pierridotite/mobile-agent-testers)](https://github.com/pierridotite/mobile-agent-testers/commits/main)
-[![Discord](https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white)](https://discord.gg/WuaCANscr8)
+<p align="center"><a href="https://github.com/pierridotite/explore-compile-replay"><img src="../../assets/ecr-now-building.svg" alt="Next: every bug becomes a free test. Explore-Compile-Replay" width="340" height="54"></a><br>
+<sub>次に作っているもの：エージェントがバグを見つけると、Explore-Compile-Replay がその操作手順を、PR ごとにモデルなしで再実行されるテストに変えます。初期ドラフトです。</sub></p>
 
 ## できること
 
@@ -122,4 +129,4 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
 
 <a href="https://github.com/pierridotite/mobile-agent-testers/graphs/contributors"><img src="https://contrib.rocks/image?repo=pierridotite/mobile-agent-testers" alt="Contributors" /></a>
 
-作者：[@pierridotite](https://github.com/pierridotite)（[LinkedIn](https://www.linkedin.com/in/pierre-raffalli/)）· MIT ライセンス
+作者：Pierre Raffalli · [LinkedIn](https://www.linkedin.com/in/pierre-raffalli/) · [GitHub](https://github.com/pierridotite) · [Discord](https://discord.gg/WuaCANscr8) · MIT ライセンス
