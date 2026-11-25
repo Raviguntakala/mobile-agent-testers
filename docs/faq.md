@@ -53,7 +53,7 @@ It sometimes misreads a screen: 3 of LocalSend's 20 agents flagged the Simulator
 - **Accessibility check** on every screen: controls with no name and touch targets under 48 dp (Android) or 44 pt (iOS), for the agent to confirm on the screenshot.
 - **Encrypted results**: public repo logs are public, so everything is encrypted with your key.
 - **Analytics blocked** inside the phones, so tests never touch your real stats.
-- **One summary** on your machine: Claude groups the reports that describe the same bug, so you see how many personas hit each one and which personas found which kind of issue.
+- **One summary** on your machine. With `SUMMARY_GROUPING=1`, Claude groups the reports that describe the same bug (one call on your Claude login), so you see how many personas hit each one and which personas found which kind of issue.
 - **Tests** on every push, offline and with no phone: accessibility check, persona matrix, summary, encrypted results ([tests/](../tests/)).
 
 ## Why not Maestro, Appium or agent-device?

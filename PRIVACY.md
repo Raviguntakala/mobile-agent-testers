@@ -11,9 +11,9 @@ account.
 - Test results (reports, screenshots, logs, app builds) are encrypted with your
   public key before upload. Only you hold the private key.
 - Analytics hosts listed in `block_hosts` are blocked inside the test phones.
-- On your machine, `collect.sh` sends the report titles, screens and severities
+- On your machine, `collect.sh` calls no model by default. Only with
+  `SUMMARY_GROUPING=1` does it send the report titles, screens and severities
   to Claude through your own Claude Code login, to group duplicate reports.
-  Set `SUMMARY_GROUPING=0` to skip it.
 
 Questions: open an issue at
 https://github.com/pierridotite/mobile-agent-testers/issues

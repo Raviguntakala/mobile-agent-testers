@@ -41,7 +41,7 @@ Claude subscription or API key: about $0.15 to $0.55 per phone in [these runs](d
 gh repo create my-testers --public --template pierridotite/mobile-agent-testers --clone
 cd my-testers && ./setup.sh           # key pair + secrets + Claude token (Windows: .\setup.ps1)
 gh workflow run agent-testers.yml     # demo: 2 Android + 2 iOS testers, ~20 min
-bash scripts/collect.sh <run id>      # decrypts reports, groups duplicates: runs/<id>/SUMMARY.md
+bash scripts/collect.sh <run id>      # decrypts reports, writes runs/<id>/SUMMARY.md
 ```
 
 Then on your own app:

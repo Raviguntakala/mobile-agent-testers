@@ -97,7 +97,7 @@ class Summary(unittest.TestCase):
                              env=dict(os.environ, SUMMARY_GROUPING="0"), capture_output=True, text=True)
         self.assertEqual(out.returncode, 0, out.stderr)
         self.assertTrue(out.stdout.startswith("# Agent test summary\n"))
-        self.assertIn("install the claude CLI", out.stdout)
+        self.assertIn("SUMMARY_GROUPING=1", out.stdout)
 
 
 class Reproduction(unittest.TestCase):

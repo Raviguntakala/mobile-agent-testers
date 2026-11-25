@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- **collect.sh calls no model by default**: grouping duplicate reports with Claude now needs `SUMMARY_GROUPING=1`, since it runs on your own Claude login. Without it, identical titles are merged. The summary is also written in UTF-8 on Windows, where it stopped on a title in Arabic or Turkish.
 - **The online demo shows LocalSend**: the [online demo](https://pierridotite.github.io/mobile-agent-testers/) now opens the map of LocalSend, a real open-source app, made by the robot with no model (27 starts of the app) and one tester. It stays static: no model is called and no key is used. `scripts/demo_pack.py --name` sets the name shown on the page.
 - **Replay: a tester who leaves the app and comes back**: when the agent opens the app again with adb (`monkey -p`, `am start`) after leaving it, the trace opens it again too (`launchApp`, its data kept), and the run page counts these returns. Before, the replay stayed on the home screen. See [docs/replay.md](docs/replay.md#replay-it-right-after-the-run).
 - **Replay: why a step found nothing**: when a replay stops at a step or a check that looks for an element, its line says whether the keyboard was open, whether the element is on the screen and in what form, and what now stands where it was when the agent tapped it, never its name. See [docs/replay.md](docs/replay.md#replay-kept-traces-many-times).
