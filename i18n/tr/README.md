@@ -40,20 +40,56 @@ Claude aboneliğiniz ya da API anahtarınız üzerinden ödeme yaparsınız: [bu
 <p align="center"><a href="https://github.com/pierridotite/explore-compile-replay"><img src="../../assets/ecr-now-building.svg" alt="Next: every bug becomes a free test. Explore-Compile-Replay" width="340" height="54"></a><br>
 <sub>Şu an üzerinde çalıştığım proje: <a href="https://github.com/pierridotite/explore-compile-replay">Explore-Compile-Replay</a>, bir ajan hata bulduğunda izlediği yolu her PR'da model kullanmadan yeniden çalışan bir teste dönüştürüyor. Henüz erken aşamada.</sub></p>
 
+## Hızlı başlangıç
+
+```bash
+gh repo create my-testers --public --template pierridotite/mobile-agent-testers --clone
+cd my-testers && ./setup.sh           # anahtar çifti + secret'lar + Claude token'ı (Windows: .\setup.ps1)
+gh workflow run agent-testers.yml     # demo: 2 Android + 2 iOS tester, ~20 dk
+bash scripts/collect.sh <run id>      # raporların şifresini çözer, tekrarları gruplar: runs/<id>/SUMMARY.md
+```
+
+Ardından kendi uygulamanızda:
+
+```bash
+gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
+  -f android_personas=anna,malik -f ios_personas=clara,jonas
+```
+
+Ya da uygulamanız için kurulumu Claude'a bırakabilirsiniz:
+
+```
+/plugin marketplace add pierridotite/mobile-agent-testers
+/plugin install mobile-agent-testers@mobile-agent-testers
+```
+
+Tüm parametreler (build'ler, brief'ler, hata raporları, daha ucuz modeller, build argümanları, video kaydı) ve desteklenen framework'ler: [docs/configuration.tr.md](docs/configuration.md).
+
+<details>
+<summary>Demo çalıştırmasının buldukları</summary>
+
+Demo uygulamaya [bilerek 11 hata yerleştirildi](../../demo-app/BUGS.md). [Bir test çalıştırmasında](../../docs/runs/) 4 demo tester bu hataların 9'unu buldu. Her ajan 2–7 dakika çalıştı; build'ler dahil tüm süreç yaklaşık 21 dakika sürdü. Ajanlar bunların dışında, kimsenin bilerek eklemediği gerçek sorunlar da buldu: Android gezinme çubuğunun altında kalan bir buton ve uygulama yeniden başlatılınca kaybolan veriler. 4 tester'ın toplam model maliyeti 0,87 $ oldu.
+
+</details>
+
 ## Neler yapabilir
 
-Her çalıştırma tek bir amaca hizmet eder; amacı [Kendi uygulamanızı test edin](#kendi-uygulamanızı-test-edin) bölümündeki parametrelerle seçersiniz.
+Her çalıştırmada tek bir kullanım; yukarıdaki parametrelerle seçilir.
 
-- **Yeni bir kullanıcı gibi keşfetme** (varsayılan). Her persona kendi hedefine ulaşmaya çalışır ve karşısına çıkan engelleri numaralı ekran görüntüleriyle raporlar.
-- **Tek bir özelliği baştan sona test etme.** Yazdığınız bir brief, her ajanı bir akışın tamamından geçirir: birkaç adımlı bir rezervasyon, geri alma özelliği olan bir editör, iki ekran arasında senkronizasyon gibi. Ajanlar dokunur, uzun basar, kaydırır ve yazı yazar; uygulamayı arka plana atıp geri döner, nelerin kaydedildiğini görmek için uygulamayı yeniden başlatır ya da doğrudan ilgili özellikten başlamak için bir deep link açar. Brief ile yaklaşık 30 eylemlik varsayılan sınırı da artırabilirsiniz. [AnkiDroid için yazılan brief](../../briefs/ankidroid.md), yeni bir kartın arka yüz alanının klavyenin altında kaldığını ortaya çıkardı.
-- **Bir hatayı her telefonda yeniden üretme.** Bir issue ya da adımları verirsiniz; her ajan ekran görüntüleriyle "evet", "hayır" ya da "belirsiz" diye cevap verir ([briefs/reproduce.md](../../briefs/reproduce.md)).
-- **İyileştirme raporu.** Her persona uygulamayı bir kez kullanır; ardından nerede tereddüt ettiğini, ne beklediğini ve öncelikle neyin değişmesi gerektiğini, alana ve etkiye göre sıralayarak anlatır ([briefs/improve.md](../../briefs/improve.md)).
-- **İki sürümü karşılaştırma.** Aynı personalar iki farklı branch ya da build üzerinde çalışır, sonuçlar tek bir tabloda toplanır: ulaşılan hedefler, eylem sayıları, puanlar ve yalnızca bir sürümde görülen sorunlar ([docs/compare-versions.md](../../docs/compare-versions.md)). Bu, gerçek bir A/B testinin yerini tutmaz; ondan önce yapılacak bir ön kontroldür.
-- **Daha ucuz bir model kullanma.** Claude Haiku ya da Anthropic uyumlu herhangi bir API'yi (OpenRouter, DeepSeek, Kimi, GLM, MiniMax, Qwen) kullanabilirsiniz. Bulguların kalitesi, modelin ekran görüntülerini ne kadar iyi okuyup akıl yürütebildiğine bağlıdır ([docs/cheaper-models.md](../../docs/cheaper-models.md)).
+| Kullanım | Ne elde edersiniz |
+|---|---|
+| **Yeni bir kullanıcı gibi keşfetme** (varsayılan) | Her persona kendi hedefine ulaşmaya çalışır ve karşısına çıkan engelleri numaralı ekran görüntüleriyle raporlar. |
+| **Tek bir özelliği baştan sona test etme** | Yazdığınız bir brief, her ajanı bir akışın tamamından geçirir: birkaç adımlı bir rezervasyon, geri alma özelliği olan bir editör, iki ekran arasında senkronizasyon gibi. Ajanlar dokunur, uzun basar, kaydırır ve yazı yazar; uygulamayı arka plana atıp geri döner, nelerin kaydedildiğini görmek için uygulamayı yeniden başlatır ya da doğrudan ilgili özellikten başlamak için bir deep link açar. Brief ile yaklaşık 30 eylemlik varsayılan sınırı da artırabilirsiniz. [AnkiDroid için yazılan brief](../../briefs/ankidroid.md), yeni bir kartın arka yüz alanının klavyenin altında kaldığını ortaya çıkardı. |
+| **Bir hatayı her telefonda yeniden üretme** | Bir issue ya da adımları verirsiniz; her ajan ekran görüntüleriyle "evet", "hayır" ya da "belirsiz" diye cevap verir ([briefs/reproduce.md](../../briefs/reproduce.md)). |
+| **İyileştirme raporu** | Her persona uygulamayı bir kez kullanır; ardından nerede tereddüt ettiğini, ne beklediğini ve öncelikle neyin değişmesi gerektiğini, alana ve etkiye göre sıralayarak anlatır ([briefs/improve.md](../../briefs/improve.md)). |
+| **İki sürümü karşılaştırma** | Aynı personalar iki farklı branch ya da build üzerinde çalışır, sonuçlar tek bir tabloda toplanır: ulaşılan hedefler, eylem sayıları, puanlar ve yalnızca bir sürümde görülen sorunlar ([docs/compare-versions.md](../../docs/compare-versions.md)). Bu, gerçek bir A/B testinin yerini tutmaz; ondan önce yapılacak bir ön kontroldür. |
+| **Tüm ekranları tek haritada görmek** | Uygulamanızın tüm ekranlarını tek bir haritada, test edenlerin yolları ve her ekranda bir ısı haritasıyla görmek ve her ekrana yorum eklemek için: `python3 scripts/dashboard.py runs/<id>` ([docs/dashboard.md](../../docs/dashboard.md)). [Demoyu deneyin](https://pierridotite.github.io/mobile-agent-testers/) veya [videoyu izleyin](../../assets/dashboard-demo.mp4). |
+
+**Daha ucuz bir model kullanma.** Claude Haiku ya da Anthropic uyumlu herhangi bir API'yi (OpenRouter, DeepSeek, Kimi, GLM, MiniMax, Qwen) kullanabilirsiniz. Bulguların kalitesi, modelin ekran görüntülerini ne kadar iyi okuyup akıl yürütebildiğine bağlıdır ([docs/cheaper-models.md](../../docs/cheaper-models.md)).
 
 Maestro ya da Appium sizin yazdığınız testleri çalıştırır. Bu ajanlar ise kimsenin test etmeyi düşünmediği şeyleri arar: [Karşılaştırmanın tamamı](../../docs/compare.md).
 
-## Uygulamalı örnekler
+## Gerçek çalıştırmalar
 
 Açık kaynak uygulamalarda yapılmış gerçek çalıştırmalar; hiçbir hata önceden yerleştirilmedi.
 
@@ -65,39 +101,12 @@ Açık kaynak uygulamalarda yapılmış gerçek çalıştırmalar; hiçbir hata 
 
 LocalSend'de bulunan 46 hatanın 34'ünün yazı boyutu ya da erişilebilirlikle bir ilgisi yoktu: bozuk akışlar, hata vermeden başarısız olan işlemler, eksik çeviriler ve tablet düzenleri. Ekran görüntüleri, tüm bulgular ve çalıştırmaları tekrarlamak için gereken komutlar: [docs/examples.tr.md](docs/examples.md).
 
-## Hızlı başlangıç
-
-```bash
-gh repo create my-testers --public --template pierridotite/mobile-agent-testers --clone
-cd my-testers && ./setup.sh           # anahtar çifti + secret'lar + Claude token'ı (Windows: .\setup.ps1)
-gh workflow run agent-testers.yml     # demo: 2 Android + 2 iOS tester, ~20 dk
-bash scripts/collect.sh <run id>      # raporların şifresini çözer, tekrarları gruplar: runs/<id>/SUMMARY.md
-```
-
-Uygulamanızın tüm ekranlarını tek bir haritada, test edenlerin yolları ve her ekranda bir ısı haritasıyla görmek ve her ekrana yorum eklemek için: `python3 scripts/dashboard.py runs/<id>` ([docs/dashboard.md](../../docs/dashboard.md)). [Demoyu deneyin](https://pierridotite.github.io/mobile-agent-testers/) veya [videoyu izleyin](../../assets/dashboard-demo.mp4).
-
-
-Demo uygulamaya [bilerek 11 hata yerleştirildi](../../demo-app/BUGS.md). [Bir test çalıştırmasında](../../docs/runs/) 4 demo tester bu hataların 9'unu buldu. Her ajan 2–7 dakika çalıştı; build'ler dahil tüm süreç yaklaşık 21 dakika sürdü. Ajanlar bunların dışında, kimsenin bilerek eklemediği gerçek sorunlar da buldu: Android gezinme çubuğunun altında kalan bir buton ve uygulama yeniden başlatılınca kaybolan veriler. 4 tester'ın toplam model maliyeti 0,87 $ oldu.
-
-Ya da uygulamanız için kurulumu Claude'a bırakabilirsiniz:
-
-```
-/plugin marketplace add pierridotite/mobile-agent-testers
-/plugin install mobile-agent-testers@mobile-agent-testers
-```
-
-## Kendi uygulamanızı test edin
-
-```bash
-gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
-  -f android_personas=anna,malik -f ios_personas=clara,jonas
-```
-
-Tüm parametreler (build'ler, brief'ler, hata raporları, daha ucuz modeller, build argümanları, video kaydı) ve desteklenen framework'ler: [docs/configuration.tr.md](docs/configuration.md).
-
 ## Katkıda bulunun
 
-Yardım beklediğimiz konular aşağıda. Aynı işi iki kişi yapmasın diye, başlamadan önce hangisini üstlendiğinizi bir issue ile bildirin. Her birine nereden başlanacağı ve çevrim dışı nasıl test edileceği [CONTRIBUTING.md](../../CONTRIBUTING.md) dosyasında anlatılıyor.
+Aynı işi iki kişi yapmasın diye, başlamadan önce hangisini üstlendiğinizi bir issue ile bildirin. Her birine nereden başlanacağı ve çevrim dışı nasıl test edileceği [CONTRIBUTING.md](../../CONTRIBUTING.md) dosyasında anlatılıyor. Sorular için: [Discord](https://discord.gg/WuaCANscr8).
+
+<details>
+<summary>Yardım beklediğimiz fikirler</summary>
 
 - **Diğer ajan CLI'ları**: OpenCode, Codex CLI, Gemini CLI, Goose. Araçlar sade script'lerden, görev de bir Markdown brief'inden oluştuğu için ajanı değiştirmek platform başına tek bir komut demek.
 - **Web uygulamaları**: aynı personaları Playwright ile bir mobil tarayıcıda çalıştırmak; PWA'lar ve mobil siteler için.
@@ -108,6 +117,8 @@ Yardım beklediğimiz konular aşağıda. Aynı işi iki kişi yapmasın diye, b
 - **Daha fazla build sistemi**: NativeScript, Unity, Godot; her biri `scripts/build/` içinde bir case olarak.
 - README ve dokümanlar için **çeviriler**.
 - **Model karşılaştırması**: demo uygulamadaki 11 yerleştirilmiş hata küçük bir benchmark işlevi görür. Her modelin hangi hataları bulduğunu ve maliyetini gösteren bir tablo.
+
+</details>
 
 ## Ekipler için barındırılan sürüm (araştırılıyor)
 

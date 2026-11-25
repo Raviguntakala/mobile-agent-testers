@@ -40,20 +40,56 @@ Claude hoặc API key của bạn: khoảng $0.15 đến $0.55 mỗi điện tho
 <p align="center"><a href="https://github.com/pierridotite/explore-compile-replay"><img src="../../assets/ecr-now-building.svg" alt="Next: every bug becomes a free test. Explore-Compile-Replay" width="340" height="54"></a><br>
 <sub>Dự án tiếp theo của tôi: khi một agent tìm thấy một bug, <a href="https://github.com/pierridotite/explore-compile-replay">Explore-Compile-Replay</a> biến đường đi của nó thành một test chạy lại trên mọi PR, không cần model. Bản nháp đầu tiên.</sub></p>
 
+## Bắt đầu nhanh
+
+```bash
+gh repo create my-testers --public --template pierridotite/mobile-agent-testers --clone
+cd my-testers && ./setup.sh           # key pair + secrets + Claude token (Windows: .\setup.ps1)
+gh workflow run agent-testers.yml     # demo: 2 Android + 2 iOS testers, ~20 min
+bash scripts/collect.sh <run id>      # decrypts reports, groups duplicates: runs/<id>/SUMMARY.md
+```
+
+Sau đó, trên ứng dụng của bạn:
+
+```bash
+gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
+  -f android_personas=anna,malik -f ios_personas=clara,jonas
+```
+
+Hoặc để Claude cài đặt cho ứng dụng của bạn:
+
+```
+/plugin marketplace add pierridotite/mobile-agent-testers
+/plugin install mobile-agent-testers@mobile-agent-testers
+```
+
+Mọi input (build, brief, báo cáo bug, model rẻ hơn, tham số build, video) và các framework được hỗ trợ: [docs/configuration.vi.md](docs/configuration.md).
+
+<details>
+<summary>Lần chạy demo tìm thấy gì</summary>
+
+Ứng dụng demo có [11 bug cố ý](../../demo-app/BUGS.md). Trong [một lần chạy](../../docs/runs/), 4 tester demo đã tìm thấy 9 trong số đó (2 đến 7 phút mỗi agent, khoảng 21 phút cho cả lần chạy, tính cả thời gian build), cộng thêm các vấn đề thật không ai gài (một nút nằm dưới thanh điều hướng Android, không dữ liệu nào được giữ lại sau khi mở lại). Mức dùng model: $0.87 cho cả 4.
+
+</details>
+
 ## Nó làm được gì
 
-Một mục đích cho mỗi lần chạy, đặt qua các input của [Kiểm thử ứng dụng của bạn](#kiểm-thử-ứng-dụng-của-bạn).
+Mỗi lần chạy một cách dùng, chọn bằng các tham số ở trên.
 
-- **Khám phá như người dùng mới** (mặc định). Mỗi persona cố gắng đạt mục tiêu của mình và báo cáo những gì cản trở, kèm ảnh chụp màn hình được đánh số.
-- **Chạy một tính năng từ đầu đến cuối.** Brief của riêng bạn đưa mọi agent qua một cơ chế hoàn chỉnh: một lượt đặt chỗ gồm nhiều bước, một trình soạn thảo có hoàn tác, một đồng bộ giữa hai màn hình. Agent chạm, nhấn giữ, vuốt và gõ, rời ứng dụng rồi quay lại, mở lại ứng dụng để kiểm tra những gì đã được lưu, hoặc mở một deep link để bắt đầu ngay tại tính năng, và một brief có thể nâng ngân sách khoảng 30 hành động. Brief của [AnkiDroid](../../briefs/ankidroid.md) đã tìm thấy trường Back của một thẻ mới bị bàn phím che khuất.
-- **Tái hiện một báo cáo bug** trên mọi điện thoại: đưa một issue hoặc các bước, và mỗi agent trả lời có, không hoặc không rõ, kèm ảnh chụp màn hình ([briefs/reproduce.md](../../briefs/reproduce.md)).
-- **Nhận một báo cáo cải tiến.** Mỗi persona dùng ứng dụng một lần, rồi nói nó đã do dự ở đâu, nó mong đợi điều gì và nên thay đổi gì trước, theo khu vực và mức tác động ([briefs/improve.md](../../briefs/improve.md)).
-- **So sánh hai phiên bản.** Cùng các persona trên hai branch hoặc hai bản build, rồi một bảng: mục tiêu đạt được, số hành động, điểm số, các vấn đề chỉ thấy ở một phiên bản ([docs/compare-versions.md](../../docs/compare-versions.md)). Một bước kiểm tra trước một A/B test thật, không phải thứ thay thế cho nó.
-- **Dùng một model rẻ hơn**: Claude Haiku, hoặc bất kỳ API tương thích Anthropic nào (OpenRouter, DeepSeek, Kimi, GLM, MiniMax, Qwen). Các phát hiện chỉ tốt bằng khả năng đọc ảnh chụp màn hình và suy luận của model ([docs/cheaper-models.md](../../docs/cheaper-models.md)).
+| Cách dùng | Bạn nhận được gì |
+|---|---|
+| **Khám phá như người dùng mới** (mặc định) | Mỗi persona cố gắng đạt mục tiêu của mình và báo cáo những gì cản trở, kèm ảnh chụp màn hình được đánh số. |
+| **Chạy một tính năng từ đầu đến cuối** | Brief của riêng bạn đưa mọi agent qua một cơ chế hoàn chỉnh: một lượt đặt chỗ gồm nhiều bước, một trình soạn thảo có hoàn tác, một đồng bộ giữa hai màn hình. Agent chạm, nhấn giữ, vuốt và gõ, rời ứng dụng rồi quay lại, mở lại ứng dụng để kiểm tra những gì đã được lưu, hoặc mở một deep link để bắt đầu ngay tại tính năng, và một brief có thể nâng ngân sách khoảng 30 hành động. Brief của [AnkiDroid](../../briefs/ankidroid.md) đã tìm thấy trường Back của một thẻ mới bị bàn phím che khuất. |
+| **Tái hiện một báo cáo bug** | Trên mọi điện thoại: đưa một issue hoặc các bước, và mỗi agent trả lời có, không hoặc không rõ, kèm ảnh chụp màn hình ([briefs/reproduce.md](../../briefs/reproduce.md)). |
+| **Nhận một báo cáo cải tiến** | Mỗi persona dùng ứng dụng một lần, rồi nói nó đã do dự ở đâu, nó mong đợi điều gì và nên thay đổi gì trước, theo khu vực và mức tác động ([briefs/improve.md](../../briefs/improve.md)). |
+| **So sánh hai phiên bản** | Cùng các persona trên hai branch hoặc hai bản build, rồi một bảng: mục tiêu đạt được, số hành động, điểm số, các vấn đề chỉ thấy ở một phiên bản ([docs/compare-versions.md](../../docs/compare-versions.md)). Một bước kiểm tra trước một A/B test thật, không phải thứ thay thế cho nó. |
+| **Xem mọi màn hình trên một bản đồ** | Để xem mọi màn hình của ứng dụng trên một bản đồ, với đường đi của các tester và bản đồ nhiệt trên từng màn hình, và bình luận từng màn hình: `python3 scripts/dashboard.py runs/<id>` ([docs/dashboard.md](../../docs/dashboard.md)). [Thử bản demo](https://pierridotite.github.io/mobile-agent-testers/) hoặc [xem video](../../assets/dashboard-demo.mp4). |
+
+**Dùng một model rẻ hơn**: Claude Haiku, hoặc bất kỳ API tương thích Anthropic nào (OpenRouter, DeepSeek, Kimi, GLM, MiniMax, Qwen). Các phát hiện chỉ tốt bằng khả năng đọc ảnh chụp màn hình và suy luận của model ([docs/cheaper-models.md](../../docs/cheaper-models.md)).
 
 Maestro hay Appium chạy các test bạn viết. Các agent này tìm những gì không ai nghĩ tới để test: [so sánh chi tiết](../../docs/compare.md).
 
-## Ví dụ thực tế
+## Các lần chạy thật
 
 Các lần chạy thật trên các ứng dụng mã nguồn mở, không gài sẵn gì cả.
 
@@ -65,38 +101,12 @@ Các lần chạy thật trên các ứng dụng mã nguồn mở, không gài s
 
 34 trong số 46 bug của LocalSend không liên quan gì đến cỡ chữ hay khả năng tiếp cận: các luồng bị hỏng, lỗi âm thầm, thiếu bản dịch, bố cục máy tính bảng. Ảnh chụp màn hình, mọi phát hiện và các lệnh để chạy lại chúng: [docs/examples.vi.md](docs/examples.md).
 
-## Bắt đầu nhanh
-
-```bash
-gh repo create my-testers --public --template pierridotite/mobile-agent-testers --clone
-cd my-testers && ./setup.sh           # key pair + secrets + Claude token (Windows: .\setup.ps1)
-gh workflow run agent-testers.yml     # demo: 2 Android + 2 iOS testers, ~20 min
-bash scripts/collect.sh <run id>      # decrypts reports, groups duplicates: runs/<id>/SUMMARY.md
-```
-
-Để xem mọi màn hình của ứng dụng trên một bản đồ, với đường đi của các tester và bản đồ nhiệt trên từng màn hình, và bình luận từng màn hình: `python3 scripts/dashboard.py runs/<id>` ([docs/dashboard.md](../../docs/dashboard.md)). [Thử bản demo](https://pierridotite.github.io/mobile-agent-testers/) hoặc [xem video](../../assets/dashboard-demo.mp4).
-
-Ứng dụng demo có [11 bug cố ý](../../demo-app/BUGS.md). Trong [một lần chạy](../../docs/runs/), 4 tester demo đã tìm thấy 9 trong số đó (2 đến 7 phút mỗi agent, khoảng 21 phút cho cả lần chạy, tính cả thời gian build), cộng thêm các vấn đề thật không ai gài (một nút nằm dưới thanh điều hướng Android, không dữ liệu nào được giữ lại sau khi mở lại). Mức dùng model: $0.87 cho cả 4.
-
-Hoặc để Claude cài đặt cho ứng dụng của bạn:
-
-```
-/plugin marketplace add pierridotite/mobile-agent-testers
-/plugin install mobile-agent-testers@mobile-agent-testers
-```
-
-## Kiểm thử ứng dụng của bạn
-
-```bash
-gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
-  -f android_personas=anna,malik -f ios_personas=clara,jonas
-```
-
-Mọi input (build, brief, báo cáo bug, model rẻ hơn, tham số build, video) và các framework được hỗ trợ: [docs/configuration.vi.md](docs/configuration.md).
-
 ## Đóng góp
 
-Các ý tưởng mà sự giúp đỡ của bạn được chào đón. Mở một issue trước để nói bạn nhận ý tưởng nào, để hai người không xây cùng một thứ. [CONTRIBUTING.md](../../CONTRIBUTING.md) nói mỗi ý tưởng bắt đầu ở đâu và cách test nó offline.
+Mở một issue trước để nói bạn nhận ý tưởng nào, để hai người không xây cùng một thứ. [CONTRIBUTING.md](../../CONTRIBUTING.md) nói mỗi ý tưởng bắt đầu ở đâu và cách test nó offline. Câu hỏi: [Discord](https://discord.gg/WuaCANscr8).
+
+<details>
+<summary>Những ý tưởng cần giúp đỡ</summary>
 
 - **Các agent CLI khác**: OpenCode, Codex CLI, Gemini CLI, Goose. Các công cụ là script thuần và nhiệm vụ là một brief Markdown, nên agent là một lệnh cho mỗi nền tảng.
 - **Ứng dụng web**: cùng các persona trên một trình duyệt di động bằng Playwright, cho PWA và các trang web di động.
@@ -107,6 +117,8 @@ Các ý tưởng mà sự giúp đỡ của bạn được chào đón. Mở m�
 - **Thêm hệ thống build**: NativeScript, Unity, Godot, mỗi cái là một case trong `scripts/build/`.
 - **Bản dịch** của README và tài liệu.
 - **So sánh model**: 11 bug được gài sẵn của ứng dụng demo tạo thành một benchmark nhỏ. Một bảng về những gì mỗi model tìm thấy và chi phí của nó.
+
+</details>
 
 ## Phiên bản hosted cho nhóm (đang thăm dò)
 

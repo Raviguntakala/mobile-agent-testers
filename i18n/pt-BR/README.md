@@ -39,20 +39,56 @@ Claude ou chave de API: de US$ 0,15 a US$ 0,55 por celular [nestas execuções](
 <p align="center"><a href="https://github.com/pierridotite/explore-compile-replay"><img src="../../assets/ecr-now-building.svg" alt="Next: every bug becomes a free test. Explore-Compile-Replay" width="340" height="54"></a><br>
 <sub>O que estou construindo agora: quando um agente encontra um bug, o Explore-Compile-Replay transforma o caminho dele em um teste que roda de novo a cada PR, sem modelo. Rascunho inicial.</sub></p>
 
+## Começo rápido
+
+```bash
+gh repo create my-testers --public --template pierridotite/mobile-agent-testers --clone
+cd my-testers && ./setup.sh           # par de chaves + secrets + token do Claude (Windows: .\setup.ps1)
+gh workflow run agent-testers.yml     # demo: 2 testadores Android + 2 iOS, ~20 min
+bash scripts/collect.sh <run id>      # descriptografa os relatórios e agrupa duplicados: runs/<id>/SUMMARY.md
+```
+
+Depois, no seu próprio app:
+
+```bash
+gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
+  -f android_personas=anna,malik -f ios_personas=clara,jonas
+```
+
+Ou deixe o Claude configurar para o seu app:
+
+```
+/plugin marketplace add pierridotite/mobile-agent-testers
+/plugin install mobile-agent-testers@mobile-agent-testers
+```
+
+Todos os parâmetros (build, briefs, reproduzir um bug, modelos mais baratos, argumentos de build, vídeo) e os frameworks suportados: [docs/configuration.pt-BR.md](docs/configuration.md).
+
+<details>
+<summary>O que a execução de demo encontra</summary>
+
+O app de demo tem [11 bugs colocados de propósito](../../demo-app/BUGS.md). Em [uma execução](../../docs/runs/), os 4 testadores da demo encontraram 9 deles (de 2 a 7 minutos por agente, cerca de 21 minutos no total, builds incluídos), além de problemas reais que ninguém colocou (um botão debaixo da barra de navegação do Android, dados que não ficam salvos depois de reabrir). Uso do modelo: US$ 0,87 para os 4.
+
+</details>
+
 ## O que ele faz
 
-Um uso por execução, escolhido com os parâmetros de [Teste o seu próprio app](#teste-o-seu-próprio-app).
+Um uso por execução, escolhido com os parâmetros acima.
 
-- **Explorar como usuários novos** (o padrão). Cada persona tenta chegar ao seu objetivo e conta o que atrapalha, com capturas numeradas.
-- **Percorrer uma função do começo ao fim.** O seu próprio brief manda cada agente por uma mecânica inteira: uma reserva em várias etapas, um editor com desfazer, uma sincronização entre duas telas. Os agentes tocam, pressionam e seguram, deslizam e digitam, saem do app e voltam, reiniciam o app para conferir o que foi salvo ou abrem um deep link para começar direto na função, e um brief pode aumentar o orçamento de cerca de 30 ações. [O do AnkiDroid](../../briefs/ankidroid.md) encontrou o campo do verso de um cartão novo escondido atrás do teclado.
-- **Reproduzir um relato de bug** em cada celular: você passa uma issue ou os passos, e cada agente responde sim, não ou incerto, com capturas ([briefs/reproduce.md](../../briefs/reproduce.md)).
-- **Gerar um relatório de melhorias.** Cada persona usa o app uma vez e depois diz onde hesitou, o que esperava e o que mudaria primeiro, por área e impacto ([briefs/improve.md](../../briefs/improve.md)).
-- **Comparar duas versões.** As mesmas personas em dois branches ou builds, e depois uma tabela: objetivos alcançados, ações, notas, problemas vistos em uma versão só ([docs/compare-versions.md](../../docs/compare-versions.md)). Uma checagem antes de um teste A/B de verdade, não um substituto.
-- **Usar um modelo mais barato**: Claude Haiku, ou qualquer API compatível com a Anthropic (OpenRouter, DeepSeek, Kimi, GLM, MiniMax, Qwen). Os achados dependem de quão bem o modelo lê as capturas e raciocina ([docs/cheaper-models.md](../../docs/cheaper-models.md)).
+| Uso | O que você recebe |
+|---|---|
+| **Explorar como usuários novos** (o padrão) | Cada persona tenta chegar ao seu objetivo e conta o que atrapalha, com capturas numeradas. |
+| **Percorrer uma função do começo ao fim** | O seu próprio brief manda cada agente por uma mecânica inteira: uma reserva em várias etapas, um editor com desfazer, uma sincronização entre duas telas. Os agentes tocam, pressionam e seguram, deslizam e digitam, saem do app e voltam, reiniciam o app para conferir o que foi salvo ou abrem um deep link para começar direto na função, e um brief pode aumentar o orçamento de cerca de 30 ações. [O do AnkiDroid](../../briefs/ankidroid.md) encontrou o campo do verso de um cartão novo escondido atrás do teclado. |
+| **Reproduzir um relato de bug** | Em cada celular: você passa uma issue ou os passos, e cada agente responde sim, não ou incerto, com capturas ([briefs/reproduce.md](../../briefs/reproduce.md)). |
+| **Gerar um relatório de melhorias** | Cada persona usa o app uma vez e depois diz onde hesitou, o que esperava e o que mudaria primeiro, por área e impacto ([briefs/improve.md](../../briefs/improve.md)). |
+| **Comparar duas versões** | As mesmas personas em dois branches ou builds, e depois uma tabela: objetivos alcançados, ações, notas, problemas vistos em uma versão só ([docs/compare-versions.md](../../docs/compare-versions.md)). Uma checagem antes de um teste A/B de verdade, não um substituto. |
+| **Ver todas as telas num mapa** | Para ver todas as telas do seu app num mapa, com os percursos dos testers e um mapa de calor em cada tela, e comentar cada tela: `python3 scripts/dashboard.py runs/<id>` ([docs/dashboard.md](../../docs/dashboard.md)). [Experimente a demo](https://pierridotite.github.io/mobile-agent-testers/) ou [veja o vídeo](../../assets/dashboard-demo.mp4). |
+
+**Usar um modelo mais barato**: Claude Haiku, ou qualquer API compatível com a Anthropic (OpenRouter, DeepSeek, Kimi, GLM, MiniMax, Qwen). Os achados dependem de quão bem o modelo lê as capturas e raciocina ([docs/cheaper-models.md](../../docs/cheaper-models.md)).
 
 Maestro ou Appium rodam os testes que você escreve. Estes agentes procuram o que ninguém pensou em testar: [comparação](../../docs/compare.md).
 
-## Exemplos aplicados
+## Execuções reais
 
 Execuções reais em apps de código aberto, sem nada plantado.
 
@@ -64,38 +100,12 @@ Execuções reais em apps de código aberto, sem nada plantado.
 
 No LocalSend, 34 dos 46 bugs não tinham nada a ver com tamanho de texto nem com acessibilidade: fluxos quebrados, falhas silenciosas, traduções faltando, layouts de tablet. Capturas de tela, cada bug encontrado e os comandos para rodar de novo: [docs/examples.pt-BR.md](docs/examples.md).
 
-## Começo rápido
-
-```bash
-gh repo create my-testers --public --template pierridotite/mobile-agent-testers --clone
-cd my-testers && ./setup.sh           # par de chaves + secrets + token do Claude (Windows: .\setup.ps1)
-gh workflow run agent-testers.yml     # demo: 2 testadores Android + 2 iOS, ~20 min
-bash scripts/collect.sh <run id>      # descriptografa os relatórios e agrupa duplicados: runs/<id>/SUMMARY.md
-```
-
-Para ver todas as telas do seu app num mapa, com os percursos dos testers e um mapa de calor em cada tela, e comentar cada tela: `python3 scripts/dashboard.py runs/<id>` ([docs/dashboard.md](../../docs/dashboard.md)). [Experimente a demo](https://pierridotite.github.io/mobile-agent-testers/) ou [veja o vídeo](../../assets/dashboard-demo.mp4).
-
-O app de demo tem [11 bugs colocados de propósito](../../demo-app/BUGS.md). Em [uma execução](../../docs/runs/), os 4 testadores da demo encontraram 9 deles (de 2 a 7 minutos por agente, cerca de 21 minutos no total, builds incluídos), além de problemas reais que ninguém colocou (um botão debaixo da barra de navegação do Android, dados que não ficam salvos depois de reabrir). Uso do modelo: US$ 0,87 para os 4.
-
-Ou deixe o Claude configurar para o seu app:
-
-```
-/plugin marketplace add pierridotite/mobile-agent-testers
-/plugin install mobile-agent-testers@mobile-agent-testers
-```
-
-## Teste o seu próprio app
-
-```bash
-gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
-  -f android_personas=anna,malik -f ios_personas=clara,jonas
-```
-
-Todos os parâmetros (build, briefs, reproduzir um bug, modelos mais baratos, argumentos de build, vídeo) e os frameworks suportados: [docs/configuration.pt-BR.md](docs/configuration.md).
-
 ## Contribuir
 
-Ideias em que ajuda é bem-vinda. Abra uma issue antes para dizer qual você vai pegar, assim duas pessoas não constroem a mesma coisa. O [CONTRIBUTING.md](../../CONTRIBUTING.md) diz por onde cada uma começa e como testar offline.
+Abra uma issue antes para dizer qual você vai pegar, assim duas pessoas não constroem a mesma coisa. O [CONTRIBUTING.md](../../CONTRIBUTING.md) diz por onde cada uma começa e como testar offline. Dúvidas: [Discord](https://discord.gg/WuaCANscr8).
+
+<details>
+<summary>Ideias em que ajuda é bem-vinda</summary>
 
 - **Outros CLIs de agente**: OpenCode, Codex CLI, Gemini CLI, Goose. As ferramentas são scripts comuns e a missão é um brief em Markdown, então o agente é um único comando por plataforma.
 - **Apps web**: as mesmas personas num navegador mobile com Playwright, para PWAs e sites mobile.
@@ -106,6 +116,8 @@ Ideias em que ajuda é bem-vinda. Abra uma issue antes para dizer qual você vai
 - **Mais sistemas de build**: NativeScript, Unity, Godot, cada um um caso em `scripts/build/`.
 - **Traduções** do README e da documentação.
 - **Comparar modelos**: os 11 bugs plantados no app de demonstração formam um pequeno benchmark. Uma tabela do que cada modelo encontra e quanto custa.
+
+</details>
 
 ## Versão hospedada para equipes (em estudo)
 

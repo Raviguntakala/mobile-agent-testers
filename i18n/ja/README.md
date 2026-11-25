@@ -39,20 +39,56 @@ API キーを使います。[これまでの実行](../../docs/runs/)では 1 �
 <p align="center"><a href="https://github.com/pierridotite/explore-compile-replay"><img src="../../assets/ecr-now-building.svg" alt="Next: every bug becomes a free test. Explore-Compile-Replay" width="340" height="54"></a><br>
 <sub>次に作っているもの：エージェントがバグを見つけると、Explore-Compile-Replay がその操作手順を、PR ごとにモデルなしで再実行されるテストに変えます。初期ドラフトです。</sub></p>
 
+## クイックスタート
+
+```bash
+gh repo create my-testers --public --template pierridotite/mobile-agent-testers --clone
+cd my-testers && ./setup.sh           # 鍵ペア + シークレット + Claude トークン（Windows：.\setup.ps1）
+gh workflow run agent-testers.yml     # デモ：Android 2 + iOS 2 のテスター、約 20 分
+bash scripts/collect.sh <run id>      # レポートを復号して重複をまとめる：runs/<id>/SUMMARY.md
+```
+
+次に、自分のアプリで：
+
+```bash
+gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
+  -f android_personas=anna,malik -f ios_personas=clara,jonas
+```
+
+または、Claude にあなたのアプリ用のセットアップを任せることもできます：
+
+```
+/plugin marketplace add pierridotite/mobile-agent-testers
+/plugin install mobile-agent-testers@mobile-agent-testers
+```
+
+すべての入力（ビルド、指示書、バグの再現、安いモデル、ビルド引数、動画）と対応フレームワーク：[docs/configuration.ja.md](docs/configuration.md)
+
+<details>
+<summary>デモ実行で見つかるもの</summary>
+
+デモアプリには[わざと仕込んだバグが 11 個](../../demo-app/BUGS.md)あります。[ある実行](../../docs/runs/)では、4 人のデモテスターがそのうち 9 個を見つけ（エージェントごとに 2〜7 分、ビルドを含めて全体で約 21 分）、さらに誰も仕込んでいない本物の問題（Android のナビゲーションバーの下に隠れたボタン、再起動するとデータが残っていない）も見つけました。モデル使用量：4 人で 0.87 ドル。
+
+</details>
+
 ## できること
 
-1 回の実行で 1 つの使い方です。設定は[自分のアプリをテストする](#自分のアプリをテストする)の入力で行います。
+1 回の実行で 1 つの使い方。上のパラメーターで選びます。
 
-- **新しいユーザーとして探索**（デフォルト）。各ペルソナが自分の目標を達成しようとし、妨げになったことを番号付きのスクリーンショットとともに報告します。
-- **1 つの機能を最初から最後まで試す。** 自分で書いた brief で、各エージェントに 1 つの仕組みを通しで試させます。複数ステップの予約、元に戻せるエディター、2 つの画面間の同期などです。エージェントはタップ、長押し、スワイプ、入力ができ、アプリを離れて戻ったり、再起動して保存内容を確かめたり、ディープリンクで目的の機能から直接始めたりします。brief では約 30 操作という上限を増やすこともできます。[AnkiDroid 用の brief](../../briefs/ankidroid.md) では、新しいカードの裏面の入力欄がキーボードに隠れることが見つかりました。
-- **バグ報告をすべての端末で再現**：issue か手順を渡すと、各エージェントが「再現した / しなかった / はっきりしない」をスクリーンショット付きで答えます（[briefs/reproduce.md](../../briefs/reproduce.md)）。
-- **改善レポートを作る。** 各ペルソナがアプリを一度使い、どこで迷ったか、何を期待していたか、まず何を変えるべきかを、領域と影響度つきで挙げます（[briefs/improve.md](../../briefs/improve.md)）。
-- **2 つのバージョンを比較する。** 同じペルソナで 2 つのブランチやビルドを試し、目標の達成、操作数、スコア、片方のバージョンだけで見つかった問題を 1 つの表にまとめます（[docs/compare-versions.md](../../docs/compare-versions.md)）。本物の A/B テストの前のチェックであり、その代わりにはなりません。
-- **安いモデルを使う**：Claude Haiku、または Anthropic 互換の API（OpenRouter、DeepSeek、Kimi、GLM、MiniMax、Qwen）。見つかるものの質は、モデルがスクリーンショットをどれだけ正しく読めるかと推論力で決まります（[docs/cheaper-models.md](../../docs/cheaper-models.md)）。
+| 使い方 | 得られるもの |
+|---|---|
+| **新しいユーザーとして探索** （デフォルト） | 各ペルソナが自分の目標を達成しようとし、妨げになったことを番号付きのスクリーンショットとともに報告します。 |
+| **1 つの機能を最初から最後まで試す** | 自分で書いた brief で、各エージェントに 1 つの仕組みを通しで試させます。複数ステップの予約、元に戻せるエディター、2 つの画面間の同期などです。エージェントはタップ、長押し、スワイプ、入力ができ、アプリを離れて戻ったり、再起動して保存内容を確かめたり、ディープリンクで目的の機能から直接始めたりします。brief では約 30 操作という上限を増やすこともできます。[AnkiDroid 用の brief](../../briefs/ankidroid.md) では、新しいカードの裏面の入力欄がキーボードに隠れることが見つかりました。 |
+| **バグ報告をすべての端末で再現** | Issue か手順を渡すと、各エージェントが「再現した / しなかった / はっきりしない」をスクリーンショット付きで答えます（[briefs/reproduce.md](../../briefs/reproduce.md)）。 |
+| **改善レポートを作る** | 各ペルソナがアプリを一度使い、どこで迷ったか、何を期待していたか、まず何を変えるべきかを、領域と影響度つきで挙げます（[briefs/improve.md](../../briefs/improve.md)）。 |
+| **2 つのバージョンを比較する** | 同じペルソナで 2 つのブランチやビルドを試し、目標の達成、操作数、スコア、片方のバージョンだけで見つかった問題を 1 つの表にまとめます（[docs/compare-versions.md](../../docs/compare-versions.md)）。本物の A/B テストの前のチェックであり、その代わりにはなりません。 |
+| **全画面を 1 枚のマップで見る** | アプリの全画面を1枚のマップで表示し、テスターの操作経路と各画面のヒートマップを確認して、画面ごとにコメントできます：`python3 scripts/dashboard.py runs/<id>`（[docs/dashboard.md](../../docs/dashboard.md)）。[デモを試す](https://pierridotite.github.io/mobile-agent-testers/)、または[動画を見る](../../assets/dashboard-demo.mp4)。 |
+
+**安いモデルを使う**：Claude Haiku、または Anthropic 互換の API（OpenRouter、DeepSeek、Kimi、GLM、MiniMax、Qwen）。見つかるものの質は、モデルがスクリーンショットをどれだけ正しく読めるかと推論力で決まります（[docs/cheaper-models.md](../../docs/cheaper-models.md)）。
 
 Maestro や Appium はあなたが書いたテストを実行します。このエージェントたちは、誰もテストしようと思わなかったところを探します（[比較](../../docs/compare.md)）。
 
-## 適用例
+## 実際の実行
 
 オープンソースのアプリでの実際の実行です。仕込んだバグはありません。
 
@@ -64,38 +100,12 @@ Maestro や Appium はあなたが書いたテストを実行します。この�
 
 LocalSend では、46 件のバグのうち 34 件が文字サイズともアクセシビリティとも無関係でした：途中で止まる流れ、黙って失敗する操作、抜けている翻訳、崩れたタブレットのレイアウト。スクリーンショット、すべての指摘、もう一度実行するためのコマンド：[docs/examples.ja.md](docs/examples.md)。
 
-## クイックスタート
-
-```bash
-gh repo create my-testers --public --template pierridotite/mobile-agent-testers --clone
-cd my-testers && ./setup.sh           # 鍵ペア + シークレット + Claude トークン（Windows：.\setup.ps1）
-gh workflow run agent-testers.yml     # デモ：Android 2 + iOS 2 のテスター、約 20 分
-bash scripts/collect.sh <run id>      # レポートを復号して重複をまとめる：runs/<id>/SUMMARY.md
-```
-
-アプリの全画面を1枚のマップで表示し、テスターの操作経路と各画面のヒートマップを確認して、画面ごとにコメントできます：`python3 scripts/dashboard.py runs/<id>`（[docs/dashboard.md](../../docs/dashboard.md)）。[デモを試す](https://pierridotite.github.io/mobile-agent-testers/)、または[動画を見る](../../assets/dashboard-demo.mp4)。
-
-デモアプリには[わざと仕込んだバグが 11 個](../../demo-app/BUGS.md)あります。[ある実行](../../docs/runs/)では、4 人のデモテスターがそのうち 9 個を見つけ（エージェントごとに 2〜7 分、ビルドを含めて全体で約 21 分）、さらに誰も仕込んでいない本物の問題（Android のナビゲーションバーの下に隠れたボタン、再起動するとデータが残っていない）も見つけました。モデル使用量：4 人で 0.87 ドル。
-
-または、Claude にあなたのアプリ用のセットアップを任せることもできます：
-
-```
-/plugin marketplace add pierridotite/mobile-agent-testers
-/plugin install mobile-agent-testers@mobile-agent-testers
-```
-
-## 自分のアプリをテストする
-
-```bash
-gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
-  -f android_personas=anna,malik -f ios_personas=clara,jonas
-```
-
-すべての入力（ビルド、指示書、バグの再現、安いモデル、ビルド引数、動画）と対応フレームワーク：[docs/configuration.ja.md](docs/configuration.md)
-
 ## コントリビュート
 
-手伝ってもらえると嬉しいアイデアです。同じものを二人で作らないよう、着手する前に issue でどれをやるか教えてください。それぞれの始め方とオフラインでのテスト方法は [CONTRIBUTING.md](../../CONTRIBUTING.md) にあります。
+同じものを二人で作らないよう、着手する前に issue でどれをやるか教えてください。それぞれの始め方とオフラインでのテスト方法は [CONTRIBUTING.md](../../CONTRIBUTING.md) にあります。 質問は [Discord](https://discord.gg/WuaCANscr8) へ。
+
+<details>
+<summary>手伝ってほしいアイデア</summary>
 
 - **他のエージェント CLI**：OpenCode、Codex CLI、Gemini CLI、Goose。ツールはただのスクリプトで、ミッションは Markdown の指示書なので、エージェントはプラットフォームごとにコマンド 1 つです。
 - **Web アプリ**：Playwright でモバイルブラウザ上に同じペルソナを走らせ、PWA やモバイルサイトを試す。
@@ -106,6 +116,8 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
 - **他のビルドシステム**：NativeScript、Unity、Godot。それぞれ `scripts/build/` に case を 1 つ追加。
 - **翻訳**：README とドキュメント。
 - **モデル比較**：デモアプリに仕込んだ 11 個のバグは小さなベンチマークになります。各モデルが見つけた数とコストの表を。
+
+</details>
 
 ## チーム向けホスト版（検討中）
 

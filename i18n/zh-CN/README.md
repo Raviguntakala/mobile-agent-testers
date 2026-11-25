@@ -38,20 +38,56 @@
 <p align="center"><a href="https://github.com/pierridotite/explore-compile-replay"><img src="../../assets/ecr-now-building.svg" alt="Next: every bug becomes a free test. Explore-Compile-Replay" width="340" height="54"></a><br>
 <sub>我接下来在做的项目：当智能体发现缺陷时，Explore-Compile-Replay 会把它走过的路径变成每个 PR 都会重跑、无需模型的测试。早期草稿。</sub></p>
 
+## 快速开始
+
+```bash
+gh repo create my-testers --public --template pierridotite/mobile-agent-testers --clone
+cd my-testers && ./setup.sh           # 密钥对 + secrets + Claude 令牌（Windows：.\setup.ps1）
+gh workflow run agent-testers.yml     # 演示：2 个 Android + 2 个 iOS 测试员，约 20 分钟
+bash scripts/collect.sh <run id>      # 解密报告并归并重复项：runs/<id>/SUMMARY.md
+```
+
+然后在你自己的应用上：
+
+```bash
+gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
+  -f android_personas=anna,malik -f ios_personas=clara,jonas
+```
+
+或者让 Claude 为你的应用完成设置：
+
+```
+/plugin marketplace add pierridotite/mobile-agent-testers
+/plugin install mobile-agent-testers@mobile-agent-testers
+```
+
+全部参数（构建、任务说明、复现 bug、更便宜的模型、构建参数、录屏）和支持的框架：[docs/configuration.zh-CN.md](docs/configuration.md)
+
+<details>
+<summary>演示运行能找到什么</summary>
+
+演示应用里有 [11 个故意埋下的缺陷](../../demo-app/BUGS.md)。在[一次运行](../../docs/runs/)中，4 个演示测试员找到了其中 9 个（每个智能体 2 到 7 分钟，整次运行约 21 分钟，含构建），还发现了没人埋下的真实问题（一个按钮被 Android 导航栏挡住、重新启动后数据没有保留）。模型用量：4 个共 0.87 美元。
+
+</details>
+
 ## 能做什么
 
-每次运行一种用法，用[测试你自己的应用](#测试你自己的应用)里的参数来设置。
+每次运行选一种用法，用上面的参数设置。
 
-- **像新用户一样探索**（默认）。每个角色都会努力完成自己的目标，并报告一路上遇到的障碍，附带编号截图。
-- **把一个功能从头测到尾。** 用你自己的 brief 让每个智能体完整走一遍某个机制：分几步的预订、带撤销的编辑器、两个页面之间的同步。智能体会点按、长按、滑动和输入，离开应用再回来，重启应用检查保存了什么，或者打开深层链接直接进入这个功能；brief 还可以提高默认约 30 步操作的预算。[AnkiDroid 的 brief](../../briefs/ankidroid.md) 就发现新卡片的背面输入框被键盘挡住了。
-- **在每台手机上复现一个缺陷报告**：给出一个 issue 或复现步骤，每个智能体回答“是 / 否 / 不确定”，并附上截图（[briefs/reproduce.md](../../briefs/reproduce.md)）。
-- **生成改进报告。** 每个角色把应用用一遍，然后说出在哪里犹豫、原本期待什么、最该先改什么，并标出领域和影响（[briefs/improve.md](../../briefs/improve.md)）。
-- **对比两个版本。** 同一批角色分别使用两个分支或构建，最后得到一张表：目标是否达成、操作次数、评分、只在一个版本出现的问题（[docs/compare-versions.md](../../docs/compare-versions.md)）。适合在真正的 A/B 测试之前做检查，但不能代替 A/B 测试。
-- **使用更便宜的模型**：Claude Haiku，或任何兼容 Anthropic 接口的 API（OpenRouter、DeepSeek、Kimi、GLM、MiniMax、通义千问）。发现的质量取决于模型读截图的能力和推理能力（[docs/cheaper-models.md](../../docs/cheaper-models.md)）。
+| 用法 | 你会得到什么 |
+|---|---|
+| **像新用户一样探索** （默认） | 每个角色都会努力完成自己的目标，并报告一路上遇到的障碍，附带编号截图。 |
+| **把一个功能从头测到尾** | 用你自己的 brief 让每个智能体完整走一遍某个机制：分几步的预订、带撤销的编辑器、两个页面之间的同步。智能体会点按、长按、滑动和输入，离开应用再回来，重启应用检查保存了什么，或者打开深层链接直接进入这个功能；brief 还可以提高默认约 30 步操作的预算。[AnkiDroid 的 brief](../../briefs/ankidroid.md) 就发现新卡片的背面输入框被键盘挡住了。 |
+| **在每台手机上复现一个缺陷报告** | 给出一个 issue 或复现步骤，每个智能体回答“是 / 否 / 不确定”，并附上截图（[briefs/reproduce.md](../../briefs/reproduce.md)）。 |
+| **生成改进报告** | 每个角色把应用用一遍，然后说出在哪里犹豫、原本期待什么、最该先改什么，并标出领域和影响（[briefs/improve.md](../../briefs/improve.md)）。 |
+| **对比两个版本** | 同一批角色分别使用两个分支或构建，最后得到一张表：目标是否达成、操作次数、评分、只在一个版本出现的问题（[docs/compare-versions.md](../../docs/compare-versions.md)）。适合在真正的 A/B 测试之前做检查，但不能代替 A/B 测试。 |
+| **在一张地图上查看所有页面** | 在一张地图上查看应用的所有页面、测试者的操作路径和每个页面的热力图，并为每个页面添加评论：`python3 scripts/dashboard.py runs/<id>`（[docs/dashboard.md](../../docs/dashboard.md)）。[试用演示](https://pierridotite.github.io/mobile-agent-testers/)，或[观看视频](../../assets/dashboard-demo.mp4)。 |
+
+**使用更便宜的模型**：Claude Haiku，或任何兼容 Anthropic 接口的 API（OpenRouter、DeepSeek、Kimi、GLM、MiniMax、通义千问）。发现的质量取决于模型读截图的能力和推理能力（[docs/cheaper-models.md](../../docs/cheaper-models.md)）。
 
 Maestro、Appium 运行你写好的测试。这些智能体寻找没人想到要测的东西：[对比](../../docs/compare.md)。
 
-## 应用实例
+## 真实运行
 
 在开源应用上的真实运行，没有预先埋入任何缺陷。
 
@@ -63,38 +99,12 @@ Maestro、Appium 运行你写好的测试。这些智能体寻找没人想到要
 
 在 LocalSend 上，46 个缺陷中有 34 个与字号和无障碍都无关：流程中断、静默失败、缺失的翻译、平板布局。截图、每个发现以及重新运行的命令：[docs/examples.zh-CN.md](docs/examples.md)。
 
-## 快速开始
-
-```bash
-gh repo create my-testers --public --template pierridotite/mobile-agent-testers --clone
-cd my-testers && ./setup.sh           # 密钥对 + secrets + Claude 令牌（Windows：.\setup.ps1）
-gh workflow run agent-testers.yml     # 演示：2 个 Android + 2 个 iOS 测试员，约 20 分钟
-bash scripts/collect.sh <run id>      # 解密报告并归并重复项：runs/<id>/SUMMARY.md
-```
-
-在一张地图上查看应用的所有页面、测试者的操作路径和每个页面的热力图，并为每个页面添加评论：`python3 scripts/dashboard.py runs/<id>`（[docs/dashboard.md](../../docs/dashboard.md)）。[试用演示](https://pierridotite.github.io/mobile-agent-testers/)，或[观看视频](../../assets/dashboard-demo.mp4)。
-
-演示应用里有 [11 个故意埋下的缺陷](../../demo-app/BUGS.md)。在[一次运行](../../docs/runs/)中，4 个演示测试员找到了其中 9 个（每个智能体 2 到 7 分钟，整次运行约 21 分钟，含构建），还发现了没人埋下的真实问题（一个按钮被 Android 导航栏挡住、重新启动后数据没有保留）。模型用量：4 个共 0.87 美元。
-
-或者让 Claude 为你的应用完成设置：
-
-```
-/plugin marketplace add pierridotite/mobile-agent-testers
-/plugin install mobile-agent-testers@mobile-agent-testers
-```
-
-## 测试你自己的应用
-
-```bash
-gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
-  -f android_personas=anna,malik -f ios_personas=clara,jonas
-```
-
-全部参数（构建、任务说明、复现 bug、更便宜的模型、构建参数、录屏）和支持的框架：[docs/configuration.zh-CN.md](docs/configuration.md)
-
 ## 参与贡献
 
-以下方向欢迎帮忙。动手前先开一个 issue 说明你要做哪一项，避免两个人做同一件事。[CONTRIBUTING.md](../../CONTRIBUTING.md) 写明了每一项从哪里入手，以及如何离线测试。
+动手前先开一个 issue 说明你要做哪一项，避免两个人做同一件事。[CONTRIBUTING.md](../../CONTRIBUTING.md) 写明了每一项从哪里入手，以及如何离线测试。 有问题请到 [Discord](https://discord.gg/WuaCANscr8)。
+
+<details>
+<summary>欢迎帮忙的方向</summary>
 
 - **其他智能体 CLI**：OpenCode、Codex CLI、Gemini CLI、Goose。工具都是普通脚本，任务是一份 Markdown 说明，所以每个平台只需换一条命令。
 - **Web 应用**：用 Playwright 在手机浏览器里跑同样的角色，覆盖 PWA 和移动网站。
@@ -105,6 +115,8 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
 - **更多构建系统**：NativeScript、Unity、Godot，每种在 `scripts/build/` 里加一个分支。
 - **翻译** README 和文档。
 - **模型对比**：演示应用里预埋的 11 个 bug 就是一个小基准。做一张表，列出每个模型找到多少、花多少钱。
+
+</details>
 
 ## 团队托管版（探索中）
 
