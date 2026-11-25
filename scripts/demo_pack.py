@@ -1,7 +1,7 @@
 """Turns collected runs of a PUBLIC app into the data of the online demo (dashboard/demo-data/).
 
 Usage: python3 scripts/demo_pack.py runs/<run id> [runs/<other run id>...] --app <public source URL>
-           [--out dashboard/demo-data]
+           [--name LocalSend] [--out dashboard/demo-data]
 
 `python3 scripts/dashboard.py --demo` (and the online demo) then opens these runs instead of
 the made-up app. Only what the page needs is copied, for each tester: the screenshots and
@@ -33,7 +33,7 @@ def findings_kept(data):
     return kept
 
 
-def pack(runs, out, app):
+def pack(runs, out, app, name=None):
     out = Path(out)
     if out.exists():
         shutil.rmtree(out)
@@ -57,6 +57,8 @@ def pack(runs, out, app):
             copied += 1
     (out / "SOURCE.md").write_text(f"Runs of {app}, packed by scripts/demo_pack.py for the online demo of the dashboard.\n",
                                    encoding="utf-8")
+    name = name or app.rstrip("/").rsplit("/", 1)[-1]
+    (out / "demo.json").write_text(json.dumps({"name": name, "app": app}) + "\n", encoding="utf-8")
     return copied
 
 
@@ -64,11 +66,12 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("runs", nargs="+")
     parser.add_argument("--app", required=True, help="where the app's source is public, e.g. https://github.com/localsend/localsend")
+    parser.add_argument("--name", help="the app's name shown on the demo, e.g. LocalSend (default: the end of --app)")
     parser.add_argument("--out", default=str(Path(__file__).resolve().parent.parent / "dashboard" / "demo-data"))
     args = parser.parse_args(argv)
     if not args.app.startswith("https://"):
         parser.error("--app must be the public address of the app's source")
-    n = pack(args.runs, args.out, args.app)
+    n = pack(args.runs, args.out, args.app, args.name)
     if not n:
         print("No trace.json in these runs: nothing packed")
         return 1

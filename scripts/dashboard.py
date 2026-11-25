@@ -375,6 +375,10 @@ def export(roots, out):
     run["static"] = True
     run["ecr"] = False
     run["run"] = "Demo: a made-up to-do app, its map and three testers"
+    about = read_json(roots[0] / "demo.json") if len(roots) == 1 else None   # written by scripts/demo_pack.py
+    if isinstance(about, dict) and about.get("name"):
+        run["run"] = f"Demo: {about['name']}, a real open-source app, its map and its testers"
+        run["demoNote"] = f"Demo on {about['name']}, a real app · run it on yours"
     (out / "api").mkdir(parents=True, exist_ok=True)
     for name, _ in STATIC.values():
         shutil.copyfile(PAGE / name, out / name)

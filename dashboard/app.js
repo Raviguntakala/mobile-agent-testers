@@ -730,6 +730,7 @@ async function start() {
     $("#save").textContent = "Download";
     $("#save").title = "Download the edited trace.json and trace.notes.json (Ctrl+S)";
     $("#demo-note").hidden = false;
+    if (S.data.demoNote) $("#demo-note").textContent = S.data.demoNote;
   }
   document.title = `App map · ${S.data.run}`;
   wire();

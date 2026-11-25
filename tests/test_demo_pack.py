@@ -30,6 +30,20 @@ class DemoPackTest(unittest.TestCase):
                          {"score": 6, "issues": [{"title": "Cut text", "severity": "minor", "screens": ["01"]}]})
         self.assertFalse(list(out.rglob("agent-output.json")))
         self.assertIn("localsend", (out / "SOURCE.md").read_text())
+        self.assertEqual(json.loads((out / "demo.json").read_text())["name"], "localsend")
+
+    def test_the_demo_is_titled_with_the_app(self):
+        import dashboard
+        root = Path(tempfile.mkdtemp())
+        tester = root / "anna" / "results" / "anna"
+        tester.mkdir(parents=True)
+        (tester / "trace.json").write_text(json.dumps({"schema": "ecr.trace/0", "app": {"id": "x"}, "steps": []}))
+        (root / "demo.json").write_text(json.dumps({"name": "LocalSend", "app": "https://github.com/localsend/localsend"}))
+        out = Path(tempfile.mkdtemp())
+        dashboard.export([root], out)
+        run = json.loads((out / "api" / "run.json").read_text())
+        self.assertTrue(run["run"].startswith("Demo: LocalSend"))
+        self.assertIn("LocalSend", run["demoNote"])
 
 
 if __name__ == "__main__":
