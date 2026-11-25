@@ -104,17 +104,15 @@ function stepBefore(key, nn) {
   const i = t.steps.findIndex((st) => st.evidence && st.evidence.screen === nn);
   return i > 0 ? i - 1 : i;
 }
-function elementSelector(el, elements) {
-  if (el.label && !el.label.includes("${") && el.label.length <= 80 && !el.label.includes("\n")) {
-    const same = elements.filter((e) => e.label === el.label);
-    return same.length > 1 ? { text: el.label, index: same.indexOf(el) } : { text: el.label };
-  }
-  if (el.id) {
-    const same = elements.filter((e) => e.id === el.id);
-    return same.length > 1 ? { id: el.id, index: same.indexOf(el) } : { id: el.id };
-  }
+/** A check names an element by its name, else by its id, never by a position or an index:
+ * "visible" holds when any element with that name is on the screen, "not visible" when none is.
+ * So it needs no count of elements that share a name, which a replay may count differently. */
+function elementSelector(el) {
+  if (el.label && !el.label.includes("${") && el.label.length <= 80 && !el.label.includes("\n") && el.label === el.label.trim()) return { text: el.label };
+  if (el.id) return { id: el.id };
   return null;
 }
+const sharedName = (el, elements, target) => elements.filter((e) => ("text" in target ? e.label === target.text : e.id === target.id)).length > 1;
 /** The human time the evaluation protocol of ECR measures: seconds from "Add a check" to the check, and how many. */
 function countEffort(key, started) {
   const notes = notesOf(key);
@@ -507,7 +505,7 @@ function renderMapSide(map) {
   const canvas = h("canvas", {});
   const overlay = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "none" });
   if (S.picking && info) for (const el of info.elements) {
-    if (!(el.label || el.id) || !elementSelector(el, info.elements)) continue;
+    if (!(el.label || el.id) || !elementSelector(el)) continue;
     const [x1, y1, x2, y2] = el.bounds;
     const r = svgEl("rect", { x: x1, y: y1, width: x2 - x1, height: y2 - y1, class: `pick-el${S.picking.el === el ? " on" : ""}` });
     const t = svgEl("title"); t.textContent = el.label || el.id; r.append(t);
@@ -582,11 +580,11 @@ function checkBox(n, shot, info) {
   if (!pick) form = h("div", { class: "row" }, h("span", { class: "hint", style: "margin:0" }, "Checks go to trace.json and compile to Maestro assertions."),
     h("button", { class: "fit", disabled: !info, onclick: () => { S.picking = { el: null, kind: "visible", bug: false, started: Date.now() }; renderMap(); } }, "Add a check"));
   else {
-    const target = pick.el && elementSelector(pick.el, info.elements);
+    const target = pick.el && elementSelector(pick.el);
     const kind = h("select", { onchange: (e) => { pick.kind = e.target.value; } }, h("option", { value: "visible", selected: pick.kind === "visible" }, "Must be visible"), h("option", { value: "notVisible", selected: pick.kind === "notVisible" }, "Must not be visible"));
     const bug = h("input", { type: "checkbox", checked: pick.bug, onchange: (e) => { pick.bug = e.target.checked; } });
     form = h("div", {},
-      h("p", { class: "hint", style: "margin:0 0 6px" }, target ? `Element: ${describeSelector(target)}` : "Click an element on the screen above."),
+      h("p", { class: "hint", style: "margin:0 0 6px" }, target ? `Element: ${describeSelector(target)}${sharedName(pick.el, info.elements, target) ? " (several elements have this name: the check is about any of them)" : ""}` : "Click an element on the screen above."),
       h("div", { class: "row" }, kind),
       h("label", { class: "check-bug" }, bug, " It was wrong during the run (known bug)"),
       h("div", { class: "row", style: "margin-top:6px" }, h("button", { class: "fit", onclick: () => { S.picking = null; renderMap(); } }, "Cancel"), h("span"),

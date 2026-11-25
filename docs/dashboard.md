@@ -34,7 +34,7 @@ Drag to move the map, scroll to zoom. Comments on a screen go to `trace.notes.js
 
 ## From a finding to a test
 
-A trace recorded from an agent is a path with no check: replayed, it only proves that the taps still work. The checks come from here. A check added on a screen becomes an oracle of the step that led to that screen, in `checkpoints` of `trace.json`: `visible` or `notVisible`, of an element found by its name or its id. "Known bug" records it as `observed: "failed"`: the compiled flow is red until the bug is fixed, then "Fixed" keeps the check as a guard ([Explore-Compile-Replay](https://github.com/pierridotite/explore-compile-replay), "a defect is a test").
+A trace recorded from an agent is a path with no check: replayed, it only proves that the taps still work. The checks come from here. A check added on a screen becomes an oracle of the step that led to that screen, in `checkpoints` of `trace.json`: `visible` or `notVisible`, of an element found by its name or its id, never by a position or by its rank among elements with the same name: "visible" holds when any element with that name is on the screen, "not visible" when none is. "Known bug" records it as `observed: "failed"`: the compiled flow is red until the bug is fixed, then "Fixed" keeps the check as a guard ([Explore-Compile-Replay](https://github.com/pierridotite/explore-compile-replay), "a defect is a test").
 
 Only checks can change. The steps stay as the agent explored them, the server refuses a trace whose steps differ, and the first save keeps the explored trace as `trace.explored.json`. Step ids never change. No check is verified when you write it: the first replay on the unchanged app does ([docs/replay.md](replay.md)).
 
