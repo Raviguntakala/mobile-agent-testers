@@ -18,8 +18,9 @@ if [ -n "${ECR_ACTION_LOG:-}" ] && [ -z "${ECR_SHIM_QUIET:-}" ] && [ "${1:-}" = 
     if [ -n "$save" ] && [ "$(tail -n 1 "$ECR_ACTION_LOG" 2>/dev/null | cut -f2)" != screen ]; then
       tree="${ECR_ACTION_LOG%/*}/tree-$(wc -l < "$ECR_ACTION_LOG" 2>/dev/null | tr -d ' ').xml"
       limit=""; command -v timeout >/dev/null 2>&1 && limit="timeout 10"
-      $limit "$ECR_REAL_ADB" shell "rm -f /sdcard/ecr-tree.xml; uiautomator dump /sdcard/ecr-tree.xml" >/dev/null 2>&1
-      $limit "$ECR_REAL_ADB" exec-out cat /sdcard/ecr-tree.xml > "$tree" 2>/dev/null
+      # Out of the shared storage, so that the app never shows the file in a picker
+      $limit "$ECR_REAL_ADB" shell "rm -f /data/local/tmp/ecr-tree.xml; uiautomator dump /data/local/tmp/ecr-tree.xml" >/dev/null 2>&1
+      $limit "$ECR_REAL_ADB" exec-out cat /data/local/tmp/ecr-tree.xml > "$tree" 2>/dev/null
       if head -c 5 "$tree" 2>/dev/null | grep -q '<?xml'; then
         printf '%s\ttree\t%s\n' "$(date +%s)" "$tree" >> "$ECR_ACTION_LOG" 2>/dev/null || true
       else

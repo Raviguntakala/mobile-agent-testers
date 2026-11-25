@@ -175,8 +175,8 @@ class Phone:
         self.adb("shell", "monkey", "-p", self.app_id, "-c", "android.intent.category.LAUNCHER", "1", quiet=True)
         for _ in range(15):   # a first start can take a while (a splash screen, a JavaScript bundle to load)
             time.sleep(3)
-            self.adb("shell", "uiautomator", "dump", "/sdcard/crawl.xml", quiet=True)
-            packages, fields, controls = read_view(self.adb("exec-out", "cat", "/sdcard/crawl.xml", quiet=True))
+            self.adb("shell", "uiautomator", "dump", "/data/local/tmp/crawl.xml", quiet=True)
+            packages, fields, controls = read_view(self.adb("exec-out", "cat", "/data/local/tmp/crawl.xml", quiet=True))
             if self.app_id in packages and (fields or controls):
                 break
 

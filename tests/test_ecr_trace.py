@@ -262,7 +262,7 @@ class Build(unittest.TestCase):
     def test_a_tree_saved_just_before_a_tap_names_it_and_keeps_the_screenshot(self):
         (self.dir / "tree-3.xml").write_text(LOGIN.replace('text="Sign in" resource-id="app:id/submit"', 'text="Try again" resource-id="app:id/submit"'),
                                              encoding="utf-8")
-        (self.dir / "tree-5.xml").write_text("cat: /sdcard/ecr-tree.xml: No such file or directory", encoding="utf-8")
+        (self.dir / "tree-5.xml").write_text("cat: /data/local/tmp/ecr-tree.xml: No such file or directory", encoding="utf-8")
         trace, _, _ = tracer.build([self.screen, "0\tadb\tshell\tinput\ttap\t500\t660",
                                     f"0\ttree\t{self.dir / 'tree-3.xml'}", "0\tadb\tshell\tinput\ttap\t500\t660",
                                     f"0\ttree\t{self.dir / 'tree-5.xml'}", "0\tadb\tshell\tinput\ttap\t500\t660"],
@@ -410,7 +410,7 @@ class EndToEnd(unittest.TestCase):
         now.write_text(LOGIN.replace('text="Sign in" resource-id="app:id/submit"', 'text="Try again" resource-id="app:id/submit"'), encoding="utf-8")
         real = work / "real-adb"
         real.write_text('#!/usr/bin/env bash\necho "$*" >> "$FAKE_ADB_CALLS"\n'
-                        'case "$*" in "exec-out cat /sdcard/ecr-tree.xml") cat "$FAKE_TREE" ;; esac\n')
+                        'case "$*" in "exec-out cat /data/local/tmp/ecr-tree.xml") cat "$FAKE_TREE" ;; esac\n')
         real.chmod(0o755)
         log = results / "actions.tsv"
         log.write_text(f"0\tscreen\t{results / '01.xml'}\t1080\t2400\n", encoding="utf-8")
@@ -443,7 +443,7 @@ class EndToEnd(unittest.TestCase):
         home.write_text(LAUNCHER, encoding="utf-8")
         real = work / "real-adb"
         real.write_text('#!/usr/bin/env bash\necho "$*" >> "$FAKE_ADB_CALLS"\n'
-                        'case "$*" in "exec-out cat /sdcard/ecr-tree.xml") cat "$FAKE_TREE" ;; esac\n')
+                        'case "$*" in "exec-out cat /data/local/tmp/ecr-tree.xml") cat "$FAKE_TREE" ;; esac\n')
         real.chmod(0o755)
         log = results / "actions.tsv"
         log.write_text(f"0\tscreen\t{results / '01.xml'}\t1080\t2400\n", encoding="utf-8")
@@ -473,6 +473,17 @@ class EndToEnd(unittest.TestCase):
                              cwd=ROOT, capture_output=True, text=True)
         self.assertEqual(run.returncode, 0)
         self.assertFalse((work / "trace.json").exists())
+
+    def test_the_tools_leave_no_file_where_the_app_can_see_it(self):
+        # An agent on LocalSend sent its own screen dump, picked in the file picker of the system:
+        # its path could not replay on a phone that only replays. The tools write in /data/local/tmp.
+        tools = ["scripts/android/screen.py", "scripts/android/crawl.py", "scripts/android/shim/adb",
+                 "scripts/android/run_agent.sh", "scripts/device_state.py"]
+        for name in tools:
+            with self.subTest(name):
+                text = (ROOT / name).read_text(encoding="utf-8")
+                self.assertNotIn("/sdcard", text)
+                self.assertNotIn("/storage/", text)
 
 
 if __name__ == "__main__":

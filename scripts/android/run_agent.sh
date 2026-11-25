@@ -53,7 +53,7 @@ if [ "${RECORD_VIDEO:-false}" = true ]; then
   ( i=0; opt="--size ${RW}x${RH}"
     while [ ! -f /tmp/stop-rec ] && [ $i -lt 40 ]; do
       i=$((i + 1)); t0=$(date +%s)
-      adb shell screenrecord $opt --bit-rate 4000000 --time-limit 180 "/sdcard/rec_$(printf %02d $i).mp4"
+      adb shell screenrecord $opt --bit-rate 4000000 --time-limit 180 "/data/local/tmp/rec_$(printf %02d $i).mp4"   # out of the shared storage: the app's gallery would show it
       [ $(($(date +%s) - t0)) -lt 3 ] && opt=""   # size refused: native size
     done ) &
   REC=$!
@@ -105,7 +105,7 @@ esac
 if [ -n "$REC" ]; then
   touch /tmp/stop-rec; adb shell pkill -INT screenrecord; sleep 4; kill "$REC" 2>/dev/null
   mkdir -p "results/$PERSONA/video"
-  for f in $(adb shell ls /sdcard/ | tr -d '\r' | grep '^rec_'); do adb pull "/sdcard/$f" "results/$PERSONA/video/" >/dev/null 2>&1; done
+  for f in $(adb shell ls /data/local/tmp/ | tr -d '\r' | grep '^rec_'); do adb pull "/data/local/tmp/$f" "results/$PERSONA/video/" >/dev/null 2>&1; done
 fi
 # 6. Optional: the path just written is replayed on the same phone, with no model (docs/replay.md)
 if [ "${REPLAY_PATH:-false}" = true ]; then

@@ -22,7 +22,7 @@ CRASHED = re.compile(r"Process: ([\w.:]+), PID: \d+")
 STOPPED = re.compile(r"Force stopping ([\w.]+) appid=\d+ user=-?\d+: ([^\n]*)")   # `pm clear` says "clear data"
 LAUNCHED = re.compile(r"START u\d+ \{[^}\n]*cmp=([\w.]+)/")
 APP_ID = re.compile(r"[A-Za-z0-9._]{1,200}")
-TREE = "/sdcard/ecr-state.xml"
+TREE = "/data/local/tmp/ecr-state.xml"   # out of the shared storage: the next replay would see it in a file picker
 DRIVERS = ("dev.mobile.maestro", "dev.mobile.maestro.test")   # what Maestro leaves on the phone
 NEAR = 24   # pixels: an element whose sides moved less than this has the same place and size
 

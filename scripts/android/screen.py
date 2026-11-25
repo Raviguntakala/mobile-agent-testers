@@ -26,8 +26,9 @@ img = Image.open(io.BytesIO(png)).convert("RGB")
 w, h = img.size
 img.resize((w // 2, h // 2)).save(out / f"{nn}.png")
 print(f"screenshot: {out}/{nn}.png (screen {w}x{h}; image is half size: multiply positions read on it by 2)")
-adb("shell", "uiautomator", "dump", "/sdcard/ui.xml")
-xml = adb("exec-out", "cat", "/sdcard/ui.xml")
+# Out of the shared storage: the app could show it in a file picker, and a path that picks it would not replay
+adb("shell", "uiautomator", "dump", "/data/local/tmp/ui.xml")
+xml = adb("exec-out", "cat", "/data/local/tmp/ui.xml")
 try:
     root = ET.fromstring(xml[xml.find("<"):])
 except ET.ParseError:
