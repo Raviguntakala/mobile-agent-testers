@@ -53,18 +53,46 @@ fi
 # 5. The agent: only the listed tools, nothing else (another model API if llm_base_url is set).
 # Its adb goes through scripts/android/shim/adb, which notes each tap and runs the real adb:
 # scripts/ecr_trace.py turns these notes into a path that replays with no model.
-source scripts/llm_env.sh || exit 1
+# With map=robot or robot+agent, a robot with no model maps the screens first (scripts/android/crawl.py);
+# with robot+agent, an agent is called only when the robot met a form it could not pass.
 ECR_REAL_ADB="$(command -v adb)"
-ECR_ACTION_LOG="$PWD/results/$PERSONA/actions.tsv"
-export ECR_REAL_ADB ECR_ACTION_LOG
-: > "$ECR_ACTION_LOG"
-PATH="$PWD/scripts/android/shim:$PATH" claude -p "Read $BRIEF and personas.json, then do the mission until the final report. PERSONA=$PERSONA PLATFORM=android APP_ID=$APP_ID. Device: ${DEVICE}, font scale x${FONT_SCALE:-1.0}, theme ${THEME:-light}${A11Y}, language $LOCALE. Report anything that does not fit this screen (cut text, off-screen buttons, broken layout)." \
-  --model "${MODEL:-sonnet}" --max-turns 400 --output-format json \
-  --allowedTools "Bash(adb:*),Bash(python3 scripts/android/screen.py:*),Bash(python3 scripts/android/type.py:*),Bash(sleep:*),Bash(ls:*),Bash(cat:*),Bash(mkdir:*),Read,Write,Edit" \
-  > results/agent-output.json 2> results/agent-errors.txt
-CODE=$?
-python3 scripts/agent_status.py results/agent-output.json results/agent-errors.txt "$PERSONA" || true
-python3 scripts/ecr_trace.py "results/$PERSONA" --persona "$PERSONA" --app-id "$APP_ID" --agent-output results/agent-output.json || true   # never fails the run
+export ECR_REAL_ADB
+ALLOWED="Bash(adb:*),Bash(python3 scripts/android/screen.py:*),Bash(python3 scripts/android/type.py:*),Bash(sleep:*),Bash(ls:*),Bash(cat:*),Bash(mkdir:*),Read,Write,Edit"
+SETTINGS="Device: ${DEVICE}, font scale x${FONT_SCALE:-1.0}, theme ${THEME:-light}${A11Y}, language $LOCALE."
+CODE=0
+case "${MAP:-none}" in
+  robot|robot+agent)
+    PATH="$PWD/scripts/android/shim:$PATH" python3 scripts/android/crawl.py "results/$PERSONA" --app-id "$APP_ID" --persona "$PERSONA" || true
+    BLOCKED=$(python3 -c 'import json,sys; print(len(json.load(open(sys.argv[1])).get("blocked", [])))' "results/$PERSONA/findings.json" 2>/dev/null || echo 0)
+    if [ "$MAP" = robot+agent ] && [ "$BLOCKED" -gt 0 ]; then
+      source scripts/llm_env.sh || exit 1
+      AGENT_DIR="results/$PERSONA/agent"
+      mkdir -p "$AGENT_DIR"
+      ECR_ACTION_LOG="$PWD/$AGENT_DIR/actions.tsv"; export ECR_ACTION_LOG; : > "$ECR_ACTION_LOG"
+      adb shell am force-stop "$APP_ID"; adb shell pm clear "$APP_ID" >/dev/null   # a clean start, as the trace's launchApp
+      adb shell monkey -p "$APP_ID" -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1; sleep 6
+      PATH="$PWD/scripts/android/shim:$PATH" claude -p "Read briefs/map.md and personas.json. A robot with no model already mapped this app: results/$PERSONA/report.md lists the screens it found and, under 'Forms the robot could not pass', the forms where it stopped. Do not map again what it found: go to each of those forms, find what they need to go further (test data only) and map the screens behind them. Your folder is $AGENT_DIR: take screenshots with python3 scripts/android/screen.py $AGENT_DIR NN, and write report.md and findings.json there. PERSONA=$PERSONA PLATFORM=android APP_ID=$APP_ID. $SETTINGS" \
+        --model "${MODEL:-sonnet}" --max-turns 200 --output-format json --allowedTools "$ALLOWED" \
+        > results/agent-output.json 2> results/agent-errors.txt
+      CODE=$?
+      python3 scripts/agent_status.py results/agent-output.json results/agent-errors.txt "$PERSONA" || true
+      python3 scripts/ecr_trace.py "$AGENT_DIR" --persona "$PERSONA" --app-id "$APP_ID" --agent-output results/agent-output.json || true
+    elif [ "$MAP" = robot+agent ]; then
+      echo "map: the robot passed every form, no agent called"
+    fi ;;
+  *)
+    source scripts/llm_env.sh || exit 1
+    ECR_ACTION_LOG="$PWD/results/$PERSONA/actions.tsv"
+    export ECR_ACTION_LOG
+    : > "$ECR_ACTION_LOG"
+    PATH="$PWD/scripts/android/shim:$PATH" claude -p "Read $BRIEF and personas.json, then do the mission until the final report. PERSONA=$PERSONA PLATFORM=android APP_ID=$APP_ID. $SETTINGS Report anything that does not fit this screen (cut text, off-screen buttons, broken layout)." \
+      --model "${MODEL:-sonnet}" --max-turns 400 --output-format json --allowedTools "$ALLOWED" \
+      > results/agent-output.json 2> results/agent-errors.txt
+    CODE=$?
+    python3 scripts/agent_status.py results/agent-output.json results/agent-errors.txt "$PERSONA" || true
+    python3 scripts/ecr_trace.py "results/$PERSONA" --persona "$PERSONA" --app-id "$APP_ID" --agent-output results/agent-output.json || true   # never fails the run
+    ;;
+esac
 if [ -n "$REC" ]; then
   touch /tmp/stop-rec; adb shell pkill -INT screenrecord; sleep 4; kill "$REC" 2>/dev/null
   mkdir -p "results/$PERSONA/video"
@@ -72,6 +100,8 @@ if [ -n "$REC" ]; then
 fi
 # 6. Optional: the path just written is replayed on the same phone, with no model (docs/replay.md)
 if [ "${REPLAY_PATH:-false}" = true ]; then
-  python3 scripts/ecr_replay.py "results/$PERSONA" --ecr .ecr --persona "$PERSONA" || true   # never fails the run
+  for d in "results/$PERSONA" "results/$PERSONA"/map-* "results/$PERSONA/agent"; do
+    [ -f "$d/trace.json" ] && { python3 scripts/ecr_replay.py "$d" --ecr .ecr --persona "$PERSONA" || true; }   # never fails the run
+  done
 fi
-echo "Agent finished (exit $CODE), $(ls "results/$PERSONA" | wc -l) files"
+echo "Agent finished (exit $CODE), $(find "results/$PERSONA" -type f | wc -l) files"

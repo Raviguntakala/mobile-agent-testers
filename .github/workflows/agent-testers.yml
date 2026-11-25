@@ -67,6 +67,11 @@ on:
         description: "Experimental, Android: after each agent, replay its path on the same phone with no model (docs/replay.md)"
         type: boolean
         default: false
+      map:
+        description: "Experimental, Android: map every screen. robot = no model, free; robot+agent = an agent only for the forms the robot could not pass (docs/dashboard.md). Use one persona: its phone settings are kept"
+        type: choice
+        options: [none, robot, robot+agent]
+        default: none
 
 permissions:
   contents: read
@@ -276,6 +281,7 @@ jobs:
           BLOCK_HOSTS: ${{ inputs.block_hosts }}
           RECORD_VIDEO: ${{ inputs.record_video }}
           REPLAY_PATH: ${{ inputs.replay_path }}
+          MAP: ${{ inputs.map }}
         with:
           api-level: ${{ matrix.api }}
           target: google_apis

@@ -17,7 +17,17 @@ Python 3.9 or later, nothing to install. The page runs in your browser and the r
 
 ## First, find every screen
 
-ECR starts by exploring. Here, that is the job of the map maker: an agent with [briefs/map.md](../briefs/map.md) instead of a persona's brief. It opens every control of every screen once, breadth first, and comes back. Its path is a trace like any other, so each screen it found has a path that replays with no model. Run the workflow with `brief: briefs/map.md`; one persona is enough.
+ECR starts by exploring. Here, that is the job of the map maker, and it has three forms, chosen with the `map` input of the workflow (one persona is enough: its phone settings are kept):
+
+| `map` | Who explores | Model cost |
+| --- | --- | --- |
+| `robot` | A robot with no model ([scripts/android/crawl.py](../scripts/android/crawl.py)): on each screen it fills the empty fields with test values, then taps each control once, depth first, and comes back with Back. When Back does not lead back, it starts the app again from a clean state and taps the way there. | None |
+| `robot+agent` | The robot first. When it met a form it could not pass (fields filled, and no control led anywhere), an agent with [briefs/map.md](../briefs/map.md) is called for those forms only, with the robot's report in hand. | Only for the forms the robot could not pass |
+| `none`, with `brief: briefs/map.md` | An agent explores every screen alone, breadth first. | The whole exploration |
+
+The robot never taps a control whose name says it deletes, pays, buys or signs out (in English and French), leaves search fields empty, and does not scroll: a control below the fold is not opened. Each start of the app is a folder (`map-01`, `map-02`...) with its own trace, which starts with `launchApp` on a clean state, so each one replays with no model. The run's log only says how many screens, taps and starts of the app, and how many forms it could not pass. The list of screens is in `report.md` and `findings.json` (`"robot": true`), with the rest of the encrypted results.
+
+`gh workflow run map-check.yml` checks the robot on the demo app, on an emulator, with no model and no secret: it must pass the sign-up form, find both screens, never delete a task, and its paths must replay.
 
 Open its run together with the persona runs. The map then shows every screen of the app, and the screens no persona reached are marked "No persona came here": a part of the app the testers never saw, or never found.
 
@@ -46,7 +56,7 @@ git clone https://github.com/pierridotite/explore-compile-replay ../explore-comp
 python3 scripts/dashboard.py runs/<run id> --ecr ../explore-compile-replay
 ```
 
-A save is then refused if `ecr validate` finds the trace invalid. Then `ecr compile` turns it into a Maestro flow that replays on every build with no model.
+A save is then refused if `ecr validate` finds the trace invalid. Use a clone of Explore-Compile-Replay at `f6bcf4b` or later: traces now hold `at` on taps and `from`/`to` on swipes, which an older clone refuses. Then `ecr compile` turns it into a Maestro flow that replays on every build with no model.
 
 `trace.notes.json` also counts, per trace, the checks added and the seconds spent adding them (`effort`), the human time that a test costs.
 
@@ -57,6 +67,7 @@ A save is then refused if `ecr validate` finds the trace invalid. Then `ecr comp
 ## Limits
 
 - Android only, like the traces.
+- The robot does not scroll, does not guess what a form wants beyond the name of its fields, and counts a screen as new when it shares under 60% of its controls with every screen seen: a screen whose controls change with its data may be counted twice.
 - The estimated heat map is a guess from the screen's controls, not a model trained on eye tracking. Use real taps, or a saliency file, when it matters.
 - Screenshots are grouped by the ids of their elements. An app without ids (many Flutter apps) is grouped by the names of its buttons, so the same screen in two languages counts as two.
 - The page has been tried on the demo run and on traces written by the offline tests. Not yet on a run on a real emulator.

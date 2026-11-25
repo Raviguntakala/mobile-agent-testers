@@ -21,6 +21,7 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
 | `block_hosts` | Các host phân tích bị chặn trong lúc kiểm thử |
 | `record_video` | Quay màn hình của mỗi điện thoại, được mã hóa cùng các báo cáo |
 | `replay_path` | Thử nghiệm, Android: sau mỗi agent, đường đi của nó được chạy lại trên cùng điện thoại, không cần mô hình ([docs/replay.md](replay.md)) |
+| `map` | Thử nghiệm, Android: trước tiên đi qua mọi màn hình. `robot`: một robot không dùng mô hình, miễn phí. `robot+agent`: robot trước, sau đó một agent chỉ cho các biểu mẫu robot không vượt qua được. Chỉ cần một persona ([docs/dashboard.md](dashboard.md)) |
 
 **Hỗ trợ sẵn** (tự động phát hiện):
 

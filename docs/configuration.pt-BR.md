@@ -21,6 +21,7 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
 | `block_hosts` | Hosts de analytics bloqueados durante os testes |
 | `record_video` | Gravação de tela de cada celular, criptografada com os relatórios |
 | `replay_path` | Experimental, Android: depois de cada agente, o percurso dele é repetido no mesmo celular sem modelo ([docs/replay.md](replay.md)) |
+| `map` | Experimental, Android: primeiro percorre todas as telas. `robot`: um robô sem modelo, gratuito. `robot+agent`: o robô e depois um agente só para os formulários que ele não conseguiu passar. Use uma só persona ([docs/dashboard.md](dashboard.md)) |
 
 **Suportados de fábrica** (detecção automática):
 
