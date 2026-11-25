@@ -25,7 +25,7 @@
 </div>
 
 <p align="center"><a href="../../assets/launch-video.mp4"><img src="../../assets/launch-video.gif" alt="发布视频，26 秒。先是 20 个 AI 测试员同时使用 LocalSend 的真实录屏：10 台 Android 模拟器和 10 台 iOS 模拟器，14 种语言，每台手机显示它报告的问题数量，共 103 个。然后是仪表盘中演示应用的地图：所有页面，每位测试者一条彩色车道，一个变成测试的缺陷，以及一条无需模型的回放路径。点击打开带声音的视频。" width="100%"></a><br>
-<sub>手机画面是 LocalSend 那次运行的真实录屏，地图是仪表盘的演示。 <a href="../../assets/launch-video.mp4">带声音的视频（MP4）</a> · <a href="../../assets/localsend-20.mp4">20 台手机的完整录屏</a> · <a href="../../docs/runs/localsend-20.md">逐台设备查看这次运行</a></sub></p>
+<sub>手机画面是 LocalSend 那次运行的真实录屏，地图是仪表盘中的<a href="../../demo-app/">演示应用</a>。 <a href="../../assets/launch-video.mp4">带声音的视频（MP4）</a> · <a href="../../assets/localsend-20.mp4">20 台手机的完整录屏</a> · <a href="../../docs/runs/localsend-20.md">逐台设备查看这次运行</a></sub></p>
 
 无需编写测试脚本。每个测试员都是一个 Claude Code 智能体，在 GitHub Actions 上拥有自己的 iOS
 模拟器或 Android 模拟器。它扮演一个角色（瑞典语、最大字号的 iPhone SE，字体 200% 的 Pixel 7，
