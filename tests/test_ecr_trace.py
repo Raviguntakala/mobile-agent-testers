@@ -61,6 +61,48 @@ class Build(unittest.TestCase):
             {"kind": "tapOn", "target": {"id": "app:id/promo"}},            # a name with ${ cannot be replayed as text
         ])
 
+    def test_an_icon_with_no_name_inside_a_card_that_has_one_is_tapped_where_the_finger_was(self):
+        (self.dir / "01.xml").write_text("""<hierarchy rotation="0">
+  <node text="" resource-id="" class="android.widget.FrameLayout" bounds="[0,0][1080,2400]">
+    <node text="" content-desc="Pixel 4" resource-id="" class="android.view.View" bounds="[40,400][1040,800]">
+      <node text="" resource-id="" class="android.widget.ImageView" bounds="[900,440][1000,540]" />
+    </node>
+  </node>
+</hierarchy>""", encoding="utf-8")
+        actions, _, _ = self.actions("1\tadb\tshell\tinput\ttap\t950\t490", "1\tadb\tshell\tinput\ttap\t300\t700",
+                                     "1\tadb\tshell\tinput\tswipe\t950\t490\t950\t490\t800")
+        self.assertEqual(actions, [
+            {"kind": "tapOn", "target": {"text": "Pixel 4"}, "at": "91%,22%"},   # the centre of the card is not the icon
+            {"kind": "tapOn", "target": {"text": "Pixel 4"}},                    # on the card itself: its centre says it
+            {"kind": "longPressOn", "target": {"text": "Pixel 4"}, "at": "91%,22%"},
+        ])
+
+    def test_the_id_of_a_whole_screen_names_nothing(self):
+        # A Flutter app draws itself in one view: its buttons have no id, and one with no name
+        # leaves only the id of the window under the finger.
+        (self.dir / "01.xml").write_text("""<hierarchy rotation="0">
+  <node text="" resource-id="android:id/content" class="android.widget.FrameLayout" bounds="[0,0][1080,2400]">
+    <node text="" resource-id="" class="io.flutter.embedding.android.FlutterView" bounds="[0,0][1080,2400]">
+      <node text="" content-desc="Send" resource-id="" class="android.view.View" bounds="[400,2200][680,2360]" />
+      <node text="" resource-id="app:id/toolbar" class="android.view.View" bounds="[0,80][1080,240]" />
+    </node>
+  </node>
+</hierarchy>""", encoding="utf-8")
+        actions, _, _ = self.actions("1\tadb\tshell\tinput\ttap\t972\t360", "1\tadb\tshell\tinput\ttap\t540\t1200",
+                                     "1\tadb\tshell\tinput\ttap\t540\t2280", "1\tadb\tshell\tinput\ttap\t100\t160")
+        self.assertEqual(actions, [
+            {"kind": "tapOn", "target": {"point": "90%,15%"}},
+            {"kind": "tapOn", "target": {"point": "50%,50%"}},   # even at its centre: the id says nothing of what is there
+            {"kind": "tapOn", "target": {"text": "Send"}},
+            {"kind": "tapOn", "target": {"id": "app:id/toolbar"}},   # an id that names one part of the screen is kept
+        ])
+
+    def test_the_public_line_counts_how_taps_are_found_and_shows_no_name(self):
+        actions, _, _ = self.actions("1\tadb\tshell\tinput\ttap\t500\t660", "1\tadb\tshell\tinput\ttap\t500\t460",
+                                     "1\tadb\tshell\tinput\ttap\t540\t1800", "1\tadb\tshell\tinput\tswipe\t500\t1500\t500\t500")
+        line = tracer.found_how([{"action": a} for a in actions])
+        self.assertEqual(line, "3 taps: 1 by name, 1 by id, 1 by position, 0 at a place inside the element")
+
     def test_typed_text_never_reaches_the_trace(self):
         trace, values, _ = tracer.build([self.screen, "0\ttype\tS3cret-pass", "0\ttype\tanna@example.com", "0\ttype\tS3cret-pass"],
                                         PERSONA, "com.example.todo", NOW)

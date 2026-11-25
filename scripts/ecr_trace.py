@@ -84,7 +84,11 @@ def inside(nodes, i, ancestor):
 
 def target_at(nodes, x, y, width, height, typed=None):
     """How a replay should find what was tapped: by name, else by id, else by position.
-    Returns the target and the bounds of the element it names (None for a position).
+    Returns the target, the bounds of the element it names (None for a position) and, when a tap
+    on the centre of that element would land on something else than the finger did, where in
+    the element the finger was ("x%,y%" of its box, else None): an icon with no name inside a
+    card that has one. An id that covers half of the screen or more says nothing of what was
+    tapped inside it (the one view a Flutter app draws itself in): a position is used.
     typed: {text the agent typed: its name}. A name on the screen that is exactly a typed text
     (a task it just added) is stored as that name; one that holds a typed text is not used.
     So typed texts stay out of the trace."""
@@ -109,13 +113,26 @@ def target_at(nodes, x, y, width, height, typed=None):
             chosen = [i for i in chosen if under(i)] or chosen
             if not chosen:
                 continue
+            box = nodes[chosen[0]]["bounds"]
+            everything = [i for i in range(len(nodes)) if under(i)]
+            finger = nodes[min(everything, key=area)]["bounds"]   # the smallest thing under the finger, named or not
+            centre = ((box[0] + box[2]) // 2, (box[1] + box[3]) // 2)
+            same = finger[0] <= centre[0] <= finger[2] and finger[1] <= centre[1] <= finger[3]
+            if key == "id" and width > 0 and height > 0 and 2 * area(chosen[0]) >= width * height:
+                break   # the id of a whole screen: only the position says what was tapped
             target = {key: value}
             if len(found) > 1:
                 target["index"] = found.index(chosen[0])
-            return target, list(nodes[chosen[0]]["bounds"])
+            inside_it = None
+            if not same and box[0] <= x <= box[2] and box[1] <= y <= box[3] and box[2] > box[0] and box[3] > box[1]:
+                inside_it = percent(x - box[0], y - box[1], box[2] - box[0], box[3] - box[1])
+            return target, list(box), inside_it
+        else:
+            continue
+        break
     if width > 0 and height > 0:
-        return {"point": percent(x, y, width, height)}, None
-    return None, None
+        return {"point": percent(x, y, width, height)}, None, None
+    return None, None, None
 
 
 RIGHT_TO_LEFT = {"ar", "fa", "he", "iw", "ur"}   # languages whose text ends on the left of a field
@@ -138,6 +155,15 @@ def end_of(nodes, bounds, x, y, right_to_left=False):
         if not covered:
             return f"{across}%,90%"
     return None
+
+
+def found_how(steps):
+    """How the taps of a path are found again, in numbers only: a name survives a change of the
+    app better than an id, and an id better than a position."""
+    taps = [s["action"] for s in steps if s["action"].get("kind") in ("tapOn", "longPressOn")]
+    by = lambda key: sum(1 for a in taps if key in a.get("target", {}))  # noqa: E731
+    inside = sum(1 for a in taps if a.get("at"))
+    return f"{len(taps)} taps: {by('text')} by name, {by('id')} by id, {by('point')} by position, {inside} at a place inside the element"
 
 
 def percent(x, y, width, height):
@@ -268,18 +294,18 @@ def build(log_lines, persona, app_id, now, model=None):
             args = input_args(fields[2:])
             if args[:1] == ["tap"] and len(args) >= 3 and args[1].lstrip("-").isdigit() and args[2].lstrip("-").isdigit():
                 x, y = int(args[1]), int(args[2])
-                target, bounds = target_at(nodes, x, y, width, height, values)
+                target, bounds, inside_it = target_at(nodes, x, y, width, height, values)
                 if target:
-                    add({"kind": "tapOn", "target": target}, point=[x, y], bounds=bounds)
+                    add({"kind": "tapOn", "target": target, **({"at": inside_it} if inside_it else {})}, point=[x, y], bounds=bounds)
                     steps[-1]["endAt"] = end_of(nodes, bounds, x, y, right_to_left)
                 else:
                     skipped.append(line.strip())
             elif args[:1] == ["swipe"] and len(args) >= 5 and all(a.lstrip("-").isdigit() for a in args[1:5]):
                 x1, y1, x2, y2 = map(int, args[1:5])
                 if abs(x2 - x1) <= 10 and abs(y2 - y1) <= 10:   # a swipe that stays in place is a long press
-                    target, bounds = target_at(nodes, x1, y1, width, height, values)
+                    target, bounds, inside_it = target_at(nodes, x1, y1, width, height, values)
                     if target:
-                        add({"kind": "longPressOn", "target": target}, point=[x1, y1], bounds=bounds)
+                        add({"kind": "longPressOn", "target": target, **({"at": inside_it} if inside_it else {})}, point=[x1, y1], bounds=bounds)
                     else:
                         skipped.append(line.strip())
                     continue
@@ -370,6 +396,7 @@ def main(argv=None):
     (results / "trace.params.json").write_text(json.dumps(values, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     what = f" ({left_out(skipped)})" if skipped else ""
     print(f"trace: {len(trace['steps'])} steps, {len(values)} typed texts kept apart, {len(skipped)} commands left out{what}")
+    print(f"trace: {found_how(trace['steps'])}")
     return 0
 
 
