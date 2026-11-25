@@ -1,4 +1,4 @@
-# Kendi uygulamanı test et
+# Kendi uygulamanızı test edin
 
 [English](configuration.md) · [简体中文](configuration.zh-CN.md) · [日本語](configuration.ja.md) · [Español](configuration.es.md) · [Português](configuration.pt-BR.md) · [Tiếng Việt](configuration.vi.md) · Türkçe
 
@@ -7,7 +7,7 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
   -f android_personas=anna,malik -f ios_personas=clara,jonas
 ```
 
-| Girdi | |
+| Parametre | |
 |---|---|
 | `source_repo`, `ref` | Uygulama reposu ve branch'i (boş = bu repo). Private repo: salt okunur bir `SOURCE_REPO_TOKEN` secret'ı ekle |
 | `app_dir`, `app_id` | Uygulama klasörü, Android paket adı / iOS bundle id (diğer platform başka bir id kullanıyorsa, o platformun derlenmiş uygulamasından okunur) |
@@ -23,7 +23,7 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
 | `replay_path` | Deneysel, Android: her ajandan sonra izlediği yol aynı telefonda modelsiz olarak yeniden oynatılır ([docs/replay.md](replay.md)) |
 | `map` | Deneysel, Android: önce tüm ekranlar gezilir. `robot`: modelsiz bir robot, ücretsiz. `robot+agent`: önce robot, ardından yalnızca robotun geçemediği formlar için bir ajan. Tek persona yeterli ([docs/dashboard.md](dashboard.md)) |
 
-**Hazır desteklenenler** (otomatik algılanır):
+**Hazır desteklenen framework'ler** (otomatik algılanır):
 
 | Framework | Android | iOS Simulator |
 |---|---|---|
@@ -31,10 +31,10 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
 | React Native / Expo | Gradle release | Xcode, arm64 |
 | Native Kotlin / Java, Swift / Objective-C | Gradle debug | Xcode, arm64 |
 | Kotlin Multiplatform | Gradle debug | iOS uygulamasının Xcode projesi |
-| Capacitor / Ionic | `cap sync` sonrası Gradle debug | `cap sync` sonrası Xcode |
+| Capacitor / Ionic | `cap sync` sonrasında Gradle debug | `cap sync` sonrasında Xcode |
 | .NET MAUI (beta) | `dotnet publish` | `iossimulator-arm64` için `dotnet build` |
-| Diğer her şey | `android_build` + `apk_path` | `ios_build` + `ios_app_path` |
+| Diğerleri | `android_build` + `apk_path` | `ios_build` + `ios_app_path` |
 
-Ajanlar ekranı ekran görüntülerinden ve erişilebilirlik ağacından okur, bu yüzden
-her UI araç takımıyla çalışır. Etiketlenmiş widget'lar (Flutter `Semantics`, `contentDescription`,
-`accessibilityLabel`) onlara daha isabetli dokunma hedefleri sağlar.
+Ajanlar ekranı ekran görüntüleri ve erişilebilirlik ağacı üzerinden okur; bu yüzden
+her UI kütüphanesiyle çalışır. Etiketlenmiş widget'lar (Flutter'da `Semantics`, Android'de `contentDescription`,
+iOS'ta `accessibilityLabel`) ajanların doğru yere dokunmasını kolaylaştırır.
