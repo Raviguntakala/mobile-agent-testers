@@ -74,7 +74,7 @@ def screen_elements(xml_path):
         if len(b) != 4 or not (label or rid):
             continue
         out.append({"label": label[:120], "id": rid, "bounds": [int(v) for v in b],
-                    "clickable": n.get("clickable") == "true"})
+                    "clickable": n.get("clickable") == "true", "selected": n.get("selected") == "true"})
     return out
 
 
@@ -185,11 +185,46 @@ def group_screens(personas):
             g["start"] = g["start"] or shot["start"]
             if screen["title"]:
                 g["titles"][screen["title"]] += 1
+            for e in screen["elements"]:
+                if e.get("selected") and e["clickable"] and e["label"]:   # the tab the screen is on
+                    g.setdefault("tabs", Counter())[re.sub(r"\s*Tab \d+ of \d+$", "", e["label"])] += 1
+            for t, y in steady_texts(screen["elements"]).items():
+                g.setdefault("seen_by", {}).setdefault(t, set()).add(p["key"])
+                g.setdefault("heights", Counter())[t] += y
+                g.setdefault("texts", Counter())[t] += 1
             screen["group"] = f"g{best + 1}"
     # members: every screenshot of the screen; the first one stands for it on the map
-    return {f"g{i + 1}": {"title": (g["titles"].most_common(1)[0][0] if g["titles"] else ""), "count": len(g["shots"]),
+    return {f"g{i + 1}": {"title": group_title(g), "count": len(g["shots"]),
                           "members": [{"key": s["key"], "nn": s["nn"]} for s in g["shots"]]}
             for i, g in enumerate(groups)}
+
+
+def steady_texts(elements):
+    """The texts of a screenshot that can name its screen: not a control, not a number, at most 40 characters,
+    each with its height on the screen."""
+    out = {}
+    for e in elements:
+        t = e["label"]
+        if t and not e["clickable"] and 2 <= len(t) <= 40 and t.strip("0123456789 :.,%#+-/") and t not in out:
+            out[t] = e["bounds"][1]
+    return out
+
+
+def group_title(g):
+    """A card's name: the text most of its testers (or starts of the app) share, as a random device name
+    or a date changes from one to the next; the highest on the screen first. Else the title of most screenshots."""
+    seen_by, heights, texts = g.get("seen_by") or {}, g.get("heights") or Counter(), g.get("texts") or Counter()
+    keys = {s["key"] for s in g["shots"]}
+    if seen_by and len(keys) > 1:   # shared by several testers or starts of the app: not a random name
+        best = max(len(v) for v in seen_by.values())
+        if best >= 2 and best * 2 >= len(keys):
+            return min((t for t, v in seen_by.items() if len(v) == best), key=lambda t: heights[t] / texts[t])
+    tabs = g.get("tabs")
+    if tabs and len(g["shots"]) > 1:
+        tab, n = tabs.most_common(1)[0]
+        if n * 2 >= len(g["shots"]):
+            return tab
+    return g["titles"].most_common(1)[0][0] if g["titles"] else ""
 
 
 def fresh_start_screen(trace):
@@ -456,11 +491,12 @@ def export(roots, out):
     run = load_run(roots)
     run["static"] = True
     run["ecr"] = False
-    run["run"] = "Demo: a made-up to-do app, its map and three testers"
+    run["run"] = "Demo on a made-up to-do app"
     about = read_json(roots[0] / "demo.json") if len(roots) == 1 else None   # written by scripts/demo_pack.py
     if isinstance(about, dict) and about.get("name"):
-        run["run"] = f"Demo: {about['name']}, a real open-source app, its map and its testers"
-        run["demoNote"] = f"Demo on {about['name']}, a real app · run it on yours"
+        run["run"] = "Demo on a real open-source app"
+        run["appName"] = about["name"]
+        run["demoNote"] = "Run it on your app"
     (out / "api").mkdir(parents=True, exist_ok=True)
     for name, _ in STATIC.values():
         shutil.copyfile(PAGE / name, out / name)

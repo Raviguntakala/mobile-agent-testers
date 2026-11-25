@@ -79,7 +79,7 @@ Any Anthropic-compatible model works, from Claude Haiku to OpenRouter, DeepSeek,
 
 ## See every screen on one map
 
-<a href="https://pierridotite.github.io/mobile-agent-testers/"><img src="assets/dashboard.png" alt="The dashboard: every screen of the app as a map, one colored lane per tester on each arrow, a heat map on each screen, the selected screen on the right" width="100%"></a>
+<a href="https://pierridotite.github.io/mobile-agent-testers/"><img src="assets/dashboard.png" alt="The map of LocalSend: every screen as a card, read left to right from the launch, a colored line for each tester, dashed lines where only the robot went, an overview on the right" width="100%"></a>
 
 Every screen the testers reached, with the path of each one in its own color and a heat map of where they tapped. Pick a device in the Device menu to see the screens in its shape (phone or tablet) and its own heat map. Comment a screen, or turn what is wrong on it into a check.
 

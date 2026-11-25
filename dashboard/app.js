@@ -55,7 +55,7 @@ function describe(a) {
 
 // ---------- state: the run, the comments (trace.notes.json) and the checks (trace.json) of each tester ----------
 
-const S = { data: null, notes: {}, traces: {}, saved: {}, savedTraces: {}, undo: [], redo: [], picking: null, mapSel: null, mapShot: null, mapHeat: "both", mapPan: null, mapPath: null, mapDevice: null, mapDragged: false };
+const S = { data: null, notes: {}, traces: {}, saved: {}, savedTraces: {}, undo: [], redo: [], picking: null, mapSel: null, mapShot: null, mapHeat: "taps", mapPan: null, mapPath: null, mapDevice: null, mapDragged: false };
 const persona = (key) => S.data.personas.find((p) => p.key === key);
 const traceOf = (key) => S.traces[key] || persona(key).trace;
 /** The trace of a tester, ready to take checks. Only checks are ever added: actions stay as explored. */
@@ -154,8 +154,8 @@ const screenUrl = (key, nn) => {
   return s.url || `api/screen?persona=${encodeURIComponent(key)}&name=${encodeURIComponent(s.file)}`;
 };
 const groupTitle = (g) => (g && S.data.groups[g] && S.data.groups[g].title) || "";
-/** The name of a screenshot: its own title (in the tester's language), else the title of its group. */
-const screenTitle = (info, nn) => (info && (info.title || groupTitle(info.group))) || `Screen ${nn}`;
+/** The name of a screen: the name of its card (shared by most testers), else the screenshot's own title. */
+const screenTitle = (info, nn) => (info && (groupTitle(info.group) || info.title)) || `Screen ${nn}`;
 
 /** Taps and swipes on every screenshot of a group, in [0, 1] of the screen. */
 function heatPoints(group, keys) {
@@ -235,13 +235,13 @@ function mergeBox(map, n, shot) {
     edit(() => { const notes = notesOf(shot.key); notes.sameAs = notes.sameAs || {}; notes.sameAs[shot.nn] = { key: o.v.key, nn: o.v.nn, by: "you" }; S.mapShot = { key: shot.key, nn: shot.nn }; });
   };
   const made = mergesOn(n.g);
-  return h("div", { class: "box" }, h("h3", {}, "Same screen in another form?", h("span", { class: "hint", style: "margin:0" }, "trace.notes.json")),
+  return fold("merge", "Same screen as another card?", made.length, [
     h("p", { class: "hint", style: "margin:0 0 6px" }, "Another language, text size, device or platform: merge the two cards. Only the map changes, never a trace."),
     h("div", { class: "row" }, pick, h("button", { class: "fit", onclick: merge }, "Merge")),
     made.length ? h("ul", { class: "list", style: "margin-top:8px" }, ...made.map((m) => h("li", {},
       h("span", { class: "grow" }, `${traceOf(m.key).persona.id} ${m.nn} = ${persona(m.to.key) ? traceOf(m.to.key).persona.id : m.to.key} ${m.to.nn}`,
         h("span", { class: "when" }, m.to.by === "claude" ? "merged by Claude" : "merged by hand")),
-      h("button", { onclick: () => edit(() => { const notes = notesOf(m.key); delete notes.sameAs[m.nn]; if (!Object.keys(notes.sameAs).length) delete notes.sameAs; S.mapShot = null; }) }, "Separate")))) : null);
+      h("button", { onclick: () => edit(() => { const notes = notesOf(m.key); delete notes.sameAs[m.nn]; if (!Object.keys(notes.sameAs).length) delete notes.sameAs; S.mapShot = null; }) }, "Separate")))) : null]);
 }
 
 function render() {
@@ -250,7 +250,7 @@ function render() {
     const info = S.mapShot && screenInfo(S.mapShot.nn, S.mapShot.key);
     S.mapSel = info ? info.group : null;
   }
-  for (const b of document.querySelectorAll("[data-mapheat]")) b.setAttribute("aria-checked", String(b.dataset.mapheat === S.mapHeat));
+  $("#map-heat").value = S.mapHeat;
   renderTop();
   renderMap();
 }
@@ -265,6 +265,7 @@ function renderTop() {
     st.textContent = dirty ? "Unsaved changes" : st.dataset.saved || "";
   }
   $("#save").disabled = !dirty;
+  document.body.classList.toggle("edited", dirty || S.undo.length > 0);
 }
 
 function pathButton(key) {
@@ -366,27 +367,40 @@ function buildMap() {
   return { nodes, edges, paths };
 }
 
-const CARD_W = 150, IMG_W = 134, COL_GAP = 120, ROW_GAP = 56, START_W = 110;
+const CARD_W = 168, IMG_W = 152, COL_GAP = 110, SUB_GAP = 28, ROW_GAP = 40, START_W = 110, MAX_ROWS = 3;
 
+/** Columns: steps from the launch. A long column wraps into several, MAX_ROWS cards high, so the map
+ * reads left to right instead of as one tall strip. */
 function layoutMap(map) {
   const cols = new Map();
   for (const n of map.nodes.values()) { if (!cols.has(n.depth)) cols.set(n.depth, []); cols.get(n.depth).push(n); }
   const aspect = (() => { const s = runSize(focusKey() || S.data.personas[0].key); return s[1] / s[0]; })();
-  const cardH = Math.round(IMG_W * aspect) + 64;
-  let maxRows = 0;
-  for (const list of cols.values()) { list.sort((a, b) => a.order - b.order); maxRows = Math.max(maxRows, list.length); }
+  const cardH = Math.round(IMG_W * aspect) + 58;
+  let maxRows = 1;
+  for (const list of cols.values()) { list.sort((a, b) => a.order - b.order); maxRows = Math.max(maxRows, Math.min(MAX_ROWS, list.length)); }
   const height = maxRows * cardH + (maxRows - 1) * ROW_GAP;
-  for (const [d, list] of cols) {
-    const colH = list.length * cardH + (list.length - 1) * ROW_GAP;
-    list.forEach((n, r) => {
-      n.x = d === 0 ? 0 : START_W + COL_GAP + (d - 1) * (CARD_W + COL_GAP);
-      n.w = d === 0 ? START_W : CARD_W;
-      n.h = d === 0 ? 44 : cardH;
-      n.y = 70 + (height - colH) / 2 + r * (cardH + ROW_GAP) + (d === 0 ? cardH / 2 - 22 : 0);
+  let x = 0;
+  for (const d of [...cols.keys()].sort((a, b) => a - b)) {
+    const list = cols.get(d);
+    if (d === 0) {
+      for (const n of list) { n.x = 0; n.w = START_W; n.h = 44; n.y = height / 2 - 22; }
+      x = START_W + COL_GAP;
+      continue;
+    }
+    const subs = Math.ceil(list.length / MAX_ROWS);
+    list.forEach((n, i) => {
+      const sub = Math.floor(i / MAX_ROWS), row = i % MAX_ROWS;
+      const inSub = Math.min(MAX_ROWS, list.length - sub * MAX_ROWS);
+      const colH = inSub * cardH + (inSub - 1) * ROW_GAP;
+      n.x = x + sub * (CARD_W + SUB_GAP);
+      n.w = CARD_W;
+      n.h = cardH;
+      n.y = (height - colH) / 2 + row * (cardH + ROW_GAP);
     });
+    x += subs * CARD_W + (subs - 1) * SUB_GAP + COL_GAP;
   }
-  const maxDepth = Math.max(...cols.keys());
-  return { width: START_W + COL_GAP + maxDepth * (CARD_W + COL_GAP), height: height + 160, cardH };
+  for (const n of map.nodes.values()) n.y += 100;
+  return { width: x - COL_GAP + 20, height: height + 150, cardH };
 }
 
 /** Findings of every tester whose screenshots belong to this screen. */
@@ -461,6 +475,7 @@ function visitFor(n) {
 
 function mapPoints(n, key, nn, mode = S.mapHeat) {
   const pts = [];
+  if (mode === "off") return pts;
   if (mode === "taps" || mode === "both") pts.push(...heatPoints(n.g, heatKeys()));
   if (mode === "estimated" || (mode === "both" && pts.filter((p) => p.weight === 1).length < 3)) pts.push(...estimatedPoints(key, nn).map((p) => ({ ...p, weight: p.weight * (mode === "both" ? 0.6 : 1) })));
   return pts;
@@ -472,7 +487,7 @@ function renderMap() {
   const world = $("#map-world");
   world.style.width = `${box.width}px`;
   world.style.height = `${box.height}px`;
-  if (!S.mapSel || !map.nodes.has(S.mapSel)) S.mapSel = [...map.nodes.values()].find((n) => n.g !== "start")?.g || null;
+  if (S.mapSel && !map.nodes.has(S.mapSel)) S.mapSel = null;
 
   // edges
   const svg = svgEl("svg", { width: box.width, height: box.height, class: "map-edges" });
@@ -541,22 +556,17 @@ function renderMap() {
     const canvas = h("canvas", {});
     const card = h("button", { class: `map-node${S.mapSel === n.g ? " sel" : ""}${n.testers.size ? "" : " unreached"}${faded ? " faded" : ""}`, style: `left:${n.x}px;top:${n.y}px;width:${n.w}px;height:${n.h}px`,
       onclick: (ev) => { if (S.mapDragged) return; S.mapSel = n.g; S.mapShot = null; renderMap(); ev.stopPropagation(); } },
-      h("div", { class: "thumb", style: `height:${n.h - 64}px` }, h("img", { src: screenUrl(rep.key, rep.nn), alt: "", class: matched ? "" : "other" }), canvas),
+      h("div", { class: "thumb", style: `height:${n.h - 58}px` }, h("img", { src: screenUrl(rep.key, rep.nn), alt: "", class: matched ? "" : "other" }), canvas),
       h("span", { class: "t" }, screenTitle(info, rep.nn)),
       h("span", { class: "m" }, n.testers.size ? h("span", { class: "dots", title: personaKeys().filter((k) => n.testers.has(k)).map((k) => traceOf(k).persona.id).join(", ") },
-          ...personaKeys().filter((k) => n.testers.has(k)).map((k) => h("i", { style: `background:${colorOf(k)}` })), ` ${taps} taps`) : h("span", { class: "chip warn" }, "No persona came here"),
-        !matched ? h("span", { class: "chip" }, S.mapPath ? `Not seen by ${traceOf(S.mapPath).persona.id}` : "Not seen on this device") : null,
+          ...personaKeys().filter((k) => n.testers.has(k)).map((k) => h("i", { style: `background:${colorOf(k)}` })), ` ${taps} tap${taps === 1 ? "" : "s"}`) : h("span", { class: "robot-only" }, "Robot only"),
+        !matched && !S.mapPath ? h("span", { class: "chip" }, "Not seen on this device") : null,
         fnd.length ? h("span", { class: "chip bad", title: fnd.map((f) => f.title).join("\n") }, `${fnd.length} finding${fnd.length > 1 ? "s" : ""}`) : null,
         com.length ? h("span", { class: "chip", title: com.map((x) => x.c.text).join("\n") }, `✎ ${com.length}`) : null));
     if (matched) requestAnimationFrame(() => paintHeat(canvas, mapPoints(n, rep.key, rep.nn), 0.6));
     return card;
   });
   world.replaceChildren(svg, ...labels, ...cards);
-  const screens = [...map.nodes.values()].filter((n) => n.g !== "start");
-  const unreached = screens.filter((n) => !n.testers.size).length;
-  const hasMapper = S.data.personas.some((p) => p.mapper);
-  const pick = $("#map-path");
-  pick.replaceChildren(h("option", { value: "" }, "All testers"), ...S.data.personas.map((p) => h("option", { value: p.key, selected: p.key === S.mapPath }, p.mapper ? `${p.trace.persona.id} (map maker)` : p.trace.persona.id)));
   const devs = devices();
   const devPick = $("#map-device");
   devPick.closest("label").hidden = devs.length < 2 && !S.mapDevice;
@@ -564,10 +574,13 @@ function renderMap() {
     const n = personaKeys().filter((k) => deviceOf(k) === d).length;
     return h("option", { value: d, selected: d === S.mapDevice }, `${d} (${n} tester${n > 1 ? "s" : ""})`);
   }));
-  $("#map-testers").replaceChildren(...personaKeys().map((k) => h("button", { class: `tester-chip${S.mapPath === k ? " on" : ""}`, title: "Show this tester's path",
-    onclick: () => { S.mapPath = S.mapPath === k ? null : k; renderMap(); } }, h("i", { style: `background:${colorOf(k)}` }), traceOf(k).persona.id)));
-  $("#map-summary").textContent = (S.mapDevice ? `On ${S.mapDevice}: ` : "") + `${screens.length} screens${hasMapper ? ", mapped by the map maker" : ", as far as the testers went"}` +
-    (hasMapper ? ` · ${unreached} reached by no persona` : " · run briefs/map.md to find every screen");
+  const robot = S.data.personas.find((p) => p.mapper);
+  $("#map-testers").replaceChildren(
+    h("button", { class: `tester-chip${S.mapPath ? "" : " on"}`, onclick: () => { S.mapPath = null; renderMap(); } }, "All"),
+    ...personaKeys().map((k) => h("button", { class: `tester-chip${S.mapPath === k ? " on" : ""}`, title: `Show only ${traceOf(k).persona.id}'s path`,
+      onclick: () => { S.mapPath = S.mapPath === k ? null : k; renderMap(); } }, h("i", { style: `background:${colorOf(k)}` }), traceOf(k).persona.id)),
+    robot ? h("button", { class: `tester-chip robot${S.mapPath === robot.key ? " on" : ""}`, title: "Show only the robot's paths",
+      onclick: () => { S.mapPath = S.mapPath === robot.key ? null : robot.key; renderMap(); } }, h("i", {}), "robot") : null);
   applyPan(box);
   renderMapSide(map);
 }
@@ -576,8 +589,9 @@ function applyPan(box) {
   const view = $("#map-canvas");
   if (!S.mapPan) {
     const vw = view.clientWidth, vh = view.clientHeight;
-    const k = Math.min(1, (vw - 40) / box.width, (vh - 40) / box.height);
-    S.mapPan = { k: Math.max(0.3, k), x: Math.max(20, (vw - box.width * Math.max(0.3, k)) / 2), y: Math.max(20, (vh - box.height * Math.max(0.3, k)) / 2) };
+    // the whole map when it fits at a readable size, else readable from the launch on the left
+    const k = Math.max(S.fitAll ? 0.15 : 0.6, Math.min(1, (vw - 40) / box.width, (vh - 40) / box.height));
+    S.mapPan = { k, x: Math.max(20, (vw - box.width * k) / 2), y: Math.max(10, (vh - box.height * k) / 2) };
   }
   $("#map-world").style.transform = `translate(${S.mapPan.x}px, ${S.mapPan.y}px) scale(${S.mapPan.k})`;
 }
@@ -603,9 +617,49 @@ function wireMap() {
     S.mapPan.k = k;
     $("#map-world").style.transform = `translate(${S.mapPan.x}px, ${S.mapPan.y}px) scale(${k})`;
   }, { passive: false });
-  $("#map-fit").onclick = () => { S.mapPan = null; renderMap(); };
-  $("#map-path").onchange = (e) => { S.mapPath = e.target.value || null; renderMap(); };
+  $("#map-fit").onclick = () => { S.mapPan = null; S.fitAll = true; renderMap(); S.fitAll = false; };
+  const zoom = (f) => {
+    const vw = view.clientWidth / 2, vh = view.clientHeight / 2;
+    const k = Math.min(2, Math.max(0.2, S.mapPan.k * f));
+    S.mapPan.x = vw - (vw - S.mapPan.x) * (k / S.mapPan.k);
+    S.mapPan.y = vh - (vh - S.mapPan.y) * (k / S.mapPan.k);
+    S.mapPan.k = k;
+    $("#map-world").style.transform = `translate(${S.mapPan.x}px, ${S.mapPan.y}px) scale(${k})`;
+  };
+  $("#map-zoom-in").onclick = () => zoom(1.25);
+  $("#map-zoom-out").onclick = () => zoom(0.8);
   $("#map-device").onchange = (e) => { S.mapDevice = e.target.value || null; S.mapShot = null; renderMap(); };
+}
+
+/** A section of the side panel that opens and closes, and stays as the reader left it. */
+function fold(id, title, count, kids, force) {
+  S.folds = S.folds || {};
+  const open = force !== undefined ? force : (id in S.folds ? S.folds[id] : count > 0);
+  const d = h("details", { class: "box fold", open }, h("summary", {}, title, count ? h("span", { class: "badge" }, String(count)) : null), ...kids.filter(Boolean));
+  d.addEventListener("toggle", () => { S.folds[id] = d.open; });
+  return d;
+}
+const appName = () => S.data.appName || ((S.data.personas[0] && traceOf(S.data.personas[0].key).app) || {}).id || "this app";
+function introPanel(map) {
+  const screens = [...map.nodes.values()].filter((n) => n.g !== "start");
+  const keys = personaKeys();
+  const robot = S.data.personas.some((p) => p.mapper);
+  const unreached = screens.filter((n) => !n.testers.size).length;
+  const findings = keys.reduce((a, k) => a + (((persona(k).findings || {}).issues) || []).length, 0);
+  const stat = (v, label) => h("div", { class: "stat" }, h("b", {}, String(v)), h("span", {}, label));
+  return [
+    h("h2", { class: "intro-title" }, appName()),
+    h("p", { class: "lead" }, robot ? `Every screen a robot found by tapping each button once, with no model, and the paths of ${keys.length} AI tester${keys.length === 1 ? "" : "s"} on top.`
+      : `The screens ${keys.length} AI tester${keys.length === 1 ? "" : "s"} reached, and the path of each one.`),
+    h("div", { class: "stats" }, stat(screens.length, "screens"), stat(keys.length, keys.length === 1 ? "tester" : "testers"),
+      robot ? stat(unreached, "reached by no tester") : null, stat(findings, findings === 1 ? "finding" : "findings")),
+    keys.length ? h("div", { class: "box" }, h("h3", {}, "Testers"), h("ul", { class: "list" }, ...keys.map((k) => {
+      const t = traceOf(k);
+      return h("li", {}, h("i", { class: "swatch", style: `background:${colorOf(k)}` }),
+        h("span", { class: "grow" }, t.persona.id, h("span", { class: "when" }, [t.persona.context?.device, t.persona.locale].filter(Boolean).join(" · "))), pathButton(k));
+    }))) : null,
+    h("p", { class: "hint" }, "Click a screen on the map to see its screenshots, what the testers found there, and to turn a finding into a check."),
+  ];
 }
 
 function renderMapSide(map) {
@@ -613,7 +667,7 @@ function renderMapSide(map) {
   const where = `${S.mapSel}|${S.mapPath}`;
   if (side.dataset.where !== where) { side.dataset.where = where; S.picking = null; requestAnimationFrame(() => { side.scrollTop = 0; }); }
   const n = map.nodes.get(S.mapSel);
-  if (!n) { side.replaceChildren(h("p", { class: "hint" }, "Click a screen.")); return; }
+  if (!n) { side.replaceChildren(...introPanel(map).filter(Boolean)); return; }
   const shot = (S.mapShot && n.visits.find((v) => v.key === S.mapShot.key && v.nn === S.mapShot.nn)) || visitFor(n).visit;
   const info = screenInfo(shot.nn, shot.key);
   const [W, H] = runSize(shot.key);
@@ -656,31 +710,32 @@ function renderMapSide(map) {
   const shown = S.mapPath && map.paths.get(S.mapPath);
   const pathBox = shown ? h("div", { class: "box path-box" }, h("h3", {}, `Path of ${traceOf(S.mapPath).persona.id}`, h("button", { class: "link", onclick: () => { S.mapPath = null; renderMap(); } }, "Show all")),
     h("ol", { class: "path" }, ...shown.slice(1).map((g) => { const o = map.nodes.get(g); return h("li", {}, h("button", { class: `link${g === n.g ? " here" : ""}`, onclick: () => { S.mapSel = g; S.mapShot = null; renderMap(); } }, screenTitle(screenInfo(o.visits[0].nn, o.visits[0].key), o.visits[0].nn))); }))) : null;
+  const seenBy = n.testers.size ? `Seen by ${n.testers.size} tester${n.testers.size === 1 ? "" : "s"}${n.mapped ? " and the robot" : ""}` : "Only the robot came here";
+  const beforeAfter = (() => { const i = flows("in"), o = flows("out"); return [
+    h("h4", {}, "Comes from"), i.length ? h("ul", { class: "list" }, ...i) : h("p", { class: "hint" }, "The launch of the app."),
+    h("h4", {}, "Leads to"), o.length ? h("ul", { class: "list" }, ...o) : h("p", { class: "hint", style: "margin:0" }, "Nobody went further from here.")]; })();
   side.replaceChildren(...[
+    h("div", { class: "side-head" }, h("h2", {}, screenTitle(info, shot.nn)), h("button", { class: "icon", title: "Back to the overview (Esc)", "aria-label": "Close", onclick: () => { S.mapSel = null; renderMap(); } }, "×")),
+    h("p", { class: "hint" }, `${seenBy} · ${n.visits.length} screenshot${n.visits.length > 1 ? "s" : ""}`),
     pathBox,
-    h("div", { class: "step-head" }, h("span", { class: "kind k-tap" }, "Screen"), h("strong", {}, screenTitle(info, shot.nn))),
-    h("p", { class: "hint" }, `${n.visits.length} screenshot${n.visits.length > 1 ? "s" : ""} ${n.testers.size ? `by ${n.testers.size} tester${n.testers.size === 1 ? "" : "s"}${n.mapped ? " and the map maker" : ""}` : "by the map maker only"}. ` +
-      (S.mapHeat === "taps" ? "Heat map: real taps of every tester." : S.mapHeat === "estimated" ? (info && info.saliency ? "Heat map: predicted by a saliency model." : "Heat map: estimated from the tappable elements and what testers tapped elsewhere.") : "Heat map: real taps, completed by the estimate where testers tapped little.")),
     phone,
     n.visits.length > 1 ? h("div", { class: "shots" }, ...n.visits.map((v) => h("button", { class: `shot${v === shot ? " on" : ""}`, title: `${traceOf(v.key).persona.id}, screenshot ${v.nn}`, onclick: () => { S.mapShot = { key: v.key, nn: v.nn }; renderMap(); } },
       h("img", { src: screenUrl(v.key, v.nn), alt: "" })))) : null,
-    h("div", { class: "box" }, h("h3", {}, "Comments on this screen", h("span", { class: "hint", style: "margin:0" }, "trace.notes.json")),
+    fnd.length ? h("div", { class: "box" }, h("h3", {}, "Found here"), h("ul", { class: "list" }, ...fnd.map((f) => h("li", {},
+      h("span", { class: "grow" }, h("span", { class: `dot sev-${f.severity}` }), f.title, h("span", { class: "when" }, `${traceOf(f.key).persona.id} · ${f.severity}`)),
+      h("button", { title: "Pick on the screen what shows this bug, or what is missing: the check stays red until the bug is fixed", onclick: () => { S.picking = { el: null, kind: "notVisible", bug: true, started: Date.now() }; S.folds = { ...(S.folds || {}), checks: true }; renderMap(); } }, "Make it a test"))))) : null,
+    testers.length ? h("div", { class: "box" }, h("h3", {}, "Testers who came here"), h("ul", { class: "list" }, ...testers)) : h("div", { class: "box" }, h("h3", {}, "No tester came here"),
+      h("p", { class: "hint", style: "margin:0" }, "Only the robot opened this screen. Is it hard to find, or not needed?"),
+      mapper ? h("div", { class: "row", style: "margin-top:8px" }, h("span", { class: "hint", style: "margin:0" }, "The robot's path replays with no model."), pathButton(mapper.key)) : null),
+    fold("flows", "Before and after", 0, beforeAfter, S.folds && "flows" in S.folds ? undefined : false),
+    fold("comments", "Comments", comments.length, [
       h("ul", { class: "list" }, ...comments.map((x) => h("li", { class: x.c.resolved ? "resolved" : "" },
         h("span", { class: "grow" }, x.c.text, h("span", { class: "when" }, `${traceOf(x.key).persona.id}, screenshot ${x.nn} · ${new Date(x.c.at).toLocaleString()}`)),
         h("button", { onclick: () => mutate(x, (l) => { l[x.j].resolved = !l[x.j].resolved; }) }, x.c.resolved ? "Reopen" : "Resolve"),
         h("button", { class: "danger", onclick: () => mutate(x, (l) => l.splice(x.j, 1)) }, "Delete")))),
-      input, h("div", { class: "row", style: "margin-top:6px" }, h("span"), h("button", { class: "fit", onclick: add }, "Comment"))),
+      input, h("div", { class: "row", style: "margin-top:6px" }, h("span", { class: "hint", style: "margin:0" }, "Saved in trace.notes.json"), h("button", { class: "fit", onclick: add }, "Comment"))]),
     checkBox(n, shot, info),
-    mergeBox(map, n, shot),
-    fnd.length ? h("div", { class: "box" }, h("h3", {}, "Findings seen here"), h("ul", { class: "list" }, ...fnd.map((f) => h("li", {},
-      h("span", { class: "grow" }, h("span", { class: `dot sev-${f.severity}` }), f.title, h("span", { class: "when" }, `${traceOf(f.key).persona.id} · ${f.severity}`)),
-      h("button", { title: "Pick on the screen what shows this bug, or what is missing: the check stays red until the bug is fixed", onclick: () => { S.picking = { el: null, kind: "notVisible", bug: true, started: Date.now() }; renderMap(); } }, "Make it a test"))))) : null,
-    h("div", { class: "box" }, h("h3", {}, "Testers who came here"), testers.length ? h("ul", { class: "list" }, ...testers)
-      : h("p", { class: "hint", style: "margin:0" }, "No persona reached this screen. Only the map maker did: is it hard to find, or not needed?"),
-      mapper ? h("div", { class: "row", style: "margin-top:8px" }, h("span", { class: "hint", style: "margin:0" }, "The map maker's path reaches this screen, and replays with no model."),
-        pathButton(mapper.key)) : null),
-    h("div", { class: "box" }, h("h3", {}, "Comes from"), h("ul", { class: "list" }, ...flows("in"))),
-    h("div", { class: "box" }, h("h3", {}, "Leads to"), (() => { const l = flows("out"); return l.length ? h("ul", { class: "list" }, ...l) : h("p", { class: "hint", style: "margin:0" }, "Nobody went further from here."); })())].filter(Boolean));
+    mergeBox(map, n, shot)].filter(Boolean));
 }
 
 function checkBox(n, shot, info) {
@@ -706,7 +761,7 @@ function checkBox(n, shot, info) {
       h("div", { class: "row", style: "margin-top:6px" }, h("button", { class: "fit", onclick: () => { S.picking = null; renderMap(); } }, "Cancel"), h("span"),
         h("button", { class: "fit primary", disabled: !target, onclick: () => { S.picking = null; addCheck(shot.key, shot.nn, target, pick.kind, pick.bug, pick.started); } }, "Add check")));
   }
-  return h("div", { class: "box" }, h("h3", {}, "Checks on this screen", h("span", { class: "hint", style: "margin:0" }, "trace.json")), list, form);
+  return fold("checks", "Checks a replay verifies", checks.length, [list, form], S.picking ? true : undefined);
 }
 
 // ---------- saving ----------
@@ -765,7 +820,12 @@ function download(name, text) {
 }
 
 function wire() {
-  for (const b of document.querySelectorAll("[data-mapheat]")) b.onclick = () => { S.mapHeat = b.dataset.mapheat; render(); };
+  $("#map-heat").onchange = (e) => { S.mapHeat = e.target.value; render(); };
+  const help = $("#help-box");
+  const openHelp = (on) => { help.hidden = !on; if (on) $("#help-close").focus(); try { localStorage.setItem("mapHelpSeen", "1"); } catch (_) { /* private window */ } };
+  $("#help").onclick = () => openHelp(true);
+  $("#help-close").onclick = () => openHelp(false);
+  help.addEventListener("click", (e) => { if (e.target === help) openHelp(false); });
   wireMap();
   $("#undo").onclick = () => undoRedo("undo", "redo");
   $("#redo").onclick = () => undoRedo("redo", "undo");
@@ -776,8 +836,10 @@ function wire() {
     if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) { if (e.key === "Escape") e.target.blur(); return; }
     if (mod && e.key.toLowerCase() === "z") { e.preventDefault(); undoRedo(e.shiftKey ? "redo" : "undo", e.shiftKey ? "undo" : "redo"); }
     else if (mod && e.key.toLowerCase() === "y") { e.preventDefault(); undoRedo("redo", "undo"); }
+    else if (e.key === "Escape" && !$("#help-box").hidden) { $("#help-box").hidden = true; }
     else if (e.key === "Escape" && S.picking) { S.picking = null; renderMap(); }
     else if (e.key === "Escape" && S.mapPath) { S.mapPath = null; renderMap(); }
+    else if (e.key === "Escape" && S.mapSel) { S.mapSel = null; renderMap(); }
   });
   window.addEventListener("resize", () => renderMap());
   window.addEventListener("beforeunload", (e) => { if (S.data && dirtyKeys().length) { e.preventDefault(); e.returnValue = ""; } });
@@ -794,6 +856,8 @@ async function start() {
   }
   if (!S.data.personas.length) { $("#loading").textContent = "No trace.json in this run."; return; }
   $("#run-name").textContent = S.data.run;
+  $("#app-name").textContent = `App map · ${appName()}`;
+  try { if (!localStorage.getItem("mapHelpSeen")) { $("#help-box").hidden = false; localStorage.setItem("mapHelpSeen", "1"); } } catch (_) { /* private window: no first-visit help */ }
   if (S.data.static) {
     document.body.classList.add("static");
     $("#save").textContent = "Download";
