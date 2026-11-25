@@ -143,7 +143,9 @@ def replay(results, ecr, env, timeout=1200, run=run_tool):
         return {"status": "not_compiled"}, steps, "\n".join(printed)
     app_id = str((steps[0].get("action") or {}).get("appId", "")) if steps else ""
     phone = {name: value for name, value in env.items() if not SECRET.search(name) and name != "REPLAY_PARAMS"}   # for adb
-    since = device_state.phone_time(run, phone)
+    first = (steps[0].get("action") or {}) if steps else {}
+    fresh = device_state.fresh_start(run, phone, app_id) if first.get("kind") == "launchApp" and first.get("clearState") is True else None
+    since = device_state.phone_time(run, phone)   # after the fresh start: the log then shows what the replay itself did
     started = time.time()
     code, output = ecr_command("replay", limit=timeout)
     result = read_result(output)
@@ -155,6 +157,8 @@ def replay(results, ecr, env, timeout=1200, run=run_tool):
     device = device_state.after_replay(run, phone, since, app_id, look=result["status"] in ("fail", "timeout", "not_run"))
     if device:
         result["device"] = device
+    if fresh is not None:
+        result["freshStart"] = fresh
     return result, steps, "\n".join(printed)
 
 

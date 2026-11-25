@@ -21,8 +21,13 @@ TYPED = "A text that must stay out of every public file"
 
 
 WINDOW = "mCurrentFocus=Window{1a2b3c u0 com.example.todo/com.example.todo.MainActivity}\n  mFocusedApp=ActivityRecord{9f u0 com.example.todo/.MainActivity t12}\n"
-LOG = ("11-25 20:00:01.000   500   520 I ActivityTaskManager: Displayed com.example.todo/.MainActivity for user 0: +1s534ms\n"
+LOG = ("11-25 20:00:00.500   500   520 I ActivityManager: Force stopping com.example.todo appid=10123 user=0: clear data\n"
+       "11-25 20:00:00.600   500   520 I ActivityManager: Force stopping com.example.todo appid=10123 user=0: from pid 4567\n"
+       "11-25 20:00:00.700   500   520 I ActivityTaskManager: START u0 {act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] "
+       "flg=0x10200000 cmp=com.example.todo/.MainActivity} from uid 2000\n"
+       "11-25 20:00:01.000   500   520 I ActivityTaskManager: Displayed com.example.todo/.MainActivity for user 0: +1s534ms\n"
        f"11-25 20:00:02.000  1234  1234 I ReactNativeJS: {TYPED}\n")
+STAT = "500.00 900.00\n1234 (com.example.todo) S 1 1 0 0 -1 4194560 100 0 0 0 10 5 0 0 20 0 30 0 47000 123456 789\n"   # started at 470 s
 
 
 class Tools:
@@ -36,9 +41,9 @@ class Tools:
     def adb(self, args):
         if not self.phone:
             return 1, "adb: no devices/emulators found\n"
-        answers = {"date": (0, "1764100800\n"), "logcat": (0, self.log), "dumpsys": (0, self.window), "pidof": (0, "1234\n"),
-                   "cat": (0, "3.52 2.10 1.00 2/300 1234\n")}
-        return answers[next(word for word in args[1:] if word in answers)]
+        answers = {"/proc/uptime": (0, STAT), "/proc/loadavg": (0, "3.52 2.10 1.00 2/300 1234\n"), "date": (0, "1764100800\n"),
+                   "logcat": (0, self.log), "dumpsys": (0, self.window), "pidof": (0, "1234\n"), "force-stop": (0, ""), "clear": (0, "Success\n")}
+        return next(answer for word, answer in answers.items() if word in args)
 
     def __call__(self, args, cwd, env, timeout):
         self.calls.append(args)
@@ -135,13 +140,20 @@ class ReplaySet(unittest.TestCase):
         tools = Tools(outcomes={"open": "fail"})
         printed, kept = self.run_it(tools, "--times", "3", "--closed-group", "noinet")
         self.assertIn("replays:   anna-20261125T120000 replay 1 of 3: FAIL, target_not_found at step s3, after 60 s; "
-                      "on screen: the app, the app running; app start 1.5 s; nothing stopped responding; no crash; load 3.5 on the phone", printed)
+                      "on screen: the app, the app running, started 30 s before; app start 1.5 s; "
+                      "in the log the app was cleared 1, stopped 1 and launched 1 times; nothing stopped responding; no crash; load 3.5 on the phone", printed)
         self.assertIn("replay 2 of 3: FAIL", printed)
         self.assertNotIn("replay 3 of 3", printed)   # the third gave what the trace recorded
-        self.assertIn("app start median 1.5 s, slowest 1.5 s", printed)
+        self.assertIn("app start median 1.5 s, slowest 1.5 s, app cleared by the harness before 3 of 3, cleared again by the replay itself in 3 of 3", printed)
         replays = kept["traces"][0]["replays"]
         self.assertEqual(replays[0]["device"]["inFront"], "the app")
-        self.assertEqual(replays[2]["device"], {"appStartSeconds": [1.5]})   # as recorded: only the start time is read
+        self.assertEqual(replays[0]["device"]["appProcessSeconds"], 30)
+        self.assertEqual(replays[2]["device"], {"appStartSeconds": [1.5], "appCleared": 1, "appStopped": 1, "appLaunched": 1})   # only the log
+        self.assertTrue(all(r["freshStart"] for r in replays))
+        clears = [i for i, args in enumerate(tools.calls) if args[:4] == ["adb", "shell", "pm", "clear"]]
+        replays_run = [i for i, args in enumerate(tools.calls) if "replay" in args or (args[0] == "sg" and "replay" in args[3])]
+        self.assertEqual(len(clears), 3)
+        self.assertTrue(all(c < r for c, r in zip(clears, replays_run)))   # each clear comes before its replay
         self.assertIn(["adb", "logcat", "-d", "-T", "1764100800.000"], tools.calls)
         public = printed + (self.out / "replays.json").read_text()
         for private in (TYPED, "MainActivity", "ReactNativeJS"):

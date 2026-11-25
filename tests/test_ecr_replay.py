@@ -104,8 +104,9 @@ class Run(unittest.TestCase):
         code, printed = self.main({"validate": (0, "ok\n"), "compile": (0, "wrote\n"), "replay": (1, FAIL)}, phone=phone)
         self.assertEqual(0, code)
         self.assertIn("after 38 s; on screen: a window that does not respond, of the system, the app not running; app start 21 s; "
-                      "not responding: the system; no crash; load 7.9 on the phone", printed)
+                      "in the log the app was cleared 0, stopped 0 and launched 0 times; not responding: the system; no crash; load 7.9 on the phone", printed)
         kept = json.loads((self.results / "replay.json").read_text())
+        self.assertNotIn("freshStart", kept)   # the trace does not ask for a fresh state: the app is not cleared
         self.assertEqual(kept["device"]["inFront"], "a window that does not respond, of the system")
         self.assertNotIn("CLAUDE_CODE_OAUTH_TOKEN", self.phone_calls[0][1])
 
@@ -113,7 +114,18 @@ class Run(unittest.TestCase):
         phone = {"date": (0, "1764100800\n"), "logcat": (0, "I ActivityTaskManager: Displayed com.example.todo/.MainActivity: +1s200ms\n")}
         code, printed = self.main({"validate": (0, "ok\n"), "compile": (0, "wrote\n"), "replay": (0, PASS)}, phone=phone)
         self.assertEqual((0, "replay: pass, 3 steps with no model in 41 s\n"), (code, printed))
-        self.assertEqual({"appStartSeconds": [1.2]}, json.loads((self.results / "replay.json").read_text())["device"])
+        self.assertEqual({"appStartSeconds": [1.2], "appCleared": 0, "appStopped": 0, "appLaunched": 0},
+                         json.loads((self.results / "replay.json").read_text())["device"])
+
+    def test_a_trace_that_asks_for_a_fresh_state_gets_the_app_cleared_before_its_replay(self):
+        trace = json.loads((self.results / "trace.json").read_text())
+        trace["steps"][0]["action"]["clearState"] = True
+        (self.results / "trace.json").write_text(json.dumps(trace))
+        phone = {"force-stop": (0, ""), "clear": (0, "Success\n"), "date": (0, "1764100800\n"), "logcat": (0, "")}
+        code, printed = self.main({"validate": (0, "ok\n"), "compile": (0, "wrote\n"), "replay": (0, PASS)}, phone=phone)
+        self.assertEqual((0, "replay: pass, 3 steps with no model in 41 s\n"), (code, printed))
+        self.assertTrue(json.loads((self.results / "replay.json").read_text())["freshStart"])
+        self.assertEqual(["adb", "shell", "pm", "clear", "com.example.todo"], self.phone_calls[1][0])
 
     def test_pass(self):
         code, printed = self.main({"validate": (0, "ok\n"), "compile": (0, "wrote\n"), "replay": (0, PASS)})

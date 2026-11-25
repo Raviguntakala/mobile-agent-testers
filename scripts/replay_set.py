@@ -123,7 +123,8 @@ def replay_trace(trace_path, ecr, env, out, times, closed_group, run):
     for internet, group in [("open", None)] * (times - 1 if closed_group else times) + ([("cut", closed_group)] if closed_group else []):
         report = out / f".{trace_path.stem}.json"
         report.unlink(missing_ok=True)
-        since = device_state.phone_time(run, phone)
+        fresh = device_state.fresh_start(run, phone, app_id) if entry["freshState"] else None
+        since = device_state.phone_time(run, phone)   # after the fresh start: the log then shows what the replay itself did
         started = time.time()
         code = ecr_command("replay", "--times", "1", "--report", str(report.resolve()), limit=300, group=group)
         try:
@@ -137,6 +138,8 @@ def replay_trace(trace_path, ecr, env, out, times, closed_group, run):
         replay = {"index": len(replays) + 1, "internet": internet, "outcome": one.get("outcome"), "durationMs": one.get("durationMs"),
                   "divergences": one.get("divergences", [])}
         replay["device"] = device_state.after_replay(run, phone, since, app_id, look=kept is None or replay["outcome"] != entry.get("recorded"))
+        if fresh is not None:
+            replay["freshStart"] = fresh
         replays.append(replay)
     if not any(r["outcome"] not in NOT_RUN for r in replays):
         timeout = any(r["outcome"] == "timeout" for r in replays)
@@ -162,6 +165,10 @@ def line_of(entry):
     taps = entry["taps"]
     starts = [r["device"]["appStartSeconds"][0] for r in replays if (r.get("device") or {}).get("appStartSeconds")]
     start = f", app start median {statistics.median(starts):g} s, slowest {max(starts):g} s" if starts else ""
+    fresh = [r["freshStart"] for r in replays if "freshStart" in r]
+    start += f", app cleared by the harness before {sum(fresh)} of {len(fresh)}" if fresh else ""
+    seen = [r["device"]["appCleared"] for r in replays if "appCleared" in (r.get("device") or {})]
+    start += f", cleared again by the replay itself in {sum(1 for n in seen if n)} of {len(seen)}" if seen and fresh else ""
     return (f"{name}: {as_recorded} of {len(replays)} replays give what the trace recorded ({counts}){closed}, median {seconds} s, "
             f"{entry['steps']} steps, taps {taps['name']} by name, {taps['id']} by id, {taps['point']} by position, trace {entry['sha256'][:12]}{start}{where}")
 

@@ -14,7 +14,23 @@ FOCUS = re.compile(r"mCurrentFocus=Window\{\S+ \S+ ([^}\n]*)\}")
 DISPLAYED = re.compile(r"Displayed ([\w.]+)/\S*?(?: for user \d+)?: \+(?:(\d+)s)?(\d+)ms")
 NOT_RESPONDING = re.compile(r"ANR in ([\w.:]+)")
 CRASHED = re.compile(r"Process: ([\w.:]+), PID: \d+")
+STOPPED = re.compile(r"Force stopping ([\w.]+) appid=\d+ user=-?\d+: ([^\n]*)")   # `pm clear` says "clear data"
+LAUNCHED = re.compile(r"START u\d+ \{[^}\n]*cmp=([\w.]+)/")
 APP_ID = re.compile(r"[A-Za-z0-9._]{1,200}")
+
+
+def fresh_start(run, env, app_id):
+    """Stops the app and clears its data, before a replay whose trace asks for a fresh state. True when the phone said Success.
+
+    Maestro clears and stops the app itself at the first step of such a trace, yet a replay can find the app
+    still on the screen where the replay before it ended, with no start in the log. Replays that follow each
+    other on one phone must start as separate runs of a CI would: the harness makes sure of it.
+    """
+    if not app_id or not APP_ID.fullmatch(app_id):
+        return False
+    run(["adb", "shell", "am", "force-stop", app_id], None, env, 30)
+    code, out = run(["adb", "shell", "pm", "clear", app_id], None, env, 60)
+    return code == 0 and "Success" in (out or "")
 
 
 def phone_time(run, env):
@@ -57,18 +73,38 @@ def load(run, env):
     return (round(float(phone.group(1)), 1) if phone else None), runner
 
 
+def process_age(run, env, pid):
+    """Seconds since the process `pid` started on the phone, or None."""
+    if not re.fullmatch(r"\d{1,7}", pid or ""):
+        return None
+    code, out = run(["adb", "shell", "cat", "/proc/uptime", f"/proc/{pid}/stat"], None, env, 20)
+    lines = (out or "").splitlines() if code == 0 else []
+    try:
+        uptime = float(lines[0].split()[0])
+        started = int(lines[1].rsplit(")", 1)[1].split()[19]) / 100   # field 22, in ticks of 1/100 s
+    except (IndexError, ValueError):
+        return None
+    return max(0, round(uptime - started))
+
+
 def after_replay(run, env, since, app_id, look):
-    """Facts about the replay that started at `since`. With look=False, only the start times of the app."""
+    """Facts about the replay that started at `since`. With look=False, only what the system log says."""
     if not since or not app_id or not APP_ID.fullmatch(app_id):
         return {}
     code, log = run(["adb", "logcat", "-d", "-T", f"{since}.000"], None, env, 60)
     log = log if code == 0 else ""
-    facts = {"appStartSeconds": app_starts(log, app_id)}
+    stops = [why for name, why in STOPPED.findall(log) if name == app_id]
+    facts = {"appStartSeconds": app_starts(log, app_id), "appCleared": sum(1 for why in stops if "clear data" in why),
+             "appStopped": sum(1 for why in stops if "clear data" not in why),
+             "appLaunched": sum(1 for name in LAUNCHED.findall(log) if name == app_id)}
     if not look:
         return facts
     code, windows = run(["adb", "shell", "dumpsys", "window"], None, env, 30)
-    running, _ = run(["adb", "shell", "pidof", app_id], None, env, 20)
+    running, pid = run(["adb", "shell", "pidof", app_id], None, env, 20)
     phone, runner = load(run, env)
+    age = process_age(run, env, (pid or "").split()[0] if running == 0 and (pid or "").split() else "")
+    if age is not None:
+        facts["appProcessSeconds"] = age
     facts.update(inFront=in_front(windows if code == 0 else "", app_id), appRunning=running == 0,
                  notResponding=sorted({"the app" if name.split(":")[0] == app_id else "the system" for name in NOT_RESPONDING.findall(log)}),
                  appCrashes=sum(1 for name in CRASHED.findall(log) if name.split(":")[0] == app_id),
@@ -83,8 +119,11 @@ def words(facts):
     starts = facts.get("appStartSeconds") or []
     said = []
     if "inFront" in facts:
-        said.append(f"on screen: {facts['inFront']}, the app {'running' if facts.get('appRunning') else 'not running'}")
+        age = f", started {facts['appProcessSeconds']} s before" if "appProcessSeconds" in facts else ""
+        said.append(f"on screen: {facts['inFront']}, the app {'running' + age if facts.get('appRunning') else 'not running'}")
     said.append(f"app start {', '.join(f'{s:g} s' for s in starts)}" if starts else "no start of the app in the log")
+    if "appCleared" in facts:
+        said.append(f"in the log the app was cleared {facts['appCleared']}, stopped {facts['appStopped']} and launched {facts['appLaunched']} times")
     if "notResponding" in facts:
         said.append(f"not responding: {' and '.join(facts['notResponding'])}" if facts["notResponding"] else "nothing stopped responding")
         crashes = facts.get("appCrashes", 0)
