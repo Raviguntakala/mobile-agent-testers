@@ -3,7 +3,7 @@
   "displayName": "Mobile Agent Testers",
   "description": "Set up and run parallel AI testers (one Claude Code agent per iOS Simulator or Android emulator, with personas) on GitHub Actions",
   "icon": ".claude-plugin/icon.png",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": {
     "name": "Pierre Raffalli",
     "url": "https://www.linkedin.com/in/pierre-raffalli/"

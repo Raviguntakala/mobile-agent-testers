@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.2.0 (25 November 2026)
+
+Every screen of your app on one map with the paths of the testers, and paths that replay with no model (experimental, Android). Also new: reproduce a bug report, an improvement report, compare two versions, cheaper models.
 
 - **Map: one card for one screen in other forms**: the same screen in another language, text size or device is now one card even when the app has no ids. It is grouped by its layout without the texts, and the first screen after a fresh start is one card for every tester. On a run of LocalSend in 10 languages, 50 cards became 20. What is left can be merged by hand on the screen's panel, or on demand by Claude with `scripts/merge_screens.py` (one call on your Claude login). Merges go to `trace.notes.json`, and Separate undoes them. See [docs/dashboard.md](docs/dashboard.md).
 - **Keep an APK**: `keep-apk.yml`, started by hand, takes the APK an earlier run built (kept 3 days, encrypted), checks its SHA-256 and attaches it with the app's license files to a pre-release on an existing tag, so that later runs replay on the same bytes. Only for an open source app, since the APK becomes public. See [docs/replay.md](docs/replay.md#replay-kept-traces-many-times).
