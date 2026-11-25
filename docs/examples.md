@@ -1,6 +1,6 @@
 # Applied examples
 
-English · [简体中文](examples.zh-CN.md) · [日本語](examples.ja.md) · [Español](examples.es.md) · [Português](examples.pt-BR.md) · [Tiếng Việt](examples.vi.md) · [Türkçe](examples.tr.md)
+English · [简体中文](../i18n/zh-CN/docs/examples.md) · [日本語](../i18n/ja/docs/examples.md) · [Español](../i18n/es/docs/examples.md) · [Português](../i18n/pt-BR/docs/examples.md) · [Tiếng Việt](../i18n/vi/docs/examples.md) · [Türkçe](../i18n/tr/docs/examples.md)
 
 Real runs on open-source apps, with nothing planted. Every number comes from [the runs](runs/), where each report is listed device by device.
 

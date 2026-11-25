@@ -1,14 +1,14 @@
 # Perguntas frequentes
 
-[English](faq.md) · [简体中文](faq.zh-CN.md) · [日本語](faq.ja.md) · [Español](faq.es.md) · Português · [Tiếng Việt](faq.vi.md) · [Türkçe](faq.tr.md)
+[English](../../../docs/faq.md) · [简体中文](../../zh-CN/docs/faq.md) · [日本語](../../ja/docs/faq.md) · [Español](../../es/docs/faq.md) · Português · [Tiếng Việt](../../vi/docs/faq.md) · [Türkçe](../../tr/docs/faq.md)
 
 ## 20 agentes não acham o mesmo bug 20 vezes?
 
-Não. No LocalSend, os 103 relatórios eram 46 bugs distintos, e 29 deles foram encontrados por um único agente, incluindo o único bloqueador ([ver a execução](runs/localsend-20.md)). Os bugs de direita para a esquerda só vieram das duas personas em árabe, e os de tablet dos quatro tablets. Os duplicados eram estados do app inteiro que todo mundo encontra, como a lista de aparelhos vazia.
+Não. No LocalSend, os 103 relatórios eram 46 bugs distintos, e 29 deles foram encontrados por um único agente, incluindo o único bloqueador ([ver a execução](../../../docs/runs/localsend-20.md)). Os bugs de direita para a esquerda só vieram das duas personas em árabe, e os de tablet dos quatro tablets. Os duplicados eram estados do app inteiro que todo mundo encontra, como a lista de aparelhos vazia.
 
 ## Quanto custa?
 
-Os runners do GitHub são gratuitos para repositórios públicos, macOS incluído. O uso do modelo foi de US$ 0,15 a US$ 0,55 por agente [nestas execuções](runs/), cerca de US$ 5 para 20 celulares. Com uma assinatura do Claude, as execuções contam no uso do seu plano em vez de virar conta. Para gastar menos, use `model=haiku` ou o modelo de outro provedor: [docs/cheaper-models.md](cheaper-models.md).
+Os runners do GitHub são gratuitos para repositórios públicos, macOS incluído. O uso do modelo foi de US$ 0,15 a US$ 0,55 por agente [nestas execuções](../../../docs/runs/), cerca de US$ 5 para 20 celulares. Com uma assinatura do Claude, as execuções contam no uso do seu plano em vez de virar conta. Para gastar menos, use `model=haiku` ou o modelo de outro provedor: [docs/cheaper-models.md](../../../docs/cheaper-models.md).
 
 ## Quanto tempo leva uma execução?
 
@@ -20,11 +20,11 @@ Não. Tudo roda nos runners do GitHub: Linux para Android, macOS para iOS. Você
 
 ## Duas execuções dão o mesmo resultado?
 
-Não. Cada agente explora, então duas execuções nunca seguem o mesmo caminho: espere os mesmos tipos de bug, não a mesma lista. Mantenha os testes com script (Maestro, Appium) para regressões, veja [a comparação](compare.md).
+Não. Cada agente explora, então duas execuções nunca seguem o mesmo caminho: espere os mesmos tipos de bug, não a mesma lista. Mantenha os testes com script (Maestro, Appium) para regressões, veja [a comparação](../../../docs/compare.md).
 
 ## Meus relatórios são públicos?
 
-Não. Os logs de um repositório público são públicos, então relatórios, capturas e vídeos são criptografados com a sua chave antes de sair do runner, e só você pode descriptografá-los. Os hosts de analytics são bloqueados dentro dos celulares. Use contas de teste, nunca contas reais. Mais em [PRIVACY.md](../PRIVACY.md).
+Não. Os logs de um repositório público são públicos, então relatórios, capturas e vídeos são criptografados com a sua chave antes de sair do runner, e só você pode descriptografá-los. Os hosts de analytics são bloqueados dentro dos celulares. Use contas de teste, nunca contas reais. Mais em [PRIVACY.md](../../../PRIVACY.md).
 
 ## Posso testar um app de código fechado?
 
@@ -32,7 +32,7 @@ Sim. Rode o workflow a partir de um repositório privado, com um `SOURCE_REPO_TO
 
 ## Posso criar minhas próprias personas?
 
-Sim. Uma persona são algumas linhas no [personas.json](../personas.json): aparelho, versão do sistema, idioma, tamanho do texto, modo escuro, localização, quem ela é e o que tenta fazer. Duas opções em `device`: `"increase_contrast": true` (Aumentar contraste no iOS, texto em alto contraste no Android) e `"reduce_motion": true` (só iOS: os emuladores Android já rodam sem animações).
+Sim. Uma persona são algumas linhas no [personas.json](../../../personas.json): aparelho, versão do sistema, idioma, tamanho do texto, modo escuro, localização, quem ela é e o que tenta fazer. Duas opções em `device`: `"increase_contrast": true` (Aumentar contraste no iOS, texto em alto contraste no Android) e `"reduce_motion": true` (só iOS: os emuladores Android já rodam sem animações).
 
 ## Onde ele erra?
 
@@ -46,7 +46,7 @@ Sim. Uma persona são algumas linhas no [personas.json](../personas.json): apare
 
 ## Como funciona
 
-<p align="center"><img src="../assets/how-it-works.svg" alt="Como funciona: um workflow faz o build do app, depois um emulador ou simulador com um agente por persona, relatórios criptografados, resumo na sua máquina" width="100%"></p>
+<p align="center"><img src="../../../assets/how-it-works.svg" alt="Como funciona: um workflow faz o build do app, depois um emulador ou simulador com um agente por persona, relatórios criptografados, resumo na sua máquina" width="100%"></p>
 
 - **As personas** definem o aparelho: modelo, sistema, tamanho da fonte, modo escuro, idioma, localização.
 - **Três ferramentas por agente**: ver a tela (com coordenadas de toque), gestos, digitação.
@@ -54,7 +54,7 @@ Sim. Uma persona são algumas linhas no [personas.json](../personas.json): apare
 - **Resultados criptografados**: os logs de um repositório público são públicos, então tudo é criptografado com a sua chave.
 - **Analytics bloqueado** dentro dos celulares, para os testes nunca mexerem nas suas estatísticas reais.
 - **Um resumo** na sua máquina: o Claude agrupa os relatórios que descrevem o mesmo bug, então você vê quantas personas encontraram cada um e quais personas encontraram cada tipo de problema.
-- **Testes** a cada push, offline e sem celular: verificação de acessibilidade, matriz de personas, resumo, resultados criptografados ([tests/](../tests/)).
+- **Testes** a cada push, offline e sem celular: verificação de acessibilidade, matriz de personas, resumo, resultados criptografados ([tests/](../../../tests/)).
 
 ## Por que não Maestro, Appium ou agent-device?
 
@@ -68,4 +68,4 @@ Eles rodam os testes que você escreve. Estes agentes procuram o que ninguém pe
 
 O [agent-device](https://github.com/callstackincubator/agent-device) dá a um agente de programação o controle de um simulador. Este projeto roda uma sessão inteira: faz o build do app, dá a cada persona seu próprio aparelho e junta relatórios criptografados. Use agentes antes de uma versão e fluxos com script para regressões.
 
-Comparação completa, com Firebase Test Lab Robo, mobile-mcp, phonedriver e beta testers humanos: [docs/compare.md](compare.md) (em inglês).
+Comparação completa, com Firebase Test Lab Robo, mobile-mcp, phonedriver e beta testers humanos: [docs/compare.md](../../../docs/compare.md) (em inglês).

@@ -1,8 +1,8 @@
 # 应用实例
 
-[English](examples.md) · 简体中文 · [日本語](examples.ja.md) · [Español](examples.es.md) · [Português](examples.pt-BR.md) · [Tiếng Việt](examples.vi.md) · [Türkçe](examples.tr.md)
+[English](../../../docs/examples.md) · 简体中文 · [日本語](../../ja/docs/examples.md) · [Español](../../es/docs/examples.md) · [Português](../../pt-BR/docs/examples.md) · [Tiếng Việt](../../vi/docs/examples.md) · [Türkçe](../../tr/docs/examples.md)
 
-在开源应用上的真实运行，没有预先埋入任何缺陷。 所有数字都来自[运行记录](runs/)，那里逐台设备列出了每一份报告。
+在开源应用上的真实运行，没有预先埋入任何缺陷。 所有数字都来自[运行记录](../../../docs/runs/)，那里逐台设备列出了每一份报告。
 
 ## 不只是无障碍
 
@@ -19,7 +19,7 @@
 
 ## LocalSend：20 个智能体，20 台设备，14 种语言
 
-<p align="center"><img src="../assets/real-findings-localsend-20.png" alt="四个带有 Flutter 溢出条纹的 LocalSend 界面，问题处用红框标出：字体 200% 的 Pixel 7 上六个发送按钮全部溢出；瑞典语、最大字号的 iPhone SE 上消息对话框溢出 149 像素，挡住了输入框和确认按钮；德语 iPad Air 上添加按钮超出卡片 114 像素；法语、默认字号的 iPhone SE 上一行溢出 28 像素" width="100%"></p>
+<p align="center"><img src="../../../assets/real-findings-localsend-20.png" alt="四个带有 Flutter 溢出条纹的 LocalSend 界面，问题处用红框标出：字体 200% 的 Pixel 7 上六个发送按钮全部溢出；瑞典语、最大字号的 iPhone SE 上消息对话框溢出 149 像素，挡住了输入框和确认按钮；德语 iPad Air 上添加按钮超出卡片 114 像素；法语、默认字号的 iPhone SE 上一行溢出 28 像素" width="100%"></p>
 
 [LocalSend](https://github.com/localsend/localsend) 是一个 10 万星的 Flutter 应用。智能体发现了：
 
@@ -33,11 +33,11 @@
 共 103 份报告（1 个阻断级，15 个严重）。人工归并后是 46 个不同的缺陷，其中大多数只被一台手机发现：
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="../assets/bugs-per-phone-dark.svg">
-  <img src="../assets/bugs-per-phone-light.svg" alt="LocalSend 的 46 个缺陷中有 29 个只被一台手机发现，其中包括唯一的阻断级缺陷。6 个被 2 台手机发现，6 个被 3 台发现，4、5、6、10 和 12 台手机各发现 1 个。没有任何缺陷被超过 20 台中的 12 台发现。" width="100%">
+  <source media="(prefers-color-scheme: dark)" srcset="../../../assets/bugs-per-phone-dark.svg">
+  <img src="../../../assets/bugs-per-phone-light.svg" alt="LocalSend 的 46 个缺陷中有 29 个只被一台手机发现，其中包括唯一的阻断级缺陷。6 个被 2 台手机发现，6 个被 3 台发现，4、5、6、10 和 12 台手机各发现 1 个。没有任何缺陷被超过 20 台中的 12 台发现。" width="100%">
 </picture>
 
-从开始到最后一份报告用时 69 分钟（免费计划同时只能运行 5 个 macOS 任务），20 个智能体的模型用量共 4.62 美元。每份报告、每台设备：[docs/runs/localsend-20.md](runs/localsend-20.md)。自己运行：
+从开始到最后一份报告用时 69 分钟（免费计划同时只能运行 5 个 macOS 任务），20 个智能体的模型用量共 4.62 美元。每份报告、每台设备：[docs/runs/localsend-20.md](../../../docs/runs/localsend-20.md)。自己运行：
 
 ```bash
 gh workflow run agent-testers.yml -f source_repo=localsend/localsend -f app_dir=app \
@@ -46,14 +46,14 @@ gh workflow run agent-testers.yml -f source_repo=localsend/localsend -f app_dir=
 
 ## AnkiDroid：10 个智能体，直接使用发布版 APK
 
-<p align="center"><img src="../assets/real-findings-ankidroid.png" alt="四个 AnkiDroid 界面，问题处用红框标出：字体 200% 的 Pixel 7 上 Again、Hard、Good、Easy 按钮被切掉一半（放大显示），同一台手机的统计页文字超出右边缘，以及葡萄牙语和日语的欢迎页上 Get started 按钮仍是英文" width="100%"></p>
+<p align="center"><img src="../../../assets/real-findings-ankidroid.png" alt="四个 AnkiDroid 界面，问题处用红框标出：字体 200% 的 Pixel 7 上 Again、Hard、Good、Easy 按钮被切掉一半（放大显示），同一台手机的统计页文字超出右边缘，以及葡萄牙语和日语的欢迎页上 Get started 按钮仍是英文" width="100%"></p>
 
 [AnkiDroid](https://github.com/ankidroid/Anki-Android) 是一个 1.2 万星的 Kotlin 应用。10 个智能体在 10 台 Android 模拟器上，直接使用其 GitHub 发布页上的 APK，无需构建：
 
 - Android 字体 200% 的 Pixel 7：Again / Hard / Good / Easy 按钮被切掉一半，统计页的文字超出右边缘。另一个智能体发现 2.26 alpha 上按钮依然被截断，打开“Show large answer buttons”后两排都是如此。
 - 在设为葡萄牙语、西班牙语和日语的设备上，欢迎页的“Get started”仍是英文，而页面其余部分都已翻译（三个智能体各自发现）。
 
-83 份报告，归并为 43 个不同的问题（其中两个来自 Android 10 和 11 模拟器镜像里过旧的系统 WebView，与应用无关）。从开始到最后一份报告不到 10 分钟，10 个智能体的模型用量共 4.69 美元。每份报告：[docs/runs/ankidroid-10.md](runs/ankidroid-10.md)。自己运行：
+83 份报告，归并为 43 个不同的问题（其中两个来自 Android 10 和 11 模拟器镜像里过旧的系统 WebView，与应用无关）。从开始到最后一份报告不到 10 分钟，10 个智能体的模型用量共 4.69 美元。每份报告：[docs/runs/ankidroid-10.md](../../../docs/runs/ankidroid-10.md)。自己运行：
 
 ```bash
 gh workflow run agent-testers.yml -f app_dir=. -f app_id=com.ichi2.anki -f brief=briefs/ankidroid.md \
@@ -63,8 +63,8 @@ gh workflow run agent-testers.yml -f app_dir=. -f app_id=com.ichi2.anki -f brief
 
 ## Flutter 官方动画示例
 
-<p align="center"><img src="../assets/real-finding-flutter.png" alt="Flutter 动画示例应用同一界面的两台手机：Pixel 7 和法语 iPhone SE，标题 Streamling your courses 被圈出：两个智能体各自报告了这个拼写错误" width="100%"></p>
+<p align="center"><img src="../../../assets/real-finding-flutter.png" alt="Flutter 动画示例应用同一界面的两台手机：Pixel 7 和法语 iPhone SE，标题 Streamling your courses 被圈出：两个智能体各自报告了这个拼写错误" width="100%"></p>
 
 在 [flutter/packages 的示例应用](https://github.com/flutter/packages/tree/main/packages/animations/example)中，Pixel 7 上的一个智能体和法语 iPhone SE 上的另一个智能体各自报告了同一个拼写错误“Streamling your courses”（[第 110 行](https://github.com/flutter/packages/blob/main/packages/animations/example/lib/shared_axis_transition.dart#L110)），Android 上的那个还注意到应用不支持深色模式。用时 19 分钟，模型用量 0.47 美元。
 
-在你的应用上跑过了？[分享它的发现](https://github.com/pierridotite/mobile-agent-testers/issues/new?title=Finding:%20)，它会被加入[运行记录](runs/)。如果你维护其中某个应用，并认为某个发现有误，请提 issue，我们会修正并重新运行。
+在你的应用上跑过了？[分享它的发现](https://github.com/pierridotite/mobile-agent-testers/issues/new?title=Finding:%20)，它会被加入[运行记录](../../../docs/runs/)。如果你维护其中某个应用，并认为某个发现有误，请提 issue，我们会修正并重新运行。

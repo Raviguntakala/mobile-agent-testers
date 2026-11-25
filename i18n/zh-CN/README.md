@@ -1,16 +1,16 @@
 # mobile-agent-testers
 
-<a href="https://github.com/pierridotite/explore-compile-replay"><img src="assets/ecr-now-building.svg" alt="Next: every bug becomes a free test. Explore-Compile-Replay" width="340" height="54"></a>
-<a href="https://www.linkedin.com/in/pierre-raffalli/"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/linkedin-follow-dark.svg"><img src="assets/linkedin-follow-light.svg" alt="Follow Pierre Raffalli on LinkedIn" width="160" height="54"></picture></a>
+<a href="https://github.com/pierridotite/explore-compile-replay"><img src="../../assets/ecr-now-building.svg" alt="Next: every bug becomes a free test. Explore-Compile-Replay" width="340" height="54"></a>
+<a href="https://www.linkedin.com/in/pierre-raffalli/"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/linkedin-follow-dark.svg"><img src="../../assets/linkedin-follow-light.svg" alt="Follow Pierre Raffalli on LinkedIn" width="160" height="54"></picture></a>
 <a href="https://trendshift.io/repositories/371956?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-371956" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/371956/daily?language=Python" alt="pierridotite%2Fmobile-agent-testers | Trendshift" width="250" height="55"/></a>
 
 **20 个 AI 测试员，20 台不同的手机，在 GitHub 的免费运行器上并行测试。**
 
-**[应用实例](docs/examples.zh-CN.md)** · **[对比](docs/compare.md)** · **[常见问题](docs/faq.zh-CN.md)** · **[角色](personas.json)** · **[参与贡献](CONTRIBUTING.md)** · **[版本](https://github.com/pierridotite/mobile-agent-testers/releases)**
+**[应用实例](docs/examples.md)** · **[对比](../../docs/compare.md)** · **[常见问题](docs/faq.md)** · **[角色](../../personas.json)** · **[参与贡献](../../CONTRIBUTING.md)** · **[版本](https://github.com/pierridotite/mobile-agent-testers/releases)**
 
-[English](README.md) · 简体中文 · [日本語](README.ja.md) · [Español](README.es.md) · [Português](README.pt-BR.md) · [Tiếng Việt](README.vi.md) · [Türkçe](README.tr.md)
+[English](../../README.md) · 简体中文 · [日本語](../ja/README.md) · [Español](../es/README.md) · [Português](../pt-BR/README.md) · [Tiếng Việt](../vi/README.md) · [Türkçe](../tr/README.md)
 
-<sub>本页译自英文版，可能稍有滞后，以 [README.md](README.md) 为准。</sub>
+<sub>本页译自英文版，可能稍有滞后，以 [README.md](../../README.md) 为准。</sub>
 
 无需编写测试脚本。每个测试员都是一个 Claude Code 智能体，在 GitHub Actions 上拥有自己的 iOS
 模拟器或 Android 模拟器。它扮演一个角色（瑞典语、最大字号的 iPhone SE，字体 200% 的 Pixel 7，
@@ -18,14 +18,14 @@
 支持 Flutter、React Native、Expo、原生 Kotlin 和 Swift、Kotlin Multiplatform、Capacitor 和 .NET MAUI。
 
 公开仓库使用 GitHub 的运行器是免费的。你只需要为模型付费，用你的 Claude 订阅或 API key：
-在[这几次运行](docs/runs/)中，每台手机大约 0.15 到 0.55 美元。
+在[这几次运行](../../docs/runs/)中，每台手机大约 0.15 到 0.55 美元。
 
-<p align="center"><a href="assets/localsend-20.mp4"><img src="assets/localsend-20.gif" alt="20 个 AI 测试员同时使用 LocalSend 的真实录屏：10 台 Android 模拟器和 10 台 iOS 模拟器，14 种语言，从小屏 Pixel 到 13 英寸 iPad。测试员完成后，手机上会显示它发现的问题数量。点击打开视频。" width="100%"></a><br>
-<sub>LocalSend 那次运行的真实录屏，已剪掉空闲时间。<a href="assets/localsend-20.mp4">完整视频（MP4）</a> · <a href="docs/runs/localsend-20.md">逐台设备查看这次运行</a></sub></p>
+<p align="center"><a href="../../assets/localsend-20.mp4"><img src="../../assets/localsend-20.gif" alt="20 个 AI 测试员同时使用 LocalSend 的真实录屏：10 台 Android 模拟器和 10 台 iOS 模拟器，14 种语言，从小屏 Pixel 到 13 英寸 iPad。测试员完成后，手机上会显示它发现的问题数量。点击打开视频。" width="100%"></a><br>
+<sub>LocalSend 那次运行的真实录屏，已剪掉空闲时间。<a href="../../assets/localsend-20.mp4">完整视频（MP4）</a> · <a href="../../docs/runs/localsend-20.md">逐台设备查看这次运行</a></sub></p>
 
 [![Tests](https://github.com/pierridotite/mobile-agent-testers/actions/workflows/tests.yml/badge.svg)](https://github.com/pierridotite/mobile-agent-testers/actions/workflows/tests.yml)
 [![Stars](https://img.shields.io/github/stars/pierridotite/mobile-agent-testers?style=flat)](https://github.com/pierridotite/mobile-agent-testers/stargazers)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](../../LICENSE)
 ![iOS + Android](https://img.shields.io/badge/platforms-iOS%20%2B%20Android-blue)
 ![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-orange)
 [![Last commit](https://img.shields.io/github/last-commit/pierridotite/mobile-agent-testers)](https://github.com/pierridotite/mobile-agent-testers/commits/main)
@@ -36,13 +36,13 @@
 每次运行一种用法，用[测试你自己的应用](#测试你自己的应用)里的参数来设置。
 
 - **像新用户一样探索**（默认）。每个角色都会努力完成自己的目标，并报告一路上遇到的障碍，附带编号截图。
-- **把一个功能从头测到尾。** 用你自己的 brief 让每个智能体完整走一遍某个机制：分几步的预订、带撤销的编辑器、两个页面之间的同步。智能体会点按、长按、滑动和输入，离开应用再回来，重启应用检查保存了什么，或者打开深层链接直接进入这个功能；brief 还可以提高默认约 30 步操作的预算。[AnkiDroid 的 brief](briefs/ankidroid.md) 就发现新卡片的背面输入框被键盘挡住了。
-- **在每台手机上复现一个缺陷报告**：给出一个 issue 或复现步骤，每个智能体回答“是 / 否 / 不确定”，并附上截图（[briefs/reproduce.md](briefs/reproduce.md)）。
-- **生成改进报告。** 每个角色把应用用一遍，然后说出在哪里犹豫、原本期待什么、最该先改什么，并标出领域和影响（[briefs/improve.md](briefs/improve.md)）。
-- **对比两个版本。** 同一批角色分别使用两个分支或构建，最后得到一张表：目标是否达成、操作次数、评分、只在一个版本出现的问题（[docs/compare-versions.md](docs/compare-versions.md)）。适合在真正的 A/B 测试之前做检查，但不能代替 A/B 测试。
-- **使用更便宜的模型**：Claude Haiku，或任何兼容 Anthropic 接口的 API（OpenRouter、DeepSeek、Kimi、GLM、MiniMax、通义千问）。发现的质量取决于模型读截图的能力和推理能力（[docs/cheaper-models.md](docs/cheaper-models.md)）。
+- **把一个功能从头测到尾。** 用你自己的 brief 让每个智能体完整走一遍某个机制：分几步的预订、带撤销的编辑器、两个页面之间的同步。智能体会点按、长按、滑动和输入，离开应用再回来，重启应用检查保存了什么，或者打开深层链接直接进入这个功能；brief 还可以提高默认约 30 步操作的预算。[AnkiDroid 的 brief](../../briefs/ankidroid.md) 就发现新卡片的背面输入框被键盘挡住了。
+- **在每台手机上复现一个缺陷报告**：给出一个 issue 或复现步骤，每个智能体回答“是 / 否 / 不确定”，并附上截图（[briefs/reproduce.md](../../briefs/reproduce.md)）。
+- **生成改进报告。** 每个角色把应用用一遍，然后说出在哪里犹豫、原本期待什么、最该先改什么，并标出领域和影响（[briefs/improve.md](../../briefs/improve.md)）。
+- **对比两个版本。** 同一批角色分别使用两个分支或构建，最后得到一张表：目标是否达成、操作次数、评分、只在一个版本出现的问题（[docs/compare-versions.md](../../docs/compare-versions.md)）。适合在真正的 A/B 测试之前做检查，但不能代替 A/B 测试。
+- **使用更便宜的模型**：Claude Haiku，或任何兼容 Anthropic 接口的 API（OpenRouter、DeepSeek、Kimi、GLM、MiniMax、通义千问）。发现的质量取决于模型读截图的能力和推理能力（[docs/cheaper-models.md](../../docs/cheaper-models.md)）。
 
-Maestro、Appium 运行你写好的测试。这些智能体寻找没人想到要测的东西：[对比](docs/compare.md)。
+Maestro、Appium 运行你写好的测试。这些智能体寻找没人想到要测的东西：[对比](../../docs/compare.md)。
 
 ## 应用实例
 
@@ -54,7 +54,7 @@ Maestro、Appium 运行你写好的测试。这些智能体寻找没人想到要
 | [AnkiDroid](https://github.com/ankidroid/Anki-Android)（Kotlin，1.2 万星，发布版 APK） | 10 台 Android | 43 个不同的问题，比如字体 200% 时答题按钮被切掉一半，三种语言里“Get started”仍是英文 | 不到 10 分钟，4.69 美元 |
 | [Flutter 官方动画示例](https://github.com/flutter/packages/tree/main/packages/animations/example) | 1 台 Android、1 台 iOS | 两个智能体各自报告了同一个拼写错误，还发现应用不支持深色模式 | 19 分钟，0.47 美元 |
 
-在 LocalSend 上，46 个缺陷中有 34 个与字号和无障碍都无关：流程中断、静默失败、缺失的翻译、平板布局。截图、每个发现以及重新运行的命令：[docs/examples.zh-CN.md](docs/examples.zh-CN.md)。
+在 LocalSend 上，46 个缺陷中有 34 个与字号和无障碍都无关：流程中断、静默失败、缺失的翻译、平板布局。截图、每个发现以及重新运行的命令：[docs/examples.zh-CN.md](docs/examples.md)。
 
 ## 快速开始
 
@@ -65,9 +65,9 @@ gh workflow run agent-testers.yml     # 演示：2 个 Android + 2 个 iOS 测�
 bash scripts/collect.sh <run id>      # 解密报告并归并重复项：runs/<id>/SUMMARY.md
 ```
 
-在一张地图上查看应用的所有页面、测试者的操作路径和每个页面的热力图，并为每个页面添加评论：`python3 scripts/dashboard.py runs/<id>`（[docs/dashboard.md](docs/dashboard.md)）。[试用演示](https://pierridotite.github.io/mobile-agent-testers/)，或[观看视频](assets/dashboard-demo.mp4)。
+在一张地图上查看应用的所有页面、测试者的操作路径和每个页面的热力图，并为每个页面添加评论：`python3 scripts/dashboard.py runs/<id>`（[docs/dashboard.md](../../docs/dashboard.md)）。[试用演示](https://pierridotite.github.io/mobile-agent-testers/)，或[观看视频](../../assets/dashboard-demo.mp4)。
 
-演示应用里有 [11 个故意埋下的缺陷](demo-app/BUGS.md)。在[一次运行](docs/runs/)中，4 个演示测试员找到了其中 9 个（每个智能体 2 到 7 分钟，整次运行约 21 分钟，含构建），还发现了没人埋下的真实问题（一个按钮被 Android 导航栏挡住、重新启动后数据没有保留）。模型用量：4 个共 0.87 美元。
+演示应用里有 [11 个故意埋下的缺陷](../../demo-app/BUGS.md)。在[一次运行](../../docs/runs/)中，4 个演示测试员找到了其中 9 个（每个智能体 2 到 7 分钟，整次运行约 21 分钟，含构建），还发现了没人埋下的真实问题（一个按钮被 Android 导航栏挡住、重新启动后数据没有保留）。模型用量：4 个共 0.87 美元。
 
 或者让 Claude 为你的应用完成设置：
 
@@ -83,11 +83,11 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
   -f android_personas=anna,malik -f ios_personas=clara,jonas
 ```
 
-全部参数（构建、任务说明、复现 bug、更便宜的模型、构建参数、录屏）和支持的框架：[docs/configuration.zh-CN.md](docs/configuration.zh-CN.md)
+全部参数（构建、任务说明、复现 bug、更便宜的模型、构建参数、录屏）和支持的框架：[docs/configuration.zh-CN.md](docs/configuration.md)
 
 ## 参与贡献
 
-以下方向欢迎帮忙。动手前先开一个 issue 说明你要做哪一项，避免两个人做同一件事。[CONTRIBUTING.md](CONTRIBUTING.md) 写明了每一项从哪里入手，以及如何离线测试。
+以下方向欢迎帮忙。动手前先开一个 issue 说明你要做哪一项，避免两个人做同一件事。[CONTRIBUTING.md](../../CONTRIBUTING.md) 写明了每一项从哪里入手，以及如何离线测试。
 
 - **其他智能体 CLI**：OpenCode、Codex CLI、Gemini CLI、Goose。工具都是普通脚本，任务是一份 Markdown 说明，所以每个平台只需换一条命令。
 - **Web 应用**：用 Playwright 在手机浏览器里跑同样的角色，覆盖 PWA 和移动网站。
@@ -117,7 +117,7 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
 
 ## 贡献者
 
-感谢每一位贡献者。想参与？[从这里开始](CONTRIBUTING.md)。
+感谢每一位贡献者。想参与？[从这里开始](../../CONTRIBUTING.md)。
 
 <a href="https://github.com/pierridotite/mobile-agent-testers/graphs/contributors"><img src="https://contrib.rocks/image?repo=pierridotite/mobile-agent-testers" alt="Contributors" /></a>
 

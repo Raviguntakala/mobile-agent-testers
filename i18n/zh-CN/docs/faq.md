@@ -1,14 +1,14 @@
 # 常见问题
 
-[English](faq.md) · 简体中文 · [日本語](faq.ja.md) · [Español](faq.es.md) · [Português](faq.pt-BR.md) · [Tiếng Việt](faq.vi.md) · [Türkçe](faq.tr.md)
+[English](../../../docs/faq.md) · 简体中文 · [日本語](../../ja/docs/faq.md) · [Español](../../es/docs/faq.md) · [Português](../../pt-BR/docs/faq.md) · [Tiếng Việt](../../vi/docs/faq.md) · [Türkçe](../../tr/docs/faq.md)
 
 ## 20 个智能体会不会把同一个缺陷找 20 遍？
 
-不会。在 LocalSend 上，103 份报告对应 46 个不同的缺陷，其中 29 个只被一个智能体发现，包括唯一的阻断级缺陷（[见这次运行](runs/localsend-20.md)）。从右到左的缺陷只来自两个阿拉伯语角色，平板的缺陷只来自四台平板。重复的都是人人都会遇到的全局状态，比如空的设备列表。
+不会。在 LocalSend 上，103 份报告对应 46 个不同的缺陷，其中 29 个只被一个智能体发现，包括唯一的阻断级缺陷（[见这次运行](../../../docs/runs/localsend-20.md)）。从右到左的缺陷只来自两个阿拉伯语角色，平板的缺陷只来自四台平板。重复的都是人人都会遇到的全局状态，比如空的设备列表。
 
 ## 要花多少钱？
 
-公开仓库的 GitHub runner 免费，包括 macOS。在[这些运行](runs/)中，每个智能体的模型用量为 0.15 到 0.55 美元，20 台手机大约 5 美元。如果使用 Claude 订阅，运行会计入你套餐的用量，不会另外收费。想省钱，可以用 `model=haiku` 或其他服务商的模型：见 [docs/cheaper-models.md](cheaper-models.md)。
+公开仓库的 GitHub runner 免费，包括 macOS。在[这些运行](../../../docs/runs/)中，每个智能体的模型用量为 0.15 到 0.55 美元，20 台手机大约 5 美元。如果使用 Claude 订阅，运行会计入你套餐的用量，不会另外收费。想省钱，可以用 `model=haiku` 或其他服务商的模型：见 [docs/cheaper-models.md](../../../docs/cheaper-models.md)。
 
 ## 一次运行要多久？
 
@@ -20,11 +20,11 @@
 
 ## 两次运行的结果会一样吗？
 
-不会。每个智能体都在探索，两次运行不会走同一条路：会发现同类的缺陷，但不是同一份清单。回归测试请继续使用脚本化测试（Maestro、Appium），参见[对比](compare.md)。
+不会。每个智能体都在探索，两次运行不会走同一条路：会发现同类的缺陷，但不是同一份清单。回归测试请继续使用脚本化测试（Maestro、Appium），参见[对比](../../../docs/compare.md)。
 
 ## 我的报告是公开的吗？
 
-不是。公开仓库的日志是公开的，所以报告、截图和视频在离开 runner 之前就已用你的密钥加密，只有你能解密。手机内会屏蔽统计分析域名。请使用测试账号，不要用真实账号。详见 [PRIVACY.md](../PRIVACY.md)。
+不是。公开仓库的日志是公开的，所以报告、截图和视频在离开 runner 之前就已用你的密钥加密，只有你能解密。手机内会屏蔽统计分析域名。请使用测试账号，不要用真实账号。详见 [PRIVACY.md](../../../PRIVACY.md)。
 
 ## 可以测试闭源应用吗？
 
@@ -32,7 +32,7 @@
 
 ## 可以自己定义角色吗？
 
-可以。一个角色就是 [personas.json](../personas.json) 里的几行：设备、系统版本、语言、字号、深色模式、位置、这个人是谁，以及想做什么。`device` 里有两个可选开关：`"increase_contrast": true`（iOS 上的“增强对比度”，Android 上的高对比度文字）和 `"reduce_motion": true`（仅 iOS：Android 模拟器本来就关闭了动画）。
+可以。一个角色就是 [personas.json](../../../personas.json) 里的几行：设备、系统版本、语言、字号、深色模式、位置、这个人是谁，以及想做什么。`device` 里有两个可选开关：`"increase_contrast": true`（iOS 上的“增强对比度”，Android 上的高对比度文字）和 `"reduce_motion": true`（仅 iOS：Android 模拟器本来就关闭了动画）。
 
 ## 它会出什么错？
 
@@ -46,7 +46,7 @@
 
 ## 工作原理
 
-<p align="center"><img src="../assets/how-it-works.svg" alt="工作原理：一个工作流构建应用，然后每个角色一台模拟器和一个智能体，报告加密，汇总在你的电脑上生成" width="100%"></p>
+<p align="center"><img src="../../../assets/how-it-works.svg" alt="工作原理：一个工作流构建应用，然后每个角色一台模拟器和一个智能体，报告加密，汇总在你的电脑上生成" width="100%"></p>
 
 - **角色**决定设备：型号、系统版本、字号、深色模式、语言、位置。
 - **每个智能体三个工具**：查看屏幕（带点击坐标）、手势、输入文字。
@@ -54,7 +54,7 @@
 - **结果加密**：公开仓库的日志是公开的，所以一切都用你的密钥加密。
 - **手机内屏蔽统计分析**，测试不会碰到你的真实数据。
 - **在你的电脑上生成一份汇总**：Claude 把描述同一缺陷的报告归并起来，你能看到每个缺陷被多少个角色遇到，以及哪些角色发现了哪类问题。
-- **每次推送都会测试**，离线、无需手机：无障碍检查、角色矩阵、汇总、加密结果（[tests/](../tests/)）。
+- **每次推送都会测试**，离线、无需手机：无障碍检查、角色矩阵、汇总、加密结果（[tests/](../../../tests/)）。
 
 ## 为什么不用 Maestro、Appium 或 agent-device？
 
@@ -68,4 +68,4 @@
 
 [agent-device](https://github.com/callstackincubator/agent-device) 让一个编程智能体操作一台模拟器。本项目运行完整的测试会话：构建应用，给每个角色分配自己的设备，并收集加密的报告。发布前用智能体，回归测试用脚本化流程。
 
-完整对比，包括 Firebase Test Lab Robo、mobile-mcp、phonedriver 和真人 Beta 测试员：[docs/compare.md](compare.md)（英文）。
+完整对比，包括 Firebase Test Lab Robo、mobile-mcp、phonedriver 和真人 Beta 测试员：[docs/compare.md](../../../docs/compare.md)（英文）。

@@ -1,6 +1,6 @@
 # Prueba tu propia app
 
-[English](configuration.md) · [简体中文](configuration.zh-CN.md) · [日本語](configuration.ja.md) · Español · [Português](configuration.pt-BR.md) · [Tiếng Việt](configuration.vi.md) · [Türkçe](configuration.tr.md)
+[English](../../../docs/configuration.md) · [简体中文](../../zh-CN/docs/configuration.md) · [日本語](../../ja/docs/configuration.md) · Español · [Português](../../pt-BR/docs/configuration.md) · [Tiếng Việt](../../vi/docs/configuration.md) · [Türkçe](../../tr/docs/configuration.md)
 
 ```bash
 gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
@@ -11,17 +11,17 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
 |---|---|
 | `source_repo`, `ref` | Repositorio y rama de la app (vacío = este repositorio). Repositorio privado: añade un secret `SOURCE_REPO_TOKEN` de solo lectura |
 | `app_dir`, `app_id` | Carpeta de la app, paquete de Android / bundle id de iOS (si la otra plataforma usa otro id, se lee de su app compilada) |
-| `android_personas`, `ios_personas` | Ids de [personas.json](../personas.json), un teléfono cada una, `all`, o `none` para saltar una plataforma. 20 listas: 14 idiomas, derecha a izquierda, tabletas, texto desde pequeño hasta el mayor tamaño de accesibilidad |
-| `brief` | Instrucciones para los agentes: [AGENT_BRIEF.md](../AGENT_BRIEF.md) para explorar, [briefs/improve.md](../briefs/improve.md) para un informe de mejoras, o el tuyo para una función |
-| `bug_report` | Un error que reproducir en lugar de explorar: un issue (`owner/repo#123` o su URL) o los pasos en texto. Cada agente lo sigue en su propio dispositivo ([briefs/reproduce.md](../briefs/reproduce.md)) |
-| `model`, `llm_base_url` | `sonnet` por defecto, `haiku` para gastar menos, o cualquier API compatible con Anthropic con su clave en un secret `LLM_API_KEY` ([docs/cheaper-models.md](cheaper-models.md)) |
+| `android_personas`, `ios_personas` | Ids de [personas.json](../../../personas.json), un teléfono cada una, `all`, o `none` para saltar una plataforma. 20 listas: 14 idiomas, derecha a izquierda, tabletas, texto desde pequeño hasta el mayor tamaño de accesibilidad |
+| `brief` | Instrucciones para los agentes: [AGENT_BRIEF.md](../../../AGENT_BRIEF.md) para explorar, [briefs/improve.md](../../../briefs/improve.md) para un informe de mejoras, o el tuyo para una función |
+| `bug_report` | Un error que reproducir en lugar de explorar: un issue (`owner/repo#123` o su URL) o los pasos en texto. Cada agente lo sigue en su propio dispositivo ([briefs/reproduce.md](../../../briefs/reproduce.md)) |
+| `model`, `llm_base_url` | `sonnet` por defecto, `haiku` para gastar menos, o cualquier API compatible con Anthropic con su clave en un secret `LLM_API_KEY` ([docs/cheaper-models.md](../../../docs/cheaper-models.md)) |
 | `framework` | `auto` (por defecto) o fuerza uno de los frameworks de abajo |
 | `android_build` + `apk_path`, `ios_build` + `ios_app_path` | Tu propio comando de compilación, o la descarga de una app ya compilada (rutas relativas a `app_dir`) |
 | `build_args` | Argumentos extra para la compilación automática de las dos plataformas, como `--dart-define=API_URL=https://staging.example.com` en Flutter (argumentos de Gradle y xcodebuild en los demás). Las claves van en un secreto `BUILD_ARGS`: en un repo público, las entradas de cada ejecución son públicas |
 | `block_hosts` | Hosts de analítica bloqueados durante las pruebas |
 | `record_video` | Grabación de pantalla de cada teléfono, cifrada con los informes |
-| `replay_path` | Experimental, Android: después de cada agente, su recorrido se repite en el mismo teléfono sin modelo ([docs/replay.md](replay.md)) |
-| `map` | Experimental, Android: primero se recorren todas las pantallas. `robot`: un robot sin modelo, gratis. `robot+agent`: el robot y después un agente solo para los formularios que no pudo pasar. Usa una sola persona ([docs/dashboard.md](dashboard.md)) |
+| `replay_path` | Experimental, Android: después de cada agente, su recorrido se repite en el mismo teléfono sin modelo ([docs/replay.md](../../../docs/replay.md)) |
+| `map` | Experimental, Android: primero se recorren todas las pantallas. `robot`: un robot sin modelo, gratis. `robot+agent`: el robot y después un agente solo para los formularios que no pudo pasar. Usa una sola persona ([docs/dashboard.md](../../../docs/dashboard.md)) |
 
 **Compatibles de serie** (detección automática):
 

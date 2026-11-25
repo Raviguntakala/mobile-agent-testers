@@ -10,7 +10,7 @@ Thanks for helping. Open an issue before you start, to say what you want to buil
 - [skills/mobile-agent-testers/SKILL.md](skills/mobile-agent-testers/SKILL.md) and [plugins/mobile-agent-testers/skills/setup/SKILL.md](plugins/mobile-agent-testers/skills/setup/SKILL.md) must stay identical (a test checks it).
 - Say how you tested. If you ran it on real emulators or simulators, a link to the run helps.
 
-The README exists in five languages. Change the English one; the translations can follow in the same pull request or a later one.
+The README exists in seven languages (translations in [i18n/](i18n/)). Change the English one; the translations can follow in the same pull request or a later one.
 
 ## Ideas, and where each one starts
 
@@ -52,7 +52,7 @@ Framework detection is in [scripts/build/detect.sh](scripts/build/detect.sh), an
 
 ### Translations
 
-Copy [README.md](README.md) to `README.<language>.md`, keep the headings in the same order, and add the language to the line of languages at the top of every README. The examples page ([docs/examples.md](docs/examples.md)) has translations too.
+Translations live in `i18n/<language>/`, with the same tree as the root: `i18n/es/README.md`, `i18n/es/docs/faq.md`. Copy [README.md](README.md) to `i18n/<language>/README.md`, keep the headings in the same order, point links to code and images back to the root (`../../personas.json`), and add the language to the line of languages at the top of every README. The configuration, examples and FAQ pages have translations too. `tests/test_i18n_links.py` checks that every relative link of a page leads to a file that exists.
 
 ### Model comparison
 

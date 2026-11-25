@@ -1,6 +1,6 @@
 # Kendi uygulamanızı test edin
 
-[English](configuration.md) · [简体中文](configuration.zh-CN.md) · [日本語](configuration.ja.md) · [Español](configuration.es.md) · [Português](configuration.pt-BR.md) · [Tiếng Việt](configuration.vi.md) · Türkçe
+[English](../../../docs/configuration.md) · [简体中文](../../zh-CN/docs/configuration.md) · [日本語](../../ja/docs/configuration.md) · [Español](../../es/docs/configuration.md) · [Português](../../pt-BR/docs/configuration.md) · [Tiếng Việt](../../vi/docs/configuration.md) · Türkçe
 
 ```bash
 gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
@@ -11,17 +11,17 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
 |---|---|
 | `source_repo`, `ref` | Uygulama reposu ve branch'i (boş = bu repo). Private repo: salt okunur bir `SOURCE_REPO_TOKEN` secret'ı ekle |
 | `app_dir`, `app_id` | Uygulama klasörü, Android paket adı / iOS bundle id (diğer platform başka bir id kullanıyorsa, o platformun derlenmiş uygulamasından okunur) |
-| `android_personas`, `ios_personas` | [personas.json](../personas.json) içindeki id'ler, her biri bir telefon; ya da `all`, bir platformu atlamak için `none`. 20 hazır persona: 14 dil, sağdan sola, tabletler, küçükten en büyük erişilebilirlik boyutuna kadar yazı |
-| `brief` | Ajan talimatları: keşif için [AGENT_BRIEF.md](../AGENT_BRIEF.md), iyileştirme raporu için [briefs/improve.md](../briefs/improve.md) ya da tek bir özellik için kendi talimatın |
-| `bug_report` | Keşif yerine yeniden üretilecek bir hata: bir issue (`owner/repo#123` ya da URL'si) veya metin olarak adımlar. Her ajan bunu kendi cihazında izler ([briefs/reproduce.md](../briefs/reproduce.md)) |
-| `model`, `llm_base_url` | Varsayılan `sonnet`, daha az harcamak için `haiku` ya da anahtarı bir `LLM_API_KEY` secret'ında duran, Anthropic uyumlu herhangi bir API ([docs/cheaper-models.md](cheaper-models.md)) |
+| `android_personas`, `ios_personas` | [personas.json](../../../personas.json) içindeki id'ler, her biri bir telefon; ya da `all`, bir platformu atlamak için `none`. 20 hazır persona: 14 dil, sağdan sola, tabletler, küçükten en büyük erişilebilirlik boyutuna kadar yazı |
+| `brief` | Ajan talimatları: keşif için [AGENT_BRIEF.md](../../../AGENT_BRIEF.md), iyileştirme raporu için [briefs/improve.md](../../../briefs/improve.md) ya da tek bir özellik için kendi talimatın |
+| `bug_report` | Keşif yerine yeniden üretilecek bir hata: bir issue (`owner/repo#123` ya da URL'si) veya metin olarak adımlar. Her ajan bunu kendi cihazında izler ([briefs/reproduce.md](../../../briefs/reproduce.md)) |
+| `model`, `llm_base_url` | Varsayılan `sonnet`, daha az harcamak için `haiku` ya da anahtarı bir `LLM_API_KEY` secret'ında duran, Anthropic uyumlu herhangi bir API ([docs/cheaper-models.md](../../../docs/cheaper-models.md)) |
 | `framework` | `auto` (varsayılan) ya da aşağıdaki framework'lerden birini zorla |
 | `android_build` + `apk_path`, `ios_build` + `ios_app_path` | Kendi build komutun ya da hazır derlenmiş bir uygulamanın indirilmesi (yollar `app_dir`'e göre) |
 | `build_args` | Her iki platformun otomatik build'i için ek argümanlar; Flutter için `--dart-define=API_URL=https://staging.example.com` gibi (diğerleri için Gradle ve xcodebuild argümanları). Anahtarlar bir `BUILD_ARGS` secret'ına konur: public bir repoda çalıştırma girdileri herkese açıktır |
 | `block_hosts` | Testler sırasında engellenen analitik host'ları |
 | `record_video` | Her telefonun ekran kaydı, raporlarla birlikte şifrelenir |
-| `replay_path` | Deneysel, Android: her ajandan sonra izlediği yol aynı telefonda modelsiz olarak yeniden oynatılır ([docs/replay.md](replay.md)) |
-| `map` | Deneysel, Android: önce tüm ekranlar gezilir. `robot`: modelsiz bir robot, ücretsiz. `robot+agent`: önce robot, ardından yalnızca robotun geçemediği formlar için bir ajan. Tek persona yeterli ([docs/dashboard.md](dashboard.md)) |
+| `replay_path` | Deneysel, Android: her ajandan sonra izlediği yol aynı telefonda modelsiz olarak yeniden oynatılır ([docs/replay.md](../../../docs/replay.md)) |
+| `map` | Deneysel, Android: önce tüm ekranlar gezilir. `robot`: modelsiz bir robot, ücretsiz. `robot+agent`: önce robot, ardından yalnızca robotun geçemediği formlar için bir ajan. Tek persona yeterli ([docs/dashboard.md](../../../docs/dashboard.md)) |
 
 **Hazır desteklenen framework'ler** (otomatik algılanır):
 

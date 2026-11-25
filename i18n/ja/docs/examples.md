@@ -1,8 +1,8 @@
 # 適用例
 
-[English](examples.md) · [简体中文](examples.zh-CN.md) · 日本語 · [Español](examples.es.md) · [Português](examples.pt-BR.md) · [Tiếng Việt](examples.vi.md) · [Türkçe](examples.tr.md)
+[English](../../../docs/examples.md) · [简体中文](../../zh-CN/docs/examples.md) · 日本語 · [Español](../../es/docs/examples.md) · [Português](../../pt-BR/docs/examples.md) · [Tiếng Việt](../../vi/docs/examples.md) · [Türkçe](../../tr/docs/examples.md)
 
-オープンソースのアプリでの実際の実行です。仕込んだバグはありません。 数字はすべて[実行記録](runs/)から取っています。そこでは、すべてのレポートを端末ごとに見られます。
+オープンソースのアプリでの実際の実行です。仕込んだバグはありません。 数字はすべて[実行記録](../../../docs/runs/)から取っています。そこでは、すべてのレポートを端末ごとに見られます。
 
 ## アクセシビリティだけではない
 
@@ -19,7 +19,7 @@ LocalSend では、46 件のバグのうち 34 件が文字サイズともアク
 
 ## LocalSend：20 エージェント、20 台、14 言語
 
-<p align="center"><img src="../assets/real-findings-localsend-20.png" alt="Flutter のオーバーフロー表示が出た LocalSend の 4 画面、問題箇所を赤枠で表示：フォント 200% の Pixel 7 では送信ボタン 6 つがすべてはみ出し、スウェーデン語で文字サイズ最大の iPhone SE ではメッセージのダイアログが 149 ピクセルはみ出して入力欄と確認ボタンが隠れ、ドイツ語の iPad Air では追加ボタンがカードから 114 ピクセルはみ出し、フランス語で標準の文字サイズの iPhone SE では 1 行が 28 ピクセルはみ出している" width="100%"></p>
+<p align="center"><img src="../../../assets/real-findings-localsend-20.png" alt="Flutter のオーバーフロー表示が出た LocalSend の 4 画面、問題箇所を赤枠で表示：フォント 200% の Pixel 7 では送信ボタン 6 つがすべてはみ出し、スウェーデン語で文字サイズ最大の iPhone SE ではメッセージのダイアログが 149 ピクセルはみ出して入力欄と確認ボタンが隠れ、ドイツ語の iPad Air では追加ボタンがカードから 114 ピクセルはみ出し、フランス語で標準の文字サイズの iPhone SE では 1 行が 28 ピクセルはみ出している" width="100%"></p>
 
 [LocalSend](https://github.com/localsend/localsend) はスター数 10 万の Flutter アプリです。エージェントが見つけたもの：
 
@@ -33,11 +33,11 @@ LocalSend では、46 件のバグのうち 34 件が文字サイズともアク
 レポートは全部で 103 件（ブロッカー 1 件、重大 15 件）。手作業でまとめると 46 個の異なるバグになり、その多くは 1 台の端末でしか見つかっていません：
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="../assets/bugs-per-phone-dark.svg">
-  <img src="../assets/bugs-per-phone-light.svg" alt="LocalSend の 46 個のバグのうち 29 個は 1 台の端末でしか見つからず、唯一のブロッカーもその中に含まれます。2 台で見つかったものが 6 個、3 台が 6 個、4、5、6、10、12 台がそれぞれ 1 個。20 台中 12 台を超えて見つかったバグはありません。" width="100%">
+  <source media="(prefers-color-scheme: dark)" srcset="../../../assets/bugs-per-phone-dark.svg">
+  <img src="../../../assets/bugs-per-phone-light.svg" alt="LocalSend の 46 個のバグのうち 29 個は 1 台の端末でしか見つからず、唯一のブロッカーもその中に含まれます。2 台で見つかったものが 6 個、3 台が 6 個、4、5、6、10、12 台がそれぞれ 1 個。20 台中 12 台を超えて見つかったバグはありません。" width="100%">
 </picture>
 
-開始から最後のレポートまで 69 分（無料プランでは macOS のジョブは同時に 5 つまで）、20 エージェントのモデル使用量は合計 4.62 ドル。すべてのレポートを端末ごとに：[docs/runs/localsend-20.md](runs/localsend-20.md)。自分で実行するには：
+開始から最後のレポートまで 69 分（無料プランでは macOS のジョブは同時に 5 つまで）、20 エージェントのモデル使用量は合計 4.62 ドル。すべてのレポートを端末ごとに：[docs/runs/localsend-20.md](../../../docs/runs/localsend-20.md)。自分で実行するには：
 
 ```bash
 gh workflow run agent-testers.yml -f source_repo=localsend/localsend -f app_dir=app \
@@ -46,14 +46,14 @@ gh workflow run agent-testers.yml -f source_repo=localsend/localsend -f app_dir=
 
 ## AnkiDroid：10 エージェント、リリース版 APK をそのまま使用
 
-<p align="center"><img src="../assets/real-findings-ankidroid.png" alt="AnkiDroid の 4 画面、問題箇所を赤枠で表示：フォント 200% の Pixel 7 で Again、Hard、Good、Easy のボタンが半分に切れている（拡大表示）、同じ端末の統計ページで文字が右端からはみ出している、ポルトガル語と日本語のようこそ画面で Get started ボタンが英語のまま" width="100%"></p>
+<p align="center"><img src="../../../assets/real-findings-ankidroid.png" alt="AnkiDroid の 4 画面、問題箇所を赤枠で表示：フォント 200% の Pixel 7 で Again、Hard、Good、Easy のボタンが半分に切れている（拡大表示）、同じ端末の統計ページで文字が右端からはみ出している、ポルトガル語と日本語のようこそ画面で Get started ボタンが英語のまま" width="100%"></p>
 
 [AnkiDroid](https://github.com/ankidroid/Anki-Android) はスター数 1.2 万の Kotlin アプリです。10 のエージェントが 10 台の Android エミュレーターで、GitHub のリリースにある APK をそのまま使い、ビルドなしでテストしました：
 
 - Android のフォント 200% の Pixel 7：Again / Hard / Good / Easy のボタンが半分に切れ、統計ページの文字が右端からはみ出します。別のエージェントは、2.26 のアルファ版でもボタンが切れたままで、「Show large answer buttons」をオンにすると 2 段とも切れることを確認しました。
 - ポルトガル語、スペイン語、日本語に設定した端末で、ようこそ画面の「Get started」が英語のままです。画面のほかの部分は翻訳されています（3 つのエージェントがそれぞれ発見）。
 
-レポートは 83 件で、43 個の異なる問題にまとまりました（そのうち 2 つは Android 10 と 11 のエミュレーターイメージに入っている古いシステム WebView が原因で、アプリのせいではありません）。開始から最後のレポートまで 10 分未満、10 エージェントのモデル使用量は合計 4.69 ドル。すべてのレポート：[docs/runs/ankidroid-10.md](runs/ankidroid-10.md)。自分で実行するには：
+レポートは 83 件で、43 個の異なる問題にまとまりました（そのうち 2 つは Android 10 と 11 のエミュレーターイメージに入っている古いシステム WebView が原因で、アプリのせいではありません）。開始から最後のレポートまで 10 分未満、10 エージェントのモデル使用量は合計 4.69 ドル。すべてのレポート：[docs/runs/ankidroid-10.md](../../../docs/runs/ankidroid-10.md)。自分で実行するには：
 
 ```bash
 gh workflow run agent-testers.yml -f app_dir=. -f app_id=com.ichi2.anki -f brief=briefs/ankidroid.md \
@@ -63,8 +63,8 @@ gh workflow run agent-testers.yml -f app_dir=. -f app_id=com.ichi2.anki -f brief
 
 ## Flutter 公式のアニメーションサンプル
 
-<p align="center"><img src="../assets/real-finding-flutter.png" alt="Flutter のアニメーションサンプルアプリの同じ画面を表示した 2 台、Pixel 7 とフランス語の iPhone SE。タイトルの Streamling your courses が丸で囲まれている：2 つのエージェントがそれぞれこのタイプミスを報告した" width="100%"></p>
+<p align="center"><img src="../../../assets/real-finding-flutter.png" alt="Flutter のアニメーションサンプルアプリの同じ画面を表示した 2 台、Pixel 7 とフランス語の iPhone SE。タイトルの Streamling your courses が丸で囲まれている：2 つのエージェントがそれぞれこのタイプミスを報告した" width="100%"></p>
 
 [flutter/packages のサンプルアプリ](https://github.com/flutter/packages/tree/main/packages/animations/example)で、Pixel 7 のエージェントとフランス語の iPhone SE のエージェントが、それぞれ同じタイプミス「Streamling your courses」（[110 行目](https://github.com/flutter/packages/blob/main/packages/animations/example/lib/shared_axis_transition.dart#L110)）を報告し、Android のほうはアプリがダークモードに対応していないことにも気づきました。19 分、モデル使用量 0.47 ドル。
 
-自分のアプリで試しましたか？[見つかったものを共有](https://github.com/pierridotite/mobile-agent-testers/issues/new?title=Finding:%20)してもらえれば、[実行記録](runs/)に加えます。これらのアプリのメンテナーの方で、間違った指摘があると思われる場合は issue を開いてください。修正して実行し直します。
+自分のアプリで試しましたか？[見つかったものを共有](https://github.com/pierridotite/mobile-agent-testers/issues/new?title=Finding:%20)してもらえれば、[実行記録](../../../docs/runs/)に加えます。これらのアプリのメンテナーの方で、間違った指摘があると思われる場合は issue を開いてください。修正して実行し直します。

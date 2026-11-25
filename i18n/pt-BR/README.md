@@ -1,16 +1,16 @@
 # mobile-agent-testers
 
-<a href="https://github.com/pierridotite/explore-compile-replay"><img src="assets/ecr-now-building.svg" alt="Next: every bug becomes a free test. Explore-Compile-Replay" width="340" height="54"></a>
-<a href="https://www.linkedin.com/in/pierre-raffalli/"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/linkedin-follow-dark.svg"><img src="assets/linkedin-follow-light.svg" alt="Follow Pierre Raffalli on LinkedIn" width="160" height="54"></picture></a>
+<a href="https://github.com/pierridotite/explore-compile-replay"><img src="../../assets/ecr-now-building.svg" alt="Next: every bug becomes a free test. Explore-Compile-Replay" width="340" height="54"></a>
+<a href="https://www.linkedin.com/in/pierre-raffalli/"><picture><source media="(prefers-color-scheme: dark)" srcset="../../assets/linkedin-follow-dark.svg"><img src="../../assets/linkedin-follow-light.svg" alt="Follow Pierre Raffalli on LinkedIn" width="160" height="54"></picture></a>
 <a href="https://trendshift.io/repositories/371956?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-371956" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/371956/daily?language=Python" alt="pierridotite%2Fmobile-agent-testers | Trendshift" width="250" height="55"/></a>
 
 **20 testadores com IA em 20 celulares diferentes, em paralelo, nos runners gratuitos do GitHub.**
 
-**[Exemplos](docs/examples.pt-BR.md)** · **[Comparação](docs/compare.md)** · **[Perguntas frequentes](docs/faq.pt-BR.md)** · **[Personas](personas.json)** · **[Contribuir](CONTRIBUTING.md)** · **[Versões](https://github.com/pierridotite/mobile-agent-testers/releases)**
+**[Exemplos](docs/examples.md)** · **[Comparação](../../docs/compare.md)** · **[Perguntas frequentes](docs/faq.md)** · **[Personas](../../personas.json)** · **[Contribuir](../../CONTRIBUTING.md)** · **[Versões](https://github.com/pierridotite/mobile-agent-testers/releases)**
 
-[English](README.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [Español](README.es.md) · Português · [Tiếng Việt](README.vi.md) · [Türkçe](README.tr.md)
+[English](../../README.md) · [简体中文](../zh-CN/README.md) · [日本語](../ja/README.md) · [Español](../es/README.md) · Português · [Tiếng Việt](../vi/README.md) · [Türkçe](../tr/README.md)
 
-<sub>Tradução do README em inglês: pode estar atrasada, a referência é o [README.md](README.md).</sub>
+<sub>Tradução do README em inglês: pode estar atrasada, a referência é o [README.md](../../README.md).</sub>
 
 Nenhum script de teste para escrever. Cada testador é um agente do Claude Code com seu próprio simulador de iOS
 ou emulador de Android no GitHub Actions. Ele interpreta uma persona (iPhone SE em sueco com o maior tamanho de
@@ -19,14 +19,14 @@ escreve um relatório de bugs com capturas de tela. Flutter, React Native, Expo,
 Multiplatform, Capacitor e .NET MAUI.
 
 Os runners do GitHub são gratuitos para repositórios públicos. Você paga só o modelo, com sua assinatura do
-Claude ou chave de API: de US$ 0,15 a US$ 0,55 por celular [nestas execuções](docs/runs/).
+Claude ou chave de API: de US$ 0,15 a US$ 0,55 por celular [nestas execuções](../../docs/runs/).
 
-<p align="center"><a href="assets/localsend-20.mp4"><img src="assets/localsend-20.gif" alt="Gravações de tela reais de 20 testadores com IA usando o LocalSend ao mesmo tempo: 10 emuladores de Android e 10 simuladores de iOS em 14 idiomas, de um Pixel pequeno a um iPad de 13 polegadas. Quando um testador termina, o celular mostra quantos problemas ele encontrou. Abre o vídeo." width="100%"></a><br>
-<sub>Gravações de tela reais da execução no LocalSend, sem os tempos de espera. <a href="assets/localsend-20.mp4">Vídeo completo (MP4)</a> · <a href="docs/runs/localsend-20.md">A execução, aparelho por aparelho</a></sub></p>
+<p align="center"><a href="../../assets/localsend-20.mp4"><img src="../../assets/localsend-20.gif" alt="Gravações de tela reais de 20 testadores com IA usando o LocalSend ao mesmo tempo: 10 emuladores de Android e 10 simuladores de iOS em 14 idiomas, de um Pixel pequeno a um iPad de 13 polegadas. Quando um testador termina, o celular mostra quantos problemas ele encontrou. Abre o vídeo." width="100%"></a><br>
+<sub>Gravações de tela reais da execução no LocalSend, sem os tempos de espera. <a href="../../assets/localsend-20.mp4">Vídeo completo (MP4)</a> · <a href="../../docs/runs/localsend-20.md">A execução, aparelho por aparelho</a></sub></p>
 
 [![Tests](https://github.com/pierridotite/mobile-agent-testers/actions/workflows/tests.yml/badge.svg)](https://github.com/pierridotite/mobile-agent-testers/actions/workflows/tests.yml)
 [![Stars](https://img.shields.io/github/stars/pierridotite/mobile-agent-testers?style=flat)](https://github.com/pierridotite/mobile-agent-testers/stargazers)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](../../LICENSE)
 ![iOS + Android](https://img.shields.io/badge/platforms-iOS%20%2B%20Android-blue)
 ![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-orange)
 [![Last commit](https://img.shields.io/github/last-commit/pierridotite/mobile-agent-testers)](https://github.com/pierridotite/mobile-agent-testers/commits/main)
@@ -37,13 +37,13 @@ Claude ou chave de API: de US$ 0,15 a US$ 0,55 por celular [nestas execuções](
 Um uso por execução, escolhido com os parâmetros de [Teste o seu próprio app](#teste-o-seu-próprio-app).
 
 - **Explorar como usuários novos** (o padrão). Cada persona tenta chegar ao seu objetivo e conta o que atrapalha, com capturas numeradas.
-- **Percorrer uma função do começo ao fim.** O seu próprio brief manda cada agente por uma mecânica inteira: uma reserva em várias etapas, um editor com desfazer, uma sincronização entre duas telas. Os agentes tocam, pressionam e seguram, deslizam e digitam, saem do app e voltam, reiniciam o app para conferir o que foi salvo ou abrem um deep link para começar direto na função, e um brief pode aumentar o orçamento de cerca de 30 ações. [O do AnkiDroid](briefs/ankidroid.md) encontrou o campo do verso de um cartão novo escondido atrás do teclado.
-- **Reproduzir um relato de bug** em cada celular: você passa uma issue ou os passos, e cada agente responde sim, não ou incerto, com capturas ([briefs/reproduce.md](briefs/reproduce.md)).
-- **Gerar um relatório de melhorias.** Cada persona usa o app uma vez e depois diz onde hesitou, o que esperava e o que mudaria primeiro, por área e impacto ([briefs/improve.md](briefs/improve.md)).
-- **Comparar duas versões.** As mesmas personas em dois branches ou builds, e depois uma tabela: objetivos alcançados, ações, notas, problemas vistos em uma versão só ([docs/compare-versions.md](docs/compare-versions.md)). Uma checagem antes de um teste A/B de verdade, não um substituto.
-- **Usar um modelo mais barato**: Claude Haiku, ou qualquer API compatível com a Anthropic (OpenRouter, DeepSeek, Kimi, GLM, MiniMax, Qwen). Os achados dependem de quão bem o modelo lê as capturas e raciocina ([docs/cheaper-models.md](docs/cheaper-models.md)).
+- **Percorrer uma função do começo ao fim.** O seu próprio brief manda cada agente por uma mecânica inteira: uma reserva em várias etapas, um editor com desfazer, uma sincronização entre duas telas. Os agentes tocam, pressionam e seguram, deslizam e digitam, saem do app e voltam, reiniciam o app para conferir o que foi salvo ou abrem um deep link para começar direto na função, e um brief pode aumentar o orçamento de cerca de 30 ações. [O do AnkiDroid](../../briefs/ankidroid.md) encontrou o campo do verso de um cartão novo escondido atrás do teclado.
+- **Reproduzir um relato de bug** em cada celular: você passa uma issue ou os passos, e cada agente responde sim, não ou incerto, com capturas ([briefs/reproduce.md](../../briefs/reproduce.md)).
+- **Gerar um relatório de melhorias.** Cada persona usa o app uma vez e depois diz onde hesitou, o que esperava e o que mudaria primeiro, por área e impacto ([briefs/improve.md](../../briefs/improve.md)).
+- **Comparar duas versões.** As mesmas personas em dois branches ou builds, e depois uma tabela: objetivos alcançados, ações, notas, problemas vistos em uma versão só ([docs/compare-versions.md](../../docs/compare-versions.md)). Uma checagem antes de um teste A/B de verdade, não um substituto.
+- **Usar um modelo mais barato**: Claude Haiku, ou qualquer API compatível com a Anthropic (OpenRouter, DeepSeek, Kimi, GLM, MiniMax, Qwen). Os achados dependem de quão bem o modelo lê as capturas e raciocina ([docs/cheaper-models.md](../../docs/cheaper-models.md)).
 
-Maestro ou Appium rodam os testes que você escreve. Estes agentes procuram o que ninguém pensou em testar: [comparação](docs/compare.md).
+Maestro ou Appium rodam os testes que você escreve. Estes agentes procuram o que ninguém pensou em testar: [comparação](../../docs/compare.md).
 
 ## Exemplos aplicados
 
@@ -55,7 +55,7 @@ Execuções reais em apps de código aberto, sem nada plantado.
 | [AnkiDroid](https://github.com/ankidroid/Anki-Android) (Kotlin, 12 mil estrelas, APK publicado) | 10 Android | 43 problemas distintos, entre eles os botões de resposta cortados pela metade com a fonte a 200% e "Get started" em inglês em três idiomas | menos de 10 min, US$ 4,69 |
 | [Exemplo de animações do Flutter](https://github.com/flutter/packages/tree/main/packages/animations/example) | 1 Android, 1 iOS | O mesmo erro de digitação, encontrado pelos dois agentes, cada um por conta própria, e um app que ignora o modo escuro | 19 min, US$ 0,47 |
 
-No LocalSend, 34 dos 46 bugs não tinham nada a ver com tamanho de texto nem com acessibilidade: fluxos quebrados, falhas silenciosas, traduções faltando, layouts de tablet. Capturas de tela, cada bug encontrado e os comandos para rodar de novo: [docs/examples.pt-BR.md](docs/examples.pt-BR.md).
+No LocalSend, 34 dos 46 bugs não tinham nada a ver com tamanho de texto nem com acessibilidade: fluxos quebrados, falhas silenciosas, traduções faltando, layouts de tablet. Capturas de tela, cada bug encontrado e os comandos para rodar de novo: [docs/examples.pt-BR.md](docs/examples.md).
 
 ## Começo rápido
 
@@ -66,9 +66,9 @@ gh workflow run agent-testers.yml     # demo: 2 testadores Android + 2 iOS, ~20 
 bash scripts/collect.sh <run id>      # descriptografa os relatórios e agrupa duplicados: runs/<id>/SUMMARY.md
 ```
 
-Para ver todas as telas do seu app num mapa, com os percursos dos testers e um mapa de calor em cada tela, e comentar cada tela: `python3 scripts/dashboard.py runs/<id>` ([docs/dashboard.md](docs/dashboard.md)). [Experimente a demo](https://pierridotite.github.io/mobile-agent-testers/) ou [veja o vídeo](assets/dashboard-demo.mp4).
+Para ver todas as telas do seu app num mapa, com os percursos dos testers e um mapa de calor em cada tela, e comentar cada tela: `python3 scripts/dashboard.py runs/<id>` ([docs/dashboard.md](../../docs/dashboard.md)). [Experimente a demo](https://pierridotite.github.io/mobile-agent-testers/) ou [veja o vídeo](../../assets/dashboard-demo.mp4).
 
-O app de demo tem [11 bugs colocados de propósito](demo-app/BUGS.md). Em [uma execução](docs/runs/), os 4 testadores da demo encontraram 9 deles (de 2 a 7 minutos por agente, cerca de 21 minutos no total, builds incluídos), além de problemas reais que ninguém colocou (um botão debaixo da barra de navegação do Android, dados que não ficam salvos depois de reabrir). Uso do modelo: US$ 0,87 para os 4.
+O app de demo tem [11 bugs colocados de propósito](../../demo-app/BUGS.md). Em [uma execução](../../docs/runs/), os 4 testadores da demo encontraram 9 deles (de 2 a 7 minutos por agente, cerca de 21 minutos no total, builds incluídos), além de problemas reais que ninguém colocou (um botão debaixo da barra de navegação do Android, dados que não ficam salvos depois de reabrir). Uso do modelo: US$ 0,87 para os 4.
 
 Ou deixe o Claude configurar para o seu app:
 
@@ -84,11 +84,11 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
   -f android_personas=anna,malik -f ios_personas=clara,jonas
 ```
 
-Todos os parâmetros (build, briefs, reproduzir um bug, modelos mais baratos, argumentos de build, vídeo) e os frameworks suportados: [docs/configuration.pt-BR.md](docs/configuration.pt-BR.md).
+Todos os parâmetros (build, briefs, reproduzir um bug, modelos mais baratos, argumentos de build, vídeo) e os frameworks suportados: [docs/configuration.pt-BR.md](docs/configuration.md).
 
 ## Contribuir
 
-Ideias em que ajuda é bem-vinda. Abra uma issue antes para dizer qual você vai pegar, assim duas pessoas não constroem a mesma coisa. O [CONTRIBUTING.md](CONTRIBUTING.md) diz por onde cada uma começa e como testar offline.
+Ideias em que ajuda é bem-vinda. Abra uma issue antes para dizer qual você vai pegar, assim duas pessoas não constroem a mesma coisa. O [CONTRIBUTING.md](../../CONTRIBUTING.md) diz por onde cada uma começa e como testar offline.
 
 - **Outros CLIs de agente**: OpenCode, Codex CLI, Gemini CLI, Goose. As ferramentas são scripts comuns e a missão é um brief em Markdown, então o agente é um único comando por plataforma.
 - **Apps web**: as mesmas personas num navegador mobile com Playwright, para PWAs e sites mobile.
@@ -118,7 +118,7 @@ Isso ajudaria a sua equipe? [Responda três perguntas](https://github.com/pierri
 
 ## Contribuidores
 
-Obrigado a todas as pessoas que contribuíram. Quer ajudar? [Comece aqui](CONTRIBUTING.md).
+Obrigado a todas as pessoas que contribuíram. Quer ajudar? [Comece aqui](../../CONTRIBUTING.md).
 
 <a href="https://github.com/pierridotite/mobile-agent-testers/graphs/contributors"><img src="https://contrib.rocks/image?repo=pierridotite/mobile-agent-testers" alt="Contributors" /></a>
 

@@ -1,6 +1,6 @@
 # Test your own app
 
-English · [简体中文](configuration.zh-CN.md) · [日本語](configuration.ja.md) · [Español](configuration.es.md) · [Português](configuration.pt-BR.md) · [Tiếng Việt](configuration.vi.md) · [Türkçe](configuration.tr.md)
+English · [简体中文](../i18n/zh-CN/docs/configuration.md) · [日本語](../i18n/ja/docs/configuration.md) · [Español](../i18n/es/docs/configuration.md) · [Português](../i18n/pt-BR/docs/configuration.md) · [Tiếng Việt](../i18n/vi/docs/configuration.md) · [Türkçe](../i18n/tr/docs/configuration.md)
 
 ```bash
 gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \

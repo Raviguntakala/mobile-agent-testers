@@ -1,8 +1,8 @@
 # Exemplos aplicados
 
-[English](examples.md) · [简体中文](examples.zh-CN.md) · [日本語](examples.ja.md) · [Español](examples.es.md) · Português · [Tiếng Việt](examples.vi.md) · [Türkçe](examples.tr.md)
+[English](../../../docs/examples.md) · [简体中文](../../zh-CN/docs/examples.md) · [日本語](../../ja/docs/examples.md) · [Español](../../es/docs/examples.md) · Português · [Tiếng Việt](../../vi/docs/examples.md) · [Türkçe](../../tr/docs/examples.md)
 
-Execuções reais em apps de código aberto, sem nada plantado. Cada número vem das [execuções](runs/), onde estão todos os relatórios, aparelho por aparelho.
+Execuções reais em apps de código aberto, sem nada plantado. Cada número vem das [execuções](../../../docs/runs/), onde estão todos os relatórios, aparelho por aparelho.
 
 ## Não é só acessibilidade
 
@@ -19,7 +19,7 @@ No LocalSend, 34 dos 46 bugs não tinham nada a ver com tamanho de texto nem com
 
 ## LocalSend: 20 agentes, 20 aparelhos, 14 idiomas
 
-<p align="center"><img src="../assets/real-findings-localsend-20.png" alt="Quatro telas do LocalSend com as faixas de overflow do Flutter, cada problema marcado em vermelho: um Pixel 7 com texto a 200% em que os seis botões de envio transbordam, um iPhone SE em sueco com o maior tamanho de texto em que o diálogo de mensagem transborda 149 pixels e esconde o campo de texto e o Confirmar, um iPad Air em alemão em que o botão Adicionar sai 114 pixels do cartão, e um iPhone SE em francês com o tamanho de texto padrão em que uma linha transborda 28 pixels" width="100%"></p>
+<p align="center"><img src="../../../assets/real-findings-localsend-20.png" alt="Quatro telas do LocalSend com as faixas de overflow do Flutter, cada problema marcado em vermelho: um Pixel 7 com texto a 200% em que os seis botões de envio transbordam, um iPhone SE em sueco com o maior tamanho de texto em que o diálogo de mensagem transborda 149 pixels e esconde o campo de texto e o Confirmar, um iPad Air em alemão em que o botão Adicionar sai 114 pixels do cartão, e um iPhone SE em francês com o tamanho de texto padrão em que uma linha transborda 28 pixels" width="100%"></p>
 
 O [LocalSend](https://github.com/localsend/localsend) é um app Flutter com 100 mil estrelas. O que os agentes encontraram:
 
@@ -33,11 +33,11 @@ O [LocalSend](https://github.com/localsend/localsend) é um app Flutter com 100 
 103 relatórios no total (1 bloqueador, 15 graves). Agrupados à mão, são 46 bugs distintos, e a maioria foi vista por um único celular:
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="../assets/bugs-per-phone-dark.svg">
-  <img src="../assets/bugs-per-phone-light.svg" alt="29 dos 46 bugs do LocalSend foram vistos por um único celular, incluindo o único bloqueador. 6 bugs foram vistos por 2 celulares, 6 por 3, e um cada por 4, 5, 6, 10 e 12 celulares. Nenhum bug foi visto por mais de 12 dos 20." width="100%">
+  <source media="(prefers-color-scheme: dark)" srcset="../../../assets/bugs-per-phone-dark.svg">
+  <img src="../../../assets/bugs-per-phone-light.svg" alt="29 dos 46 bugs do LocalSend foram vistos por um único celular, incluindo o único bloqueador. 6 bugs foram vistos por 2 celulares, 6 por 3, e um cada por 4, 5, 6, 10 e 12 celulares. Nenhum bug foi visto por mais de 12 dos 20." width="100%">
 </picture>
 
-69 minutos do início ao último relatório (o plano gratuito roda 5 jobs de macOS ao mesmo tempo), US$ 4,62 de uso do modelo para os 20. Cada relatório, aparelho por aparelho: [docs/runs/localsend-20.md](runs/localsend-20.md). Rode você mesmo:
+69 minutos do início ao último relatório (o plano gratuito roda 5 jobs de macOS ao mesmo tempo), US$ 4,62 de uso do modelo para os 20. Cada relatório, aparelho por aparelho: [docs/runs/localsend-20.md](../../../docs/runs/localsend-20.md). Rode você mesmo:
 
 ```bash
 gh workflow run agent-testers.yml -f source_repo=localsend/localsend -f app_dir=app \
@@ -46,14 +46,14 @@ gh workflow run agent-testers.yml -f source_repo=localsend/localsend -f app_dir=
 
 ## AnkiDroid: 10 agentes, direto do APK publicado
 
-<p align="center"><img src="../assets/real-findings-ankidroid.png" alt="Quatro telas do AnkiDroid, cada problema marcado em vermelho: um Pixel 7 com texto a 200% em que os botões Again, Hard, Good e Easy aparecem cortados pela metade (ampliado), a página de Estatísticas do mesmo celular em que as linhas saem pela direita, e a tela de boas-vindas em português e em japonês em que o botão Get started continua em inglês" width="100%"></p>
+<p align="center"><img src="../../../assets/real-findings-ankidroid.png" alt="Quatro telas do AnkiDroid, cada problema marcado em vermelho: um Pixel 7 com texto a 200% em que os botões Again, Hard, Good e Easy aparecem cortados pela metade (ampliado), a página de Estatísticas do mesmo celular em que as linhas saem pela direita, e a tela de boas-vindas em português e em japonês em que o botão Get started continua em inglês" width="100%"></p>
 
 O [AnkiDroid](https://github.com/ankidroid/Anki-Android) é um app Kotlin com 12 mil estrelas. 10 agentes em 10 emuladores de Android, com o APK da versão publicada no GitHub, sem build:
 
 - Pixel 7 com a fonte do Android a 200%: os botões Again / Hard / Good / Easy aparecem cortados pela metade, e o texto das Estatísticas sai pela borda direita. Um segundo agente viu os botões ainda cortados no alfa 2.26, nas duas fileiras quando "Show large answer buttons" está ativado.
 - A tela de boas-vindas mostra "Get started" em inglês em aparelhos configurados em português, espanhol e japonês, enquanto o resto da tela está traduzido (três agentes, cada um por conta própria).
 
-83 relatórios, que se agrupam em 43 problemas distintos (dois vêm do WebView do sistema, antigo demais, das imagens de emulador do Android 10 e 11, e não do app). Menos de 10 minutos do início ao último relatório, US$ 4,69 de uso do modelo para os 10. Cada relatório: [docs/runs/ankidroid-10.md](runs/ankidroid-10.md). Rode você mesmo:
+83 relatórios, que se agrupam em 43 problemas distintos (dois vêm do WebView do sistema, antigo demais, das imagens de emulador do Android 10 e 11, e não do app). Menos de 10 minutos do início ao último relatório, US$ 4,69 de uso do modelo para os 10. Cada relatório: [docs/runs/ankidroid-10.md](../../../docs/runs/ankidroid-10.md). Rode você mesmo:
 
 ```bash
 gh workflow run agent-testers.yml -f app_dir=. -f app_id=com.ichi2.anki -f brief=briefs/ankidroid.md \
@@ -63,8 +63,8 @@ gh workflow run agent-testers.yml -f app_dir=. -f app_id=com.ichi2.anki -f brief
 
 ## O exemplo oficial de animações do Flutter
 
-<p align="center"><img src="../assets/real-finding-flutter.png" alt="Dois celulares na mesma tela do app de exemplo de animações do Flutter, um Pixel 7 e um iPhone SE em francês, com o título Streamling your courses circulado: os dois agentes relataram esse erro de digitação por conta própria" width="100%"></p>
+<p align="center"><img src="../../../assets/real-finding-flutter.png" alt="Dois celulares na mesma tela do app de exemplo de animações do Flutter, um Pixel 7 e um iPhone SE em francês, com o título Streamling your courses circulado: os dois agentes relataram esse erro de digitação por conta própria" width="100%"></p>
 
 No [app de exemplo do flutter/packages](https://github.com/flutter/packages/tree/main/packages/animations/example), um agente num Pixel 7 e outro num iPhone SE em francês relataram, cada um, o mesmo erro de digitação, "Streamling your courses" ([linha 110](https://github.com/flutter/packages/blob/main/packages/animations/example/lib/shared_axis_transition.dart#L110)), e o do Android percebeu que o app ignora o modo escuro. 19 minutos, US$ 0,47 de uso do modelo.
 
-Rodou no seu app? [Compartilhe o que ele encontrou](https://github.com/pierridotite/mobile-agent-testers/issues/new?title=Finding:%20) e isso entra nas [execuções](runs/). Se você mantém um desses apps e acha que um bug relatado está errado, abra uma issue: ele é corrigido e a execução é refeita.
+Rodou no seu app? [Compartilhe o que ele encontrou](https://github.com/pierridotite/mobile-agent-testers/issues/new?title=Finding:%20) e isso entra nas [execuções](../../../docs/runs/). Se você mantém um desses apps e acha que um bug relatado está errado, abra uma issue: ele é corrigido e a execução é refeita.
