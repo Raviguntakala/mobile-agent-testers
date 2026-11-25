@@ -21,6 +21,7 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
 | `block_hosts` | 测试期间屏蔽的统计分析域名 |
 | `record_video` | 每台手机的录屏，与报告一起加密 |
 | `replay_path` | 实验性，仅 Android：每个代理结束后，在同一台手机上不用模型重放它的操作路径（[docs/replay.md](../../../docs/replay.md)） |
+| `replay_traces`, `replay_times` | 实验性，仅 Android：不运行代理。仓库某个文件夹中保存的轨迹会在每个角色的手机上各重放 `replay_times` 次（默认 20 次），不用模型（[docs/replay.md](../../../docs/replay.md#replay-kept-traces-many-times)） |
 | `map` | 实验性，仅 Android：先走遍所有屏幕。`robot`：不用模型的机器人，免费。`robot+agent`：先由机器人走，再只让代理处理机器人过不去的表单。用一个角色即可（[docs/dashboard.md](../../../docs/dashboard.md)） |
 
 **开箱即用**（自动检测）：
