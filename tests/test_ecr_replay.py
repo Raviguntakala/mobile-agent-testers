@@ -149,5 +149,29 @@ class Tool(unittest.TestCase):
         self.assertEqual({"a", "b"}, set(printed.split()))
 
 
+class Check(unittest.TestCase):
+    """The replay check on a phone (scripts/android/replay_check.py) cannot run here: only what it relies on."""
+
+    def test_both_workflows_use_the_same_commit_of_explore_compile_replay(self):
+        import re
+        refs = set()
+        for name in ("agent-testers.yml", "replay-check.yml"):
+            text = (ROOT / ".github/workflows" / name).read_text(encoding="utf-8")
+            found = re.findall(r"repository: pierridotite/explore-compile-replay\n\s+ref: (\S+)", text)
+            self.assertEqual(1, len(found), name)
+            self.assertRegex(found[0], r"^[0-9a-f]{40}$")   # a full commit, never a branch
+            refs.add(found[0])
+        self.assertEqual(1, len(refs))
+
+    def test_the_scripted_tester_reads_what_screen_py_prints(self):
+        sys.path.insert(0, str(ROOT / "scripts/android"))
+        import replay_check
+        found = replay_check.SEEN.match('- button "Continue" centre=(540,1200)')
+        self.assertEqual(("Continue", "540", "1200"), found.groups()[1:])
+        self.assertIn('centre=({(x1 + x2) // 2},{(y1 + y2) // 2})', (ROOT / "scripts/android/screen.py").read_text(encoding="utf-8"))
+        kinds = {kind for kind, _, _ in replay_check.STEPS}
+        self.assertEqual({"tap", "type", "hide"}, kinds)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -31,24 +31,54 @@ KEYS = {"KEYCODE_BACK": "Back", "4": "Back", "KEYCODE_ENTER": "Enter", "66": "En
 
 
 def read_screen(path):
-    """Named elements of a saved screen tree, in document order: (label, id, x1, y1, x2, y2)."""
+    """Elements of a saved screen tree, in document order. Each one is a dict:
+    label (its text, else its description), names (every text Maestro can match it by),
+    id, bounds [x1, y1, x2, y2] and parent (its place in the list, None at the top)."""
     try:
         root = ET.parse(path).getroot()
     except (ET.ParseError, OSError):
         return []
     nodes = []
-    for n in root.iter("node"):
-        b = re.findall(r"-?\d+", n.get("bounds", ""))
-        if len(b) != 4:
-            continue
-        label = (n.get("text") or "").strip() or (n.get("content-desc") or "").strip()
-        nodes.append((label, (n.get("resource-id") or "").strip(), *map(int, b)))
+    todo = [(child, None) for child in reversed(list(root))]
+    while todo:   # no recursion: a screen tree can be deep
+        element, parent = todo.pop()
+        here = parent
+        bounds = re.findall(r"-?\d+", element.get("bounds", ""))
+        if element.tag == "node" and len(bounds) == 4:
+            names = [value for value in (element.get(key) or "" for key in ("text", "content-desc", "hint")) if value.strip()]
+            nodes.append({"label": names[0] if names else "", "names": names, "id": (element.get("resource-id") or "").strip(),
+                          "bounds": [int(b) for b in bounds], "parent": parent})
+            here = len(nodes) - 1
+        todo.extend((child, here) for child in reversed(list(element)))
     return nodes
 
 
 def shows(label, typed):
     """True when a name on the screen holds a text the agent typed (its e-mail in a greeting)."""
     return any(len(text) >= 3 and text in label for text in typed)
+
+
+def found_by(nodes, key, name):
+    """The places of the elements a replay finds for this name or id, in the order it counts them.
+    Maestro keeps the deepest elements that match (a button and the text inside it share a name:
+    it keeps the text), then counts them from the top of the screen, then from the left."""
+    if key == "text":
+        found = [i for i, node in enumerate(nodes) if name in node["names"]]
+    else:
+        found = [i for i, node in enumerate(nodes) if node["id"] == name or node["id"].rsplit("/", 1)[-1] == name]
+    above = set()
+    for i in found:
+        parent = nodes[i]["parent"]
+        while parent is not None and parent not in above:
+            above.add(parent)
+            parent = nodes[parent]["parent"]
+    return sorted((i for i in found if i not in above), key=lambda i: (nodes[i]["bounds"][1], nodes[i]["bounds"][0]))
+
+
+def inside(nodes, i, ancestor):
+    while i is not None and i != ancestor:
+        i = nodes[i]["parent"]
+    return i is not None
 
 
 def target_at(nodes, x, y, width, height, typed=None):
@@ -58,24 +88,30 @@ def target_at(nodes, x, y, width, height, typed=None):
     (a task it just added) is stored as that name; one that holds a typed text is not used.
     So typed texts stay out of the trace."""
     typed = typed or {}
-    hits = [n for n in nodes if n[2] <= x <= n[4] and n[3] <= y <= n[5] and (n[0] or n[1])]
-    hits.sort(key=lambda n: (n[4] - n[2]) * (n[5] - n[3]))   # the smallest element under the finger
-    for key in (0, 1):   # a name first: it survives a refactoring better than an id
+    under = lambda i: nodes[i]["bounds"][0] <= x <= nodes[i]["bounds"][2] and nodes[i]["bounds"][1] <= y <= nodes[i]["bounds"][3]  # noqa: E731
+    area = lambda i: (nodes[i]["bounds"][2] - nodes[i]["bounds"][0]) * (nodes[i]["bounds"][3] - nodes[i]["bounds"][1])  # noqa: E731
+    hits = sorted((i for i in range(len(nodes)) if under(i) and (nodes[i]["label"] or nodes[i]["id"])), key=area)   # the smallest first
+    for key in ("text", "id"):   # a name first: it survives a refactoring better than an id
         for hit in hits:
-            name = hit[key]
-            if not name or "${" in name or len(name) > 80 or "\n" in name:
+            name = nodes[hit]["label" if key == "text" else "id"]
+            if not name or "${" in name or len(name) > 80 or "\n" in name or name != name.strip():
                 continue
-            if key == 0 and name in typed:
+            if key == "text" and name in typed:
                 value = {"param": typed[name]}
             elif shows(name, typed):
                 continue
             else:
                 value = name
-            same = [n for n in nodes if n[key] == name]
-            target = {"text" if key == 0 else "id": value}
-            if len(same) > 1:
-                target["index"] = same.index(hit)
-            return target, list(hit[2:6])
+            found = found_by(nodes, key, name)
+            # The element the replay will act on: the one tapped, or the deepest one with that name inside it
+            chosen = [i for i in found if inside(nodes, i, hit)]
+            chosen = [i for i in chosen if under(i)] or chosen
+            if not chosen:
+                continue
+            target = {key: value}
+            if len(found) > 1:
+                target["index"] = found.index(chosen[0])
+            return target, list(nodes[chosen[0]]["bounds"])
     if width > 0 and height > 0:
         return {"point": f"{min(100, max(0, round(100 * x / width)))}%,{min(100, max(0, round(100 * y / height)))}%"}, None
     return None, None

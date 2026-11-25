@@ -85,6 +85,43 @@ class Build(unittest.TestCase):
                           {"text": {"param": "TEXT_1"}}])          # the name is the typed text: stored under its name
         self.assertNotIn("Buy milk", json.dumps(trace))
 
+    def test_same_names_are_counted_the_way_the_replay_counts_them(self):
+        # React Native: a button carries the text of its label as its description, so both share a name.
+        # Maestro keeps the deepest element of each, then counts from the top of the screen, then from the left.
+        (self.dir / "03.xml").write_text("""<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<hierarchy rotation="0">
+  <node text="" resource-id="" class="android.widget.FrameLayout" bounds="[0,0][1080,2400]">
+    <node text="" content-desc="Add" resource-id="" class="android.view.ViewGroup" clickable="true" bounds="[40,2000][1040,2140]">
+      <node text="Add" resource-id="" class="android.widget.TextView" bounds="[480,2040][600,2100]" />
+    </node>
+    <node text="" content-desc="Delete" resource-id="row-delete" class="android.view.ViewGroup" clickable="true" bounds="[900,900][1040,1000]">
+      <node text="Delete" resource-id="" class="android.widget.TextView" bounds="[920,920][1020,980]" />
+    </node>
+    <node text="" content-desc="Delete" resource-id="app:id/row-delete" class="android.view.ViewGroup" clickable="true" bounds="[900,600][1040,700]">
+      <node text="Delete" resource-id="" class="android.widget.TextView" bounds="[920,620][1020,680]" />
+    </node>
+    <node text=" padded " resource-id="app:id/padded" class="android.widget.TextView" bounds="[40,1200][1040,1300]" />
+  </node>
+</hierarchy>
+""", encoding="utf-8")
+        tap = lambda x, y: f"0\tadb\tshell\tinput\ttap\t{x}\t{y}"  # noqa: E731
+        trace, _, _ = tracer.build([f"0\tscreen\t{self.dir / '03.xml'}\t1080\t2400",
+                                    tap(540, 2070), tap(100, 2010), tap(970, 950), tap(970, 650), tap(905, 605), tap(500, 1250)],
+                                   PERSONA, "com.example.todo", NOW)
+        steps = trace["steps"][1:]
+        self.assertEqual([s["action"]["target"] for s in steps], [
+            {"text": "Add"},                    # on the label: one element for the replay, so no index
+            {"text": "Add"},                    # on the button around it: the same element
+            {"text": "Delete", "index": 1},     # first in the file, second from the top
+            {"text": "Delete", "index": 0},
+            {"text": "Delete", "index": 0},     # on the edge of the button, outside its label
+            {"id": "app:id/padded"},            # a name with spaces around it would not match: the id is used
+        ])
+        self.assertEqual(steps[1]["evidence"]["bounds"], [480, 2040, 600, 2100])   # the element the replay acts on
+        nodes = tracer.read_screen(self.dir / "03.xml")
+        self.assertEqual(len(tracer.found_by(nodes, "id", "row-delete")), 2)       # an id also matches without its prefix
+        self.assertEqual(len(tracer.found_by(nodes, "id", "app:id/row-delete")), 1)
+
     def test_swipes_and_keys(self):
         actions, _, skipped = self.actions(
             "1\tadb\tshell\tinput\tswipe\t500\t1800\t500\t600\t400", "1\tadb\tshell\tinput\tswipe\t900\t1000\t100\t1010\t400",
