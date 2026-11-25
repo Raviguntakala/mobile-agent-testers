@@ -55,7 +55,7 @@ function describe(a) {
 
 // ---------- state: the run, the comments (trace.notes.json) and the checks (trace.json) of each tester ----------
 
-const S = { data: null, notes: {}, traces: {}, saved: {}, savedTraces: {}, undo: [], redo: [], picking: null, mapSel: null, mapShot: null, mapHeat: "both", mapPan: null, mapPath: null, mapDragged: false };
+const S = { data: null, notes: {}, traces: {}, saved: {}, savedTraces: {}, undo: [], redo: [], picking: null, mapSel: null, mapShot: null, mapHeat: "both", mapPan: null, mapPath: null, mapDevice: null, mapDragged: false };
 const persona = (key) => S.data.personas.find((p) => p.key === key);
 const traceOf = (key) => S.traces[key] || persona(key).trace;
 /** The trace of a tester, ready to take checks. Only checks are ever added: actions stay as explored. */
@@ -303,7 +303,7 @@ const CARD_W = 150, IMG_W = 134, COL_GAP = 120, ROW_GAP = 56, START_W = 110;
 function layoutMap(map) {
   const cols = new Map();
   for (const n of map.nodes.values()) { if (!cols.has(n.depth)) cols.set(n.depth, []); cols.get(n.depth).push(n); }
-  const aspect = (() => { const s = runSize(S.data.personas[0].key); return s[1] / s[0]; })();
+  const aspect = (() => { const s = runSize(focusKey() || S.data.personas[0].key); return s[1] / s[0]; })();
   const cardH = Math.round(IMG_W * aspect) + 64;
   let maxRows = 0;
   for (const list of cols.values()) { list.sort((a, b) => a.order - b.order); maxRows = Math.max(maxRows, list.length); }
@@ -372,9 +372,24 @@ function estimatedPoints(key, nn) {
 const firstVisit = (n) => n.visits.find((v) => !persona(v.key).mapper) || n.visits[0];
 const personaKeys = () => S.data.personas.filter((p) => !p.mapper).map((p) => p.key);
 
+// ---------- devices: each tester's phone or tablet, and its shape on the map ----------
+const deviceOf = (key) => { const c = (traceOf(key).persona || {}).context || {}; const [w, h] = runSize(key); return c.device || `${w} × ${h}`; };
+const devices = () => [...new Set(personaKeys().map(deviceOf))];
+/** The tester whose screen shape the map takes: the chosen path, else the first tester of the chosen device. */
+const focusKey = () => S.mapPath || (S.mapDevice && personaKeys().find((k) => deviceOf(k) === S.mapDevice)) || null;
+/** The taps the heat map counts: the chosen tester's, else every tester on the chosen device, else all. */
+const heatKeys = () => S.mapPath ? (persona(S.mapPath).mapper ? [] : [S.mapPath]) : personaKeys().filter((k) => !S.mapDevice || deviceOf(k) === S.mapDevice);
+/** The screenshot a card shows: the chosen tester's or device's when it saw this screen. matched is false when it did not. */
+function visitFor(n) {
+  const want = S.mapPath ? (v) => v.key === S.mapPath : S.mapDevice ? (v) => !persona(v.key).mapper && deviceOf(v.key) === S.mapDevice : null;
+  if (!want) return { visit: firstVisit(n), matched: true };
+  const v = n.visits.find(want);
+  return v ? { visit: v, matched: true } : { visit: firstVisit(n), matched: false };
+}
+
 function mapPoints(n, key, nn, mode = S.mapHeat) {
   const pts = [];
-  if (mode === "taps" || mode === "both") pts.push(...heatPoints(n.g, personaKeys()));
+  if (mode === "taps" || mode === "both") pts.push(...heatPoints(n.g, heatKeys()));
   if (mode === "estimated" || (mode === "both" && pts.filter((p) => p.weight === 1).length < 3)) pts.push(...estimatedPoints(key, nn).map((p) => ({ ...p, weight: p.weight * (mode === "both" ? 0.6 : 1) })));
   return pts;
 }
@@ -430,20 +445,21 @@ function renderMap() {
   // nodes
   const cards = [...map.nodes.values()].map((n) => {
     if (n.g === "start") return h("div", { class: "map-start", style: `left:${n.x}px;top:${n.y}px;width:${n.w}px` }, "Launch");
-    const faded = trail && !pathNodes.has(n.g);
-    const rep = firstVisit(n);
+    const { visit: rep, matched } = visitFor(n);
+    const faded = (trail && !pathNodes.has(n.g)) || !matched;
     const info = screenInfo(rep.nn, rep.key);
-    const taps = heatPoints(n.g, personaKeys()).filter((p) => p.weight === 1).length;
+    const taps = heatPoints(n.g, heatKeys()).filter((p) => p.weight === 1).length;
     const fnd = findingsOn(n), com = screenComments(n).filter((x) => !x.c.resolved);
     const canvas = h("canvas", {});
     const card = h("button", { class: `map-node${S.mapSel === n.g ? " sel" : ""}${n.testers.size ? "" : " unreached"}${faded ? " faded" : ""}`, style: `left:${n.x}px;top:${n.y}px;width:${n.w}px;height:${n.h}px`,
       onclick: (ev) => { if (S.mapDragged) return; S.mapSel = n.g; S.mapShot = null; renderMap(); ev.stopPropagation(); } },
-      h("div", { class: "thumb", style: `height:${n.h - 64}px` }, h("img", { src: screenUrl(rep.key, rep.nn), alt: "" }), canvas),
+      h("div", { class: "thumb", style: `height:${n.h - 64}px` }, h("img", { src: screenUrl(rep.key, rep.nn), alt: "", class: matched ? "" : "other" }), canvas),
       h("span", { class: "t" }, screenTitle(info, rep.nn)),
       h("span", { class: "m" }, n.testers.size ? `${n.testers.size} tester${n.testers.size > 1 ? "s" : ""} · ${taps} taps` : h("span", { class: "chip warn" }, "No persona came here"),
+        !matched ? h("span", { class: "chip" }, S.mapPath ? `Not seen by ${traceOf(S.mapPath).persona.id}` : "Not seen on this device") : null,
         fnd.length ? h("span", { class: "chip bad", title: fnd.map((f) => f.title).join("\n") }, `${fnd.length} finding${fnd.length > 1 ? "s" : ""}`) : null,
         com.length ? h("span", { class: "chip", title: com.map((x) => x.c.text).join("\n") }, `✎ ${com.length}`) : null));
-    requestAnimationFrame(() => paintHeat(canvas, mapPoints(n, rep.key, rep.nn), 0.6));
+    if (matched) requestAnimationFrame(() => paintHeat(canvas, mapPoints(n, rep.key, rep.nn), 0.6));
     return card;
   });
   world.replaceChildren(svg, ...labels, ...cards);
@@ -452,7 +468,14 @@ function renderMap() {
   const hasMapper = S.data.personas.some((p) => p.mapper);
   const pick = $("#map-path");
   pick.replaceChildren(h("option", { value: "" }, "All testers"), ...S.data.personas.map((p) => h("option", { value: p.key, selected: p.key === S.mapPath }, p.mapper ? `${p.trace.persona.id} (map maker)` : p.trace.persona.id)));
-  $("#map-summary").textContent = `${screens.length} screens${hasMapper ? ", mapped by the map maker" : ", as far as the testers went"}` +
+  const devs = devices();
+  const devPick = $("#map-device");
+  devPick.closest("label").hidden = devs.length < 2 && !S.mapDevice;
+  devPick.replaceChildren(h("option", { value: "" }, "All devices"), ...devs.map((d) => {
+    const n = personaKeys().filter((k) => deviceOf(k) === d).length;
+    return h("option", { value: d, selected: d === S.mapDevice }, `${d} (${n} tester${n > 1 ? "s" : ""})`);
+  }));
+  $("#map-summary").textContent = (S.mapDevice ? `On ${S.mapDevice}: ` : "") + `${screens.length} screens${hasMapper ? ", mapped by the map maker" : ", as far as the testers went"}` +
     (hasMapper ? ` · ${unreached} reached by no persona` : " · run briefs/map.md to find every screen");
   applyPan(box);
   renderMapSide(map);
@@ -491,6 +514,7 @@ function wireMap() {
   }, { passive: false });
   $("#map-fit").onclick = () => { S.mapPan = null; renderMap(); };
   $("#map-path").onchange = (e) => { S.mapPath = e.target.value || null; renderMap(); };
+  $("#map-device").onchange = (e) => { S.mapDevice = e.target.value || null; S.mapShot = null; renderMap(); };
 }
 
 function renderMapSide(map) {
@@ -499,7 +523,7 @@ function renderMapSide(map) {
   if (side.dataset.where !== where) { side.dataset.where = where; S.picking = null; requestAnimationFrame(() => { side.scrollTop = 0; }); }
   const n = map.nodes.get(S.mapSel);
   if (!n) { side.replaceChildren(h("p", { class: "hint" }, "Click a screen.")); return; }
-  const shot = (S.mapShot && n.visits.find((v) => v.key === S.mapShot.key && v.nn === S.mapShot.nn)) || firstVisit(n);
+  const shot = (S.mapShot && n.visits.find((v) => v.key === S.mapShot.key && v.nn === S.mapShot.nn)) || visitFor(n).visit;
   const info = screenInfo(shot.nn, shot.key);
   const [W, H] = runSize(shot.key);
   const canvas = h("canvas", {});

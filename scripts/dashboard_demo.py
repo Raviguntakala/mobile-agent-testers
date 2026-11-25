@@ -10,6 +10,7 @@ from xml.sax.saxutils import escape
 import ecr_trace
 
 W, H = 1080, 2400
+PHONE_W = 1080
 APP = "com.example.todo"
 
 TEXTS = {
@@ -65,6 +66,31 @@ def screens(t, keyboard=False):
                  ("row", t["contact"], "app:id/contact", (0, 460, 1080, 620)),
                  ("row", t["privacy"], "app:id/privacy", (0, 620, 1080, 780))],
     }
+
+
+def widen(elements, width):
+    """The phone layout on a wider screen (a tablet): full-width bars stretch, the tab bar
+    keeps its halves, everything else stays its size in the middle."""
+    if width == PHONE_W:
+        return elements
+    pad = (width - PHONE_W) // 2
+    out = []
+    for kind, label, rid, (x1, y1, x2, y2) in elements:
+        if kind == "tab":
+            x1, x2 = x1 * width // PHONE_W, x2 * width // PHONE_W
+        elif x1 == 0 and x2 == PHONE_W:
+            x2 = width
+        else:
+            x1, x2 = x1 + pad, x2 + pad
+        out.append((kind, label, rid, (x1, y1, x2, y2)))
+    return out
+
+
+def centre(elements, rid):
+    for _, _, r, (x1, y1, x2, y2) in elements:
+        if r == rid:
+            return (x1 + x2) // 2, (y1 + y2) // 2
+    raise KeyError(rid)
 
 
 def xml(elements):
@@ -176,6 +202,24 @@ TESTERS = [
 ]
 
 
+# On a tablet: the same app, wider. Taps name the element ("el", resource id): they land on its centre.
+TABLET = 1600
+TESTERS.append(
+    ({"id": "lucia", "profile": "Nurse, 39, uses the app on the family tablet, in the kitchen.",
+      "goal": "Make a shopping list for the week.", "locale": "en-GB",
+      "device": {"name": "Pixel Tablet, Android 14", "font_scale": 1.0, "theme": "light"}}, "en", False, [
+        ("welcome", False, ("el", "app:id/start")),
+        ("signup", False, ("el", "app:id/email")), ("signup", True, ("type", "lucia@example.com")),
+        ("signup", True, ("el", "app:id/password")), ("signup", True, ("type", "kitchen-tablet-1")),
+        ("signup", True, ("key", "KEYCODE_BACK")), ("signup", False, ("el", "app:id/submit")),
+        ("home", False, ("el", "app:id/fab")),
+        ("new", True, ("el", "app:id/item_title")), ("new", True, ("type", "Buy milk")),
+        ("new", True, ("key", "KEYCODE_BACK")), ("new", False, ("el", "app:id/save")),
+        ("home_item", False, ("el", "app:id/tab_settings")),
+    ], [{"title": "On the tablet the form stays phone-sized in the middle: a lot of empty space", "severity": "minor",
+         "screen": "Sign-up", "screens": ["02"]}], 7, "settings"))
+
+
 # The map maker of briefs/map.md: no persona, every screen once.
 MAPPER = ({"id": "map", "profile": "Map maker: opens every control once.", "goal": "Reach every screen of the app.",
            "locale": "en-US", "device": {"name": "Small phone, Android 11", "font_scale": 1.0, "theme": "light"}}, "en", False, [
@@ -192,8 +236,10 @@ MAPPER = ({"id": "map", "profile": "Map maker: opens every control once.", "goal
 
 def write(root):
     """Writes the run under root, laid out like the output of scripts/collect.sh."""
+    global W
     root = Path(root)
     for persona, lang, dark, path, issues, score, last in TESTERS + [MAPPER]:
+        W = TABLET if "Tablet" in persona["device"]["name"] else PHONE_W
         folder = root / f"android-{persona['id']}" / "results" / persona["id"]
         folder.mkdir(parents=True, exist_ok=True)
         log, nn = [], 0
@@ -202,13 +248,15 @@ def write(root):
             nonlocal nn
             nn += 1
             tag = f"{nn:02d}"
-            elements = screens(TEXTS[lang], keyboard)[name]
+            elements = widen(screens(TEXTS[lang], keyboard)[name], W)
             (folder / f"{tag}.xml").write_text(xml(elements), encoding="utf-8")
             (folder / f"{tag}.svg").write_text(svg(elements, dark, keyboard), encoding="utf-8")
             log.append(f"0\tscreen\t{folder / (tag + '.xml')}\t{W}\t{H}")
 
         for name, keyboard, action in path:
             shoot(name, keyboard)
+            if action[0] == "el":
+                action = ("tap", *centre(widen(screens(TEXTS[lang], keyboard)[name], W), action[1]))
             if action[0] == "type":
                 log.append(f"0\ttype\t{action[1]}")
             elif action[0] == "key":
@@ -226,4 +274,5 @@ def write(root):
             report += [f"### {i['title']}", f"- Severity: {i['severity']}", f"- Screenshots: {', '.join(i['screens'])}", ""]
         report += ["## Opinion", "", f"Score: {score}/10"] if score is not None else ["## Screens found", "", "Welcome, Sign-up, My lists, New item, Settings, Help."]
         (folder / "report.md").write_text("\n".join(report) + "\n", encoding="utf-8")
+    W = PHONE_W
     return root

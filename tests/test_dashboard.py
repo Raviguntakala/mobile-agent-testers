@@ -23,11 +23,21 @@ class Run(unittest.TestCase):
 
     def test_every_tester_of_the_demo_has_a_valid_path(self):
         run = dashboard.load_run(self.root)
-        self.assertEqual(sorted(p["trace"]["persona"]["id"] for p in run["personas"]), ["anna", "kenji", "lucas", "map"])
+        self.assertEqual(sorted(p["trace"]["persona"]["id"] for p in run["personas"]), ["anna", "kenji", "lucas", "lucia", "map"])
         for p in run["personas"]:
             self.assertTrue(p["screens"])
             self.assertTrue(all("_tokens" not in s for s in p["screens"].values()))
             self.assertIn("lastScreen", p["trace"]["evidence"])
+
+    def test_the_tablet_shows_the_same_screens_in_its_own_shape(self):
+        run = dashboard.load_run(self.root)
+        by = {p["trace"]["persona"]["id"]: p for p in run["personas"]}
+        lucia = by["lucia"]
+        self.assertEqual(lucia["trace"]["persona"]["context"]["device"], "Pixel Tablet, Android 14")
+        self.assertEqual(next(s["evidence"]["size"] for s in lucia["trace"]["steps"] if "evidence" in s), [1600, 2400])
+        self.assertEqual(lucia["screens"]["01"]["group"], by["anna"]["screens"]["01"]["group"])   # the welcome screen, wider
+        taps = [s["action"]["target"] for s in lucia["trace"]["steps"] if s["action"]["kind"] == "tapOn"]
+        self.assertIn({"text": "Get started"}, taps)
 
     def test_the_same_screen_in_two_languages_is_one_group(self):
         run = dashboard.load_run(self.root)
@@ -65,8 +75,8 @@ class Run(unittest.TestCase):
         self.addCleanup(shutil.rmtree, other, True)
         run = dashboard.load_run([self.root, other])
         keys = [p["key"] for p in run["personas"]]
-        self.assertEqual(len(keys), 8)
-        self.assertEqual(len(set(keys)), 8)
+        self.assertEqual(len(keys), 10)
+        self.assertEqual(len(set(keys)), 10)
         self.assertTrue(all(k.startswith(("1:", "2:")) for k in keys))
         self.assertIn(other.resolve(), dashboard.locate([self.root, other], keys[-1]).parents)
         self.assertIsNone(dashboard.locate([self.root, other], "3:android-anna/results/anna"))
@@ -89,8 +99,8 @@ class Run(unittest.TestCase):
         self.addCleanup(shutil.rmtree, other, True)
         run = dashboard.load_run([self.root, other])
         keys = [p["key"] for p in run["personas"]]
-        self.assertEqual(len(keys), 8)
-        self.assertEqual(len(set(keys)), 8)
+        self.assertEqual(len(keys), 10)
+        self.assertEqual(len(set(keys)), 10)
         self.assertTrue(all(k.startswith(("1:", "2:")) for k in keys))
         self.assertIn(other.resolve(), dashboard.locate([self.root, other], keys[-1]).parents)
         self.assertIsNone(dashboard.locate([self.root, other], "3:android-anna/results/anna"))
@@ -150,7 +160,7 @@ class Server(unittest.TestCase):
         self.assertEqual(self.get("/app.js")[0], 200)
         code, body = self.get("/api/run")
         self.assertEqual(code, 200)
-        self.assertEqual(len(json.loads(body)["personas"]), 4)
+        self.assertEqual(len(json.loads(body)["personas"]), 5)
         self.assertNotIn(b"S3cret-pass", body)
 
     def test_only_screenshots_are_served(self):

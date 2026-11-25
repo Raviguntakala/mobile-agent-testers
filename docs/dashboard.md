@@ -38,7 +38,8 @@ Open its run together with the persona runs. The map then shows every screen of 
 - **A heat map on each screen**: the real taps of the testers, an estimate of where people would look and tap, or both (the estimate fills in where testers tapped little). The estimate weighs each control by its size and by how often testers tapped it on other screens. A file `NN.saliency.json` next to a screenshot (`{"points": [[x, y, weight], ...]}`, x and y from 0 to 1), from a saliency model of your choice, replaces it.
 - Click a screen to open it on the right: its screenshots, its comments, the findings, the testers who came, where they came from and where they went next.
 - **Checks on a screen**: "Add a check", click an element on the screen, then say whether it must be visible or must not be. From a finding, "Make it a test" does the same, marked as a known bug. See below.
-- **One tester's path**: pick it in "Path", or "Show path" on a screen. Its arrows stand out, the other screens fade, and the panel lists its screens in order.
+- **One tester's path**: pick it in "Path", or "Show path" on a screen. Its arrows stand out, the other screens fade, and the panel lists its screens in order. The cards then show that tester's screenshots, in the shape of its phone or tablet.
+- **One device**: pick it in "Device" (shown when the run has several). The cards show the screenshots taken on that device, in its shape, and the heat map counts only the taps made on it, so a button easy to reach on a phone and missed on a tablet stands out. A screen nobody reached on that device fades. The map can only show the devices that ran: add a persona on a tablet (Lucia, Pixel Tablet) to see that shape. The demo has one.
 
 Drag to move the map, scroll to zoom. Comments on a screen go to `trace.notes.json` of the first persona who saw it, under `screens`. Undo and redo with Ctrl+Z and Ctrl+Shift+Z, save with Ctrl+S.
 
