@@ -111,6 +111,7 @@ jobs:
     timeout-minutes: 60
     outputs:
       app_commit: ${{ steps.app_source.outputs.commit || github.sha }}
+      apk_sha256: ${{ steps.built.outputs.apk_sha256 }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
@@ -141,6 +142,17 @@ jobs:
           BUILD_ARGS_SECRET: ${{ secrets.BUILD_ARGS }}
           ARTIFACT: ${{ inputs.apk_path }}
         run: bash scripts/build/android.sh "$APP_DIR" "${{ inputs.framework }}"
+      # Public: which source was built and the hash of the APK, nothing from inside it
+      - name: What was built
+        id: built
+        env:
+          SOURCE: ${{ inputs.source_repo || github.repository }}
+          REF: ${{ inputs.ref }}
+          COMMIT: ${{ steps.app_source.outputs.commit || github.sha }}
+        run: |
+          SHA=$(sha256sum app.apk | cut -d' ' -f1)
+          echo "apk_sha256=$SHA" >> "$GITHUB_OUTPUT"
+          echo "Android app: $SOURCE ${REF:-default branch} at $COMMIT, APK SHA-256 $SHA" | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Encrypt APK
         env: { ARTIFACT_PASSPHRASE: "${{ secrets.ARTIFACT_PASSPHRASE }}" }
         run: mkdir -p out && openssl enc -aes-256-cbc -pbkdf2 -salt -in app.apk -out out/app.apk.enc -pass env:ARTIFACT_PASSPHRASE
