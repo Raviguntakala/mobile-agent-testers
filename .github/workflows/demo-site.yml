@@ -11,9 +11,10 @@ permissions:
   id-token: write
 concurrency: { group: pages, cancel-in-progress: true }
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-    environment: { name: github-pages, url: "${{ steps.deploy.outputs.page_url }}" }
+    outputs:
+      pages: ${{ steps.pages.outputs.on }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -31,6 +32,12 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         if: steps.pages.outputs.on == 'true'
         with: { path: site }
+  # A job of its own, as in GitHub's starter workflow: the artifact is listed once the build job ends.
+  deploy:
+    needs: build
+    if: needs.build.outputs.pages == 'true'
+    runs-on: ubuntu-latest
+    environment: { name: github-pages, url: "${{ steps.deploy.outputs.page_url }}" }
+    steps:
       - id: deploy
-        if: steps.pages.outputs.on == 'true'
         uses: actions/deploy-pages@v4
