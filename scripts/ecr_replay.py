@@ -92,6 +92,8 @@ def summary(result, step_ids, steps=()):
         where = f" at step {at + 1} of {total}"
         kind = kind_of(steps[at]) if at < len(steps) and status == "fail" else ""
         reason += f", {kind}" if kind else ""
+        before = [kind_of(step) for step in steps[max(0, at - 3):at]] if kind else []
+        reason += f", after {', '.join(before)}" if before and all(before) else ""
     if status == "known_bug":
         return f"the bug is still there{where} ({reason}), after {seconds}"
     return f"stopped{where} ({reason}), after {seconds}"

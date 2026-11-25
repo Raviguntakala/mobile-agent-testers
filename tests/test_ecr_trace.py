@@ -167,6 +167,27 @@ class Build(unittest.TestCase):
         self.assertEqual(tracer.left_out(skipped), "keyevent KEYCODE_TAB, draganddrop")
         self.assertEqual(tracer.left_out(["0\tadb\tshell\tinput\tsecret words here"]), "other")   # never a text
 
+    def test_emptying_a_field_is_a_step_of_the_path(self):
+        actions, values, skipped = self.actions(
+            "0\ttype\tApples", "0\ttype\t",                                  # type.py "" empties the field
+            "0\tadb\tshell\tinput\tkeyevent\tKEYCODE_MOVE_END",            # by hand: to the end, then three deletes
+            "0\tadb\tshell\tinput\tkeyevent\t67\t67", "0\tadb\tshell\tinput\tkeyevent\tKEYCODE_DEL",
+            "0\tadb\tshell\tinput\tkeyevent\t123\t67",                     # the same in one command
+            "0\tadb\tshell\tinput\ttap\t990\t90",
+            "0\tadb\tshell\tinput\tkeyevent\t67",                           # a delete with no move: a key
+            "0\tadb\tshell\tinput\tkeyevent\tKEYCODE_MOVE_END",            # a move with no delete: left out
+            "0\tadb\tshell\tinput\ttap\t990\t90")
+        self.assertEqual(actions, [
+            {"kind": "eraseText"}, {"kind": "inputText", "text": {"param": "TEXT_1"}},
+            {"kind": "eraseText"},
+            {"kind": "eraseText", "characters": 4},
+            {"kind": "tapOn", "target": {"text": "Help"}},
+            {"kind": "pressKey", "key": "Backspace"},
+            {"kind": "tapOn", "target": {"text": "Help"}},
+        ])
+        self.assertEqual(tracer.left_out(skipped), "keyevent KEYCODE_MOVE_END")
+        self.assertEqual(len(skipped), 1)
+
     def test_a_tap_uses_the_last_screen_seen_before_it(self):
         other = self.dir / "02.xml"
         other.write_text(LOGIN.replace('text="Sign in" resource-id="app:id/submit"', 'text="Create account" resource-id="app:id/submit"'), encoding="utf-8")

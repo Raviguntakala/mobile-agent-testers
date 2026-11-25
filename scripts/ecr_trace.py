@@ -28,6 +28,7 @@ from pathlib import Path
 
 KEYS = {"KEYCODE_BACK": "Back", "4": "Back", "KEYCODE_ENTER": "Enter", "66": "Enter",
         "KEYCODE_HOME": "Home", "3": "Home", "KEYCODE_DEL": "Backspace", "67": "Backspace"}
+END = {"KEYCODE_MOVE_END", "123"}   # the cursor to the end of the field: no key of a replay does it
 
 
 def read_screen(path):
@@ -177,8 +178,14 @@ def build(log_lines, persona, app_id, now, model=None):
     steps, params, values, skipped = [], [], {}, []
     nodes, width, height, screen, last_screen = [], 0, 0, None, None
 
+    at_end = None   # the note of a "cursor to the end" key that nothing has used yet
+
     def add(action, **seen):
         """seen: what a tool needs to show the step (screenshot, finger, screen size). Never used to replay."""
+        nonlocal at_end
+        if at_end:   # it was not followed by deletes: the trace cannot hold it
+            skipped.append(at_end)
+            at_end = None
         step = {"id": f"s{len(steps) + 1}", "action": action, "checkpoints": []}
         evidence = {key: value for key, value in dict(screen=screen, **seen).items() if value is not None}
         if width > 0 and height > 0 and ("point" in evidence or "from" in evidence):
@@ -210,8 +217,8 @@ def build(log_lines, persona, app_id, now, model=None):
         elif kind == "tree":   # saved by the pass-through adb just before a tap that follows no screenshot
             nodes = read_screen(fields[2]) or nodes
         elif kind == "type":
+            add({"kind": "eraseText"})   # type.py replaces what the field holds: typing nothing empties it
             if fields[2]:
-                add({"kind": "eraseText"})   # type.py replaces what the field holds
                 add({"kind": "inputText", "text": {"param": named(fields[2])}})
         elif kind == "adb":
             args = input_args(fields[2:])
@@ -236,13 +243,29 @@ def build(log_lines, persona, app_id, now, model=None):
                 else:
                     direction = "UP" if y2 < y1 else "DOWN"
                 add({"kind": "swipe", "direction": direction}, **{"from": [x1, y1], "to": [x2, y2]})
-            elif args[:1] == ["keyevent"] and len(args) >= 2 and all(key in KEYS for key in args[1:]):
+            elif args[:1] == ["keyevent"] and len(args) >= 2 and all(key in KEYS or key in END for key in args[1:]):
                 for key in args[1:]:   # `input keyevent 67 67 67` presses three keys
-                    add({"kind": "pressKey", "key": KEYS[key]})
+                    erasing = bool(steps) and steps[-1]["action"].get("kind") == "eraseText" and steps[-1].get("fromEnd")
+                    if key in END:
+                        at_end = at_end or line.strip()
+                    elif KEYS[key] == "Backspace" and erasing:
+                        at_end = None
+                        steps[-1]["action"]["characters"] += 1
+                    elif KEYS[key] == "Backspace" and at_end:   # to the end, then deletes: the end of the text is erased
+                        at_end = None
+                        add({"kind": "eraseText", "characters": 1})
+                        steps[-1]["fromEnd"] = True
+                    else:
+                        add({"kind": "pressKey", "key": KEYS[key]})
             elif args[:1] == ["text"] and text_typed_with_adb(fields[2:]):
                 add({"kind": "inputText", "text": {"param": named(text_typed_with_adb(fields[2:]))}})   # adb adds to the field
             elif args:
                 skipped.append(line.strip())
+
+    if at_end:
+        skipped.append(at_end)
+    for step in steps:
+        step.pop("fromEnd", None)   # only used while reading the notes
 
     device = persona.get("device") or {}
     context = {"platform": "android"}

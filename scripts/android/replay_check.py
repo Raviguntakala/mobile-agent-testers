@@ -38,6 +38,14 @@ STEPS = [
     ("tap", "Pay the rent", 0),
     ("tap", "Book the dentist", 0),
     ("tap", "Buy milk", 0),              # a text that was typed: stored under its name, not as text
+    ("tap", "Search", 0), ("type", "Apples", 0),   # the search is case-sensitive: the list is now empty
+    ("type", "", 0),                     # the field is emptied, as an agent does with type.py ""
+    ("hide", "", 0),
+    ("tap", "Buy apples", 0),            # back on the screen only if the replay emptied the field too
+    ("tap", "Search", 0), ("type", "milk", 0),
+    ("keys", "KEYCODE_MOVE_END", 0), ("keys", "67 67 67 67", 0),   # emptied by hand: to the end, then four deletes
+    ("hide", "", 0),
+    ("tap", "Pay the rent", 0),
 ]
 SEEN = re.compile(r'^- (\w+) "(.*)" centre=\((\d+),(\d+)\)$')
 
@@ -58,6 +66,9 @@ def follow(results):
     for kind, value, which in STEPS:
         if kind == "type":
             run(sys.executable, "scripts/android/type.py", value)
+            continue
+        if kind == "keys":
+            run("adb", "shell", "input", "keyevent", *value.split())
             continue
         if kind in ("hide", "look"):
             if kind == "hide" and "mInputShown=true" in run("adb", "shell", "dumpsys", "input_method")[1]:
@@ -128,9 +139,11 @@ def main(argv=None):
 
     problems = []
     for kind, wanted in (("inputText", "type"), ("tapOn", "tap")):
-        planned = sum(1 for step, _, _ in STEPS if step == wanted)
+        planned = sum(1 for step, value, _ in STEPS if step == wanted and value)
         if sum(1 for step in trace["steps"] if step["action"]["kind"] == kind) != planned:
             problems.append(f"the trace does not have {planned} {kind} steps")
+    if not [step for step in trace["steps"] if step["action"] == {"kind": "eraseText", "characters": 4}]:
+        problems.append("the four deletes after a move to the end are not stored as four characters erased")
     if not taps(trace, text="Continue"):
         problems.append('the tap on "Continue" is not stored by its name alone')
     if not taps(trace, text="x", index=1):

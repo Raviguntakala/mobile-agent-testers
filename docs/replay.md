@@ -30,7 +30,7 @@ With `-f replay_path=true`, each Android tester's path is replayed on the same p
 gh workflow run agent-testers.yml -f android_personas=anna -f ios_personas=none -f replay_path=true
 ```
 
-The run page says how it went in one line, for example `replay: pass, 22 steps with no model in 41 s` or `replay: stopped at step 7 of 22 (target_not_found, tapOn by name), after 38 s`. It never prints a text of your app. Three more files join the encrypted results: the compiled flow (`anna-<date>.flow.yaml`), `replay.json` (the status, the step where it stopped and why) and `replay.txt` (everything the tools printed), plus what Maestro kept in `replay-debug/`.
+The run page says how it went in one line, for example `replay: pass, 22 steps with no model in 41 s` or `replay: stopped at step 7 of 22 (target_not_found, tapOn by name, after tapOn by name, eraseText, inputText), after 38 s`: the step, why, its kind and the kinds of the three steps before it. It never prints a text of your app. Three more files join the encrypted results: the compiled flow (`anna-<date>.flow.yaml`), `replay.json` (the status, the step where it stopped and why) and `replay.txt` (everything the tools printed), plus what Maestro kept in `replay-debug/`.
 
 The replay runs with the model keys taken out of its environment ([scripts/ecr_replay.py](../scripts/ecr_replay.py)), and a replay that stops never fails the run. It adds a few minutes to each tester: installing Maestro, then the replay itself.
 
