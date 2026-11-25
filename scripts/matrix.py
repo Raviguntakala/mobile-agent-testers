@@ -1,7 +1,8 @@
 """Builds the job matrix: one row per requested persona, with its device.
-Env: PERSONAS (comma-separated ids, "all" for every persona of the platform, "none" or empty to skip it), PLATFORM (android | ios).
+Env: PERSONAS (comma-separated ids, "all" for every persona of the platform, "none" or empty to skip it), PLATFORM (android | ios | web).
 Prints <platform>=<json> for $GITHUB_OUTPUT."""
-import json, os
+import json
+import os
 
 platform = os.environ.get("PLATFORM", "android")
 wanted = [p.strip() for p in os.environ.get("PERSONAS", "").split(",") if p.strip()]
@@ -24,7 +25,10 @@ for pid in wanted:
     row = {"persona": pid, "theme": d.get("theme", "light"), "locale": p.get("locale", "en-US"),
            "geo": f"{geo[0]},{geo[1]}",
            "increase_contrast": "true" if d.get("increase_contrast") else "false"}
-    if platform == "ios":
+    if platform == "web":  # a mobile browser: Playwright device profile, see scripts/web/browser.py
+        row.update({"emulate": d.get("emulate", "iPhone 15"), "device": d.get("name", d.get("emulate", "iPhone 15")),
+                    "reduce_motion": "true" if d.get("reduce_motion") else "false"})
+    elif platform == "ios":
         row.update({"simulator": d.get("simulator", "iPhone 16"), "ios": str(d.get("ios", "18")),
                     "text_size": d.get("text_size", "large"),
                     "reduce_motion": "true" if d.get("reduce_motion") else "false"})

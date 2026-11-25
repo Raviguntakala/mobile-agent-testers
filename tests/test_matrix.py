@@ -38,7 +38,7 @@ def job(name):
 
 class Matrix(unittest.TestCase):
     def test_all_takes_every_persona_of_the_platform(self):
-        for platform in ("android", "ios"):
+        for platform in ("android", "ios", "web"):
             expected = [p["id"] for p in PERSONAS if p["platform"] == platform]
             self.assertEqual([r["persona"] for r in rows(platform, "all")], expected)
 
@@ -62,14 +62,14 @@ class Matrix(unittest.TestCase):
         self.assertIn(ios_one, out.stderr)
 
     def test_accessibility_settings_default_to_off(self):
-        ids = {"android": [], "ios": []}
+        ids = {"android": [], "ios": [], "web": []}
         for p in PERSONAS:
             if not p["device"].get("increase_contrast") and not p["device"].get("reduce_motion"):
                 ids[p["platform"]].append(p["id"])
-        for platform in ("android", "ios"):
+        for platform in ("android", "ios", "web"):
             for row in rows(platform, ids[platform][0]):
                 self.assertEqual(row["increase_contrast"], "false")
-                if platform == "ios":
+                if platform in ("ios", "web"):
                     self.assertEqual(row["reduce_motion"], "false")
 
     def test_accessibility_settings_reach_the_row(self):
@@ -80,7 +80,7 @@ class Matrix(unittest.TestCase):
             with self.subTest(p["id"]):
                 row = rows(p["platform"], p["id"])[0]
                 self.assertEqual(row["increase_contrast"], "true" if d.get("increase_contrast") else "false")
-                if p["platform"] == "ios":
+                if p["platform"] in ("ios", "web"):
                     self.assertEqual(row["reduce_motion"], "true" if d.get("reduce_motion") else "false")
 
     def test_run_scripts_apply_the_accessibility_settings(self):
@@ -93,9 +93,14 @@ class Matrix(unittest.TestCase):
         self.assertLess(ios.index("increase_contrast"), ios.index("simctl launch"))
         self.assertLess(ios.index("ReduceMotionEnabled"), ios.index("simctl launch"))
         self.assertLess(android.index("high_text_contrast_enabled"), android.index("monkey -p"))
+        # Web: browser context options, set before the page opens
+        web = (ROOT / "scripts/web/browser.py").read_text(encoding="utf-8")
+        self.assertIn('reduced_motion="reduce" if env.get("REDUCE_MOTION") == "true"', web)
+        self.assertIn('contrast="more" if env.get("INCREASE_CONTRAST") == "true"', web)
+        self.assertLess(web.index("reduced_motion="), web.index("new_page()"))
 
     def test_rows_have_every_key_the_jobs_read(self):
-        for platform in ("android", "ios"):
+        for platform in ("android", "ios", "web"):
             used = set(re.findall(r"matrix\.([a-z_]+)", job(platform)))
             for row in rows(platform, "all"):
                 self.assertFalse(used - set(row), f"{platform} job reads {used - set(row)}, missing in {row}")
@@ -111,7 +116,7 @@ class Personas(unittest.TestCase):
     def test_each_persona_is_complete(self):
         for p in PERSONAS:
             with self.subTest(p["id"]):
-                self.assertIn(p["platform"], ("android", "ios"))
+                self.assertIn(p["platform"], ("android", "ios", "web"))
                 for key in ("profile", "goal", "locale", "device"):
                     self.assertTrue(p.get(key), key)
                 self.assertRegex(p["locale"], r"^[a-z]{2,3}(-[A-Za-z0-9]+)*$")
@@ -129,7 +134,11 @@ class Personas(unittest.TestCase):
                 if p["platform"] == "android":
                     # Animations are off on every emulator already (disable-animations)
                     self.assertNotIn("reduce_motion", d)
-                if p["platform"] == "ios":
+                if p["platform"] == "web":
+                    # A Playwright device name (tests/test_web.py checks them when Playwright is installed)
+                    self.assertTrue(d["emulate"] and d["name"])
+                    self.assertNotIn("simulator", d)
+                elif p["platform"] == "ios":
                     self.assertIn(d["text_size"], IOS_TEXT_SIZES)
                     self.assertTrue(d["simulator"].startswith(("iPhone", "iPad")))
                     self.assertIsInstance(d["ios"], int)

@@ -2,7 +2,8 @@
 
 You are a QA tester playing ONE persona (find yours in personas.json with the
 PERSONA id you were given). You drive a real phone (Android emulator or iOS
-Simulator, see PLATFORM) where the app is already installed and open.
+Simulator, see PLATFORM) where the app is already installed and open, or, with
+PLATFORM=web, a phone's browser where the site is already open.
 Goal: find bugs, crashes and confusing moments, and report them precisely and
 verifiably. Play the persona honestly (patience, skills, goal), but stay a tester.
 
@@ -17,6 +18,15 @@ iOS
 - `bash scripts/ios/gesture.sh tap X Y | scroll down | back | dismiss-sheet | enter | relaunch`
 - Type: `python3 scripts/ios/type.py "text"` (tap the field first). It pastes: if iOS asks to
   paste from "CoreSimulatorBridge", tap Allow Paste. That alert comes from the tool, not the app.
+Web (the site in the phone's browser)
+- See the screen: `python3 scripts/web/screen.py results/<persona> <NN>` (positions in CSS pixels).
+  It also prints the address, how far the page is scrolled and what went wrong since the last one.
+- `bash scripts/web/gesture.sh tap X Y | scroll down|up | swipe X1 Y1 X2 Y2 | long-press X Y | back | enter | reload`
+- A drop-down list draws no picker here: the screen lists its `options`, pick one with
+  `bash scripts/web/gesture.sh choose X Y "option"`.
+- Type: `python3 scripts/web/type.py "text"` (tap the field first).
+- A link to a blocked host is not loaded: the screen says where it would have gone. A link that
+  opens a new tab brings it to the front; `back` closes it.
 
 ## Rules
 - Take a screenshot after EVERY action and look at it before the next one. Number them in order.

@@ -14,6 +14,7 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
 | `android_personas`, `ios_personas` | Ids from [personas.json](../personas.json), one phone each, `all`, or `none` to skip a platform. 20 ready: 14 languages, right to left, tablets, text from small to the largest accessibility size, increased contrast and reduced motion |
 | `brief` | Agent instructions: [AGENT_BRIEF.md](../AGENT_BRIEF.md) to explore, [briefs/improve.md](../briefs/improve.md) for an improvement report, [briefs/map.md](../briefs/map.md) to find every screen for the [dashboard](dashboard.md) map, or your own for one feature |
 | `bug_report` | A bug to reproduce instead of exploring: an issue (`owner/repo#123` or its URL) or the steps as text. Each agent follows it on its own device ([briefs/reproduce.md](../briefs/reproduce.md)) |
+| `web_personas`, `web_url` | Ids of web personas (`tom`, `amelie`, `lena`, `arjun`), `all`, or `none` (default), and the address of the site to test. The other platforms keep their defaults, so set `android_personas=none` and `ios_personas=none` for a web-only run. |
 | `model`, `llm_base_url` | `sonnet` by default, `haiku` to spend less, or any Anthropic-compatible API with its key in an `LLM_API_KEY` secret ([docs/cheaper-models.md](cheaper-models.md)) |
 | `framework` | `auto` (default) or force one of the frameworks below |
 | `android_build` + `apk_path`, `ios_build` + `ios_app_path` | Your own build command, or a download of a prebuilt app (paths relative to `app_dir`) |

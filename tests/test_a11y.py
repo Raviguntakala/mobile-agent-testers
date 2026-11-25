@@ -105,5 +105,28 @@ class IosCheck(unittest.TestCase):
         self.assertIsNone(a11y.ios(ios_app(button("Continue", 20, 600, 335, 50)), 375, 667))
 
 
+
+# Web, 390x844 CSS px, as scripts/web/browser.py lists them
+def el(kind, name, x, y, w, h, inline=False):
+    return {"kind": kind, "name": name, "value": "", "x": x, "y": y, "w": w, "h": h, "inline": inline}
+
+
+class WebCheck(unittest.TestCase):
+    def test_full_line(self):
+        line = a11y.web([el("button", "", 340, 40, 30, 30), el("button", "Close", 10, 100, 20, 20),
+                         el("button", "Buy", 20, 300, 350, 48)], 390, 844)
+        self.assertIn("1 control with no name at (355,55)", line)
+        self.assertIn('1 touch target under 24 px: "Close" 20x20 px at (20,110)', line)
+
+    def test_link_inside_text_and_text_are_not_flagged(self):
+        self.assertIsNone(a11y.web([el("button", "terms", 40, 200, 38, 16, inline=True),
+                                    el("text", "", 0, 0, 10, 10)], 390, 844))
+
+    def test_target_cut_by_the_screen_edge_is_ignored(self):
+        self.assertIsNone(a11y.web([el("button", "Next", 0, 830, 390, 14)], 390, 844))
+
+    def test_full_page_layer_with_no_name_is_not_flagged(self):
+        self.assertIsNone(a11y.web([el("button", "", 0, 0, 390, 844)], 390, 844))
+
 if __name__ == "__main__":
     unittest.main()

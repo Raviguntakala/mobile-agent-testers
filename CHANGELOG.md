@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **Web platform**: a new `web` platform runs the same personas in a phone's browser, on any site or web app, with Playwright device profiles. iPhones run on WebKit and Android phones on Chromium, on `ubuntu-latest`, with no emulator and no build. New inputs `web_personas` (default `none`) and `web_url`, and four personas: `tom`, `amelie`, `lena` and `arjun`. The tools in `scripts/web/` (`screen.py`, `gesture.sh`, `type.py`) follow the phone tools, and `screen.py` also reports page errors, console errors, failed requests, blocked links and new tabs. `block_hosts`, `record_video` and the accessibility check work for the web too; on iPhones scroll and swipe are scripted, because Playwright has no touch input on WebKit beyond a tap. The web agent's file tools stay in the checkout: it reads there and writes only under `results/`, because a website is untrusted input that can reach the agent through page text and console errors. `url` opens only pages of the site under test, and every command to the browser needs a per-run key, so the site cannot drive it through `127.0.0.1`.
+
 ## 0.2.0 (25 November 2026)
 
 Every screen of your app on one map with the paths of the testers, and paths that replay with no model (experimental, Android). Also new: reproduce a bug report, an improvement report, compare two versions, cheaper models.

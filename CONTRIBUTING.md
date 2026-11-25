@@ -26,7 +26,14 @@ Test it offline with a stand-in for the CLI on `PATH`, like [tests/test_build_ar
 
 ### Web apps
 
-The same personas on a mobile browser, for PWAs and mobile sites. A new `web` platform in [scripts/matrix.py](scripts/matrix.py) and [personas.json](personas.json), and `scripts/web/` with the three tools on Playwright: `screen.py` (screenshot plus the list of elements with their centres, in the same format as the phone tools), gestures and typing. It runs on the Linux runners, so it would be the cheapest platform.
+The web platform lives in `scripts/web/`. `browser.py` keeps one page open between tool calls. Every command to it carries a per-run key from a file only the user can read, so the site under test cannot drive the browser. Open ideas:
+
+- Text size, with browser zoom or a minimum font size. Start in `personas.json`.
+- A slow network persona. Start in `browser.py`, where the page is opened.
+- Native momentum scrolling and touch events beyond a tap on WebKit. Start in `cmd_scroll` and `cmd_swipe` in `scripts/web/browser.py`.
+- Real Safari through the iOS Simulator on the macOS runners, as a new platform in `scripts/matrix.py`.
+
+Test offline with `python3 -m unittest tests.test_web`. With Playwright and its browsers installed, `WEB_BROWSER_TEST=1` also runs a real-browser test on a local HTML page.
 
 ### Physical Android phones
 
