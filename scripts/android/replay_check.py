@@ -20,6 +20,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent.parent
 APP_ID = "com.example.tinytodo"
 # (what to do, the name on the screen or the text to type, which one when several share the name)
+# Like an agent, the tester looks once and then taps several times from what it saw:
+# it looks again only when the name it wants was not on the last look, or on "look".
 STEPS = [
     ("tap", "Name", 0), ("type", "Anna", 0),
     ("tap", "Email", 0), ("type", "anna@example.com", 0),
@@ -27,9 +29,11 @@ STEPS = [
     ("hide", "", 0),                     # the keyboard, with Back, as an agent does
     ("tap", "Continue", 0),              # a button and its label share this name
     ("tap", "New task", 0), ("type", "Buy milk", 0),
+    ("tap", "New task", 0),              # same place, but the field now shows the typed text
     ("tap", "Add", 0),
     ("hide", "", 0),
     ("tap", "x", 1),                     # four tasks, four "x": the second one deletes "Call the plumber"
+    ("look", "", 0),                     # the list moved
     ("tap", "Buy apples", 0),            # the three tasks that must be left: a replay that deleted another one stops here
     ("tap", "Pay the rent", 0),
     ("tap", "Book the dentist", 0),
@@ -50,28 +54,55 @@ def look(results, number):
 
 
 def follow(results):
-    screens = 0
+    screens, seen = 0, []
     for kind, value, which in STEPS:
         if kind == "type":
             run(sys.executable, "scripts/android/type.py", value)
             continue
-        if kind == "hide":
-            if "mInputShown=true" in run("adb", "shell", "dumpsys", "input_method")[1]:
+        if kind in ("hide", "look"):
+            if kind == "hide" and "mInputShown=true" in run("adb", "shell", "dumpsys", "input_method")[1]:
                 run("adb", "shell", "input", "keyevent", "KEYCODE_BACK")
+            seen = []
             continue
+        named = [(x, y) for name, x, y in seen if name == value]
         for attempt in (1, 2):
-            screens += 1
-            named = [(x, y) for name, x, y in look(results, screens) if name == value]
             if len(named) > which:
                 break
-            if attempt == 1:   # the keyboard may be over it: an agent presses Back, so does this
+            if attempt == 2:   # the keyboard may be over it: an agent presses Back, so does this
                 run("adb", "shell", "input", "keyevent", "KEYCODE_BACK")
-        else:
+            screens += 1
+            seen = look(results, screens)
+            named = [(x, y) for name, x, y in seen if name == value]
+        if len(named) <= which:
             sys.exit(f'check: "{value}" is not on screen {screens:02d}')
         run("adb", "shell", "input", "tap", str(named[which][0]), str(named[which][1]))
     left = [name for name, _, _ in look(results, screens + 1)]
     if "Call the plumber" in left or "Buy milk" not in left:
         sys.exit("check: the path did not do what was planned (a task added, another one deleted)")
+
+
+def counted_the_old_way(results, trace, ecr):
+    """For the record: the trace once counted every element with the name, in the order of the file.
+    Replays the same path with that count for "Continue" and says where it stops. Never fails the check."""
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import ecr_trace
+    step = next((s for s in trace["steps"] if s["action"].get("target") == {"text": "Continue"}), None)
+    trees = [ecr_trace.read_screen(path) for path in sorted(results.glob("*.xml"))]
+    tree = next((nodes for nodes in trees if any("Continue" in node["names"] for node in nodes)), None)
+    if step is None or tree is None:
+        return
+    every = [node for node in tree if "Continue" in node["names"]]
+    print(f'check: "Continue" names {len(every)} elements of the tree, {len(ecr_trace.found_by(tree, "text", "Continue"))} for the replay')
+    if len(every) < 2:
+        return
+    old = results / "old-count"
+    old.mkdir(exist_ok=True)
+    changed = json.loads(json.dumps(trace))
+    next(s for s in changed["steps"] if s["id"] == step["id"])["action"]["target"]["index"] = len(every) - 1
+    (old / "trace.json").write_text(json.dumps(changed, indent=2) + "\n", encoding="utf-8")
+    (old / "trace.params.json").write_text((results / "trace.params.json").read_text(encoding="utf-8"), encoding="utf-8")
+    _, printed = run(sys.executable, "scripts/ecr_replay.py", str(old), "--ecr", ecr)
+    print(f"check: counted the old way, {printed.strip()}")
 
 
 def taps(trace, **target):
@@ -104,8 +135,10 @@ def main(argv=None):
         problems.append('the tap on "Continue" is not stored by its name alone')
     if not taps(trace, text="x", index=1):
         problems.append('the tap on the second "x" is not stored as the second one')
-    if not [step for step in trace["steps"] if isinstance(step["action"].get("target", {}).get("text"), dict)]:
-        problems.append("the tap on the typed text is not stored under its name")
+    if len([step for step in trace["steps"] if isinstance(step["action"].get("target", {}).get("text"), dict)]) != 2:
+        problems.append("the two taps on the typed text are not stored under its name")
+    if "\ttree\t" not in (results / "actions.tsv").read_text(encoding="utf-8"):
+        problems.append("no tree was saved before a tap that followed no screenshot")
     if "Buy milk" in json.dumps(trace) or "only-for-this-test" in json.dumps(trace):
         problems.append("a typed text is in the trace")
 
@@ -121,6 +154,8 @@ def main(argv=None):
             print((results / "replay.txt").read_text(encoding="utf-8")[-6000:])
         except OSError:
             pass
+    else:
+        counted_the_old_way(results, trace, str(Path(args.ecr).resolve()))
     for problem in problems:
         print(f"check: {problem}")
     print("check: FAILED" if problems else f"check: ok, {len(trace['steps'])} steps written from the taps and replayed with no model")

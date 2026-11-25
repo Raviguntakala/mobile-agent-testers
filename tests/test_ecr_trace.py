@@ -131,6 +131,42 @@ class Build(unittest.TestCase):
                                    {"kind": "pressKey", "key": "Back"}, {"kind": "pressKey", "key": "Enter"}])
         self.assertEqual(len(skipped), 1)
 
+    def test_a_tree_saved_just_before_a_tap_names_it_and_keeps_the_screenshot(self):
+        (self.dir / "tree-3.xml").write_text(LOGIN.replace('text="Sign in" resource-id="app:id/submit"', 'text="Try again" resource-id="app:id/submit"'),
+                                             encoding="utf-8")
+        (self.dir / "tree-5.xml").write_text("cat: /sdcard/ecr-tree.xml: No such file or directory", encoding="utf-8")
+        trace, _, _ = tracer.build([self.screen, "0\tadb\tshell\tinput\ttap\t500\t660",
+                                    f"0\ttree\t{self.dir / 'tree-3.xml'}", "0\tadb\tshell\tinput\ttap\t500\t660",
+                                    f"0\ttree\t{self.dir / 'tree-5.xml'}", "0\tadb\tshell\tinput\ttap\t500\t660"],
+                                   PERSONA, "com.example.todo", NOW)
+        self.assertEqual([s["action"]["target"] for s in trace["steps"][1:]],
+                         [{"text": "Sign in", "index": 1},   # named on the screenshot
+                          {"text": "Try again"},              # named on the tree saved just before the tap
+                          {"text": "Try again"}])             # a tree that cannot be read changes nothing
+        self.assertEqual({s["evidence"]["screen"] for s in trace["steps"][1:]}, {"01"})   # the last screenshot, for tools
+
+    def test_long_press_text_typed_with_adb_and_several_keys(self):
+        actions, values, skipped = self.actions(
+            "0\tadb\tshell\tinput\tswipe\t500\t660\t500\t660\t800",            # stays in place: a long press
+            "0\tadb\tshell\tinput\ttouchscreen\ttap\t990\t90",                    # a source before the command
+            "0\tadb\tshell\tinput\ttext\tBuy%smilk",
+            "0\tadb\tshell\tinput text 'Call mum'",
+            "0\tadb\tshell\tinput\tkeyevent\t67\t67\tKEYCODE_ENTER",
+            "0\tadb\tshell\tinput\tkeyevent\tKEYCODE_TAB",
+            "0\tadb\tshell\tinput\tkeyevent\t67\tKEYCODE_TAB",
+            "0\tadb\tshell\tinput\tdraganddrop\t1\t2\t3\t4")
+        self.assertEqual(actions, [
+            {"kind": "longPressOn", "target": {"text": "Sign in", "index": 1}},
+            {"kind": "tapOn", "target": {"text": "Help"}},
+            {"kind": "inputText", "text": {"param": "TEXT_1"}},
+            {"kind": "inputText", "text": {"param": "TEXT_2"}},
+            {"kind": "pressKey", "key": "Backspace"}, {"kind": "pressKey", "key": "Backspace"}, {"kind": "pressKey", "key": "Enter"},
+        ])
+        self.assertEqual(values, {"TEXT_1": "Buy milk", "TEXT_2": "Call mum"})
+        self.assertEqual(len(skipped), 3)
+        self.assertEqual(tracer.left_out(skipped), "keyevent KEYCODE_TAB, draganddrop")
+        self.assertEqual(tracer.left_out(["0\tadb\tshell\tinput\tsecret words here"]), "other")   # never a text
+
     def test_a_tap_uses_the_last_screen_seen_before_it(self):
         other = self.dir / "02.xml"
         other.write_text(LOGIN.replace('text="Sign in" resource-id="app:id/submit"', 'text="Create account" resource-id="app:id/submit"'), encoding="utf-8")
@@ -215,6 +251,39 @@ class EndToEnd(unittest.TestCase):
                          ["launchApp", "tapOn", "eraseText", "inputText", "tapOn", "pressKey"])
         self.assertEqual(json.loads((results / "trace.params.json").read_text()), {"TEXT_1": "S3cret pass"})
         self.assertNotIn("S3cret", (results / "trace.json").read_text())
+
+    def test_a_tap_that_follows_no_screenshot_is_named_on_a_tree_saved_at_that_moment(self):
+        work = Path(tempfile.mkdtemp())
+        results = work / "results" / "anna"
+        results.mkdir(parents=True)
+        (results / "01.xml").write_text(LOGIN, encoding="utf-8")
+        now = work / "now.xml"   # what the phone shows when the second tap comes
+        now.write_text(LOGIN.replace('text="Sign in" resource-id="app:id/submit"', 'text="Try again" resource-id="app:id/submit"'), encoding="utf-8")
+        real = work / "real-adb"
+        real.write_text('#!/usr/bin/env bash\necho "$*" >> "$FAKE_ADB_CALLS"\n'
+                        'case "$*" in "exec-out cat /sdcard/ecr-tree.xml") cat "$FAKE_TREE" ;; esac\n')
+        real.chmod(0o755)
+        log = results / "actions.tsv"
+        log.write_text(f"0\tscreen\t{results / '01.xml'}\t1080\t2400\n", encoding="utf-8")
+        env = dict(os.environ, PATH=f"{ROOT / 'scripts/android/shim'}:{os.environ['PATH']}", ECR_REAL_ADB=str(real),
+                   ECR_ACTION_LOG=str(log), FAKE_ADB_CALLS=str(work / "calls"), FAKE_TREE=str(now))
+        run = lambda *cmd: subprocess.run(cmd, env=env, cwd=ROOT, check=True, capture_output=True, text=True)  # noqa: E731
+        run("adb", "shell", "input", "tap", "500", "660")       # right after a screenshot: no tree is saved
+        run("adb", "shell", "input", "tap", "500", "660")       # no screenshot since: the tree is saved first
+        run("adb", "shell", "input", "keyevent", "KEYCODE_BACK")   # a key needs no tree
+
+        kinds = [line.split("\t")[1] for line in log.read_text().splitlines()]
+        self.assertEqual(kinds, ["screen", "adb", "tree", "adb", "adb"])
+        calls = (work / "calls").read_text().splitlines()
+        self.assertEqual(calls[0], "shell input tap 500 660")
+        self.assertEqual(calls.count("shell input tap 500 660"), 2)   # the real adb got both taps
+        trace, _, _ = tracer.build(log.read_text().splitlines(), PERSONA, "com.example.todo", NOW)
+        self.assertEqual([s["action"].get("target") for s in trace["steps"][1:]], [{"text": "Sign in", "index": 1}, {"text": "Try again"}, None])
+
+        env["FAKE_TREE"] = str(work / "missing.xml")             # the phone gives no tree: the tap still goes through
+        run("adb", "shell", "input", "tap", "500", "660")
+        self.assertEqual([line.split("\t")[1] for line in log.read_text().splitlines()][-1], "adb")
+        self.assertEqual(list(results.glob("tree-*.xml")), [results / "tree-2.xml"])
 
     def test_no_notes_writes_nothing_and_does_not_fail(self):
         work = Path(tempfile.mkdtemp())

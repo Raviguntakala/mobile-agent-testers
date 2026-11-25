@@ -170,7 +170,7 @@ class Check(unittest.TestCase):
         self.assertEqual(("Continue", "540", "1200"), found.groups()[1:])
         self.assertIn('centre=({(x1 + x2) // 2},{(y1 + y2) // 2})', (ROOT / "scripts/android/screen.py").read_text(encoding="utf-8"))
         kinds = {kind for kind, _, _ in replay_check.STEPS}
-        self.assertEqual({"tap", "type", "hide"}, kinds)
+        self.assertEqual({"tap", "type", "hide", "look"}, kinds)
 
 
 if __name__ == "__main__":

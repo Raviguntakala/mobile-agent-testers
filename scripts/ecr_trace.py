@@ -117,10 +117,44 @@ def target_at(nodes, x, y, width, height, typed=None):
     return None, None
 
 
+COMMANDS = {"tap", "swipe", "text", "keyevent", "draganddrop", "press", "roll", "motionevent", "keycombination"}
+SOURCES = {"touchscreen", "keyboard", "mouse", "touchpad", "stylus", "dpad", "gamepad", "trackball", "joystick", "touchnavigation"}
+
+
 def input_args(fields):
-    """['shell', 'input', 'tap', '1', '2'] or ['shell', 'input tap 1 2'] -> ['tap', '1', '2']"""
+    """['shell', 'input', 'tap', '1', '2'] or ['shell', 'input tap 1 2'] -> ['tap', '1', '2'].
+    A source before the command (`input touchscreen tap`) and a display (`-d 0`) are dropped."""
     words = " ".join(fields[1:]).split()
-    return words[1:] if words[:1] == ["input"] else []
+    if words[:1] != ["input"]:
+        return []
+    words = words[1:]
+    while words and (words[0] in SOURCES or words[0] == "-d"):
+        words = words[2:] if words[0] == "-d" else words[1:]
+    return words
+
+
+def text_typed_with_adb(fields):
+    """The text of `adb shell input text ...`, as the phone got it: %s is a space, quotes and backslashes are the shell's."""
+    raw = " ".join(fields[1:])
+    found = re.search(r"\binput\s+(?:(?:%s)\s+)?text\s+(.*)$" % "|".join(sorted(SOURCES)), raw, re.S)
+    text = found.group(1).strip() if found else ""
+    if len(text) >= 2 and text[0] == text[-1] and text[0] in "'\"":
+        text = text[1:-1]
+    return re.sub(r"\\(.)", r"\1", text).replace("%s", " ")
+
+
+def left_out(lines):
+    """What was left out, in words of adb only, never a text: 'keyevent KEYCODE_TAB', 'text', 'tap'."""
+    kinds = []
+    for line in lines:
+        args = input_args(line.split("\t")[2:])
+        kind = args[0] if args and args[0] in COMMANDS else "other"
+        if kind == "keyevent":
+            keys = [a for a in args[1:] if a not in KEYS and re.fullmatch(r"KEYCODE_[A-Z0-9_]{1,30}|\d{1,3}", a)]
+            kind += f" {keys[0]}" if keys else ""
+        if kind not in kinds:
+            kinds.append(kind)
+    return ", ".join(kinds[:5])
 
 
 def model_of(path):
@@ -155,6 +189,13 @@ def build(log_lines, persona, app_id, now, model=None):
         nonlocal last_screen
         last_screen = None   # known again at the next screenshot
 
+    def named(text):
+        """The name of a typed text: the trace only holds names."""
+        if text not in values:
+            values[text] = f"TEXT_{len(values) + 1}"
+            params.append({"name": values[text], "secret": True, "description": "A text the agent typed"})
+        return values[text]
+
     add({"kind": "launchApp", "appId": app_id, "clearState": True})
     for line in log_lines:
         fields = line.rstrip("\n").split("\t")
@@ -166,15 +207,12 @@ def build(log_lines, persona, app_id, now, model=None):
             screen = last_screen = Path(fields[2]).stem
             if len(fields) >= 5 and fields[3].isdigit() and fields[4].isdigit():
                 width, height = int(fields[3]), int(fields[4])
+        elif kind == "tree":   # saved by the pass-through adb just before a tap that follows no screenshot
+            nodes = read_screen(fields[2]) or nodes
         elif kind == "type":
-            text = fields[2]
-            if not text:
-                continue
-            if text not in values:
-                values[text] = f"TEXT_{len(values) + 1}"
-                params.append({"name": values[text], "secret": True, "description": "A text the agent typed"})
-            add({"kind": "eraseText"})
-            add({"kind": "inputText", "text": {"param": values[text]}})
+            if fields[2]:
+                add({"kind": "eraseText"})   # type.py replaces what the field holds
+                add({"kind": "inputText", "text": {"param": named(fields[2])}})
         elif kind == "adb":
             args = input_args(fields[2:])
             if args[:1] == ["tap"] and len(args) >= 3 and args[1].lstrip("-").isdigit() and args[2].lstrip("-").isdigit():
@@ -186,13 +224,23 @@ def build(log_lines, persona, app_id, now, model=None):
                     skipped.append(line.strip())
             elif args[:1] == ["swipe"] and len(args) >= 5 and all(a.lstrip("-").isdigit() for a in args[1:5]):
                 x1, y1, x2, y2 = map(int, args[1:5])
+                if abs(x2 - x1) <= 10 and abs(y2 - y1) <= 10:   # a swipe that stays in place is a long press
+                    target, bounds = target_at(nodes, x1, y1, width, height, values)
+                    if target:
+                        add({"kind": "longPressOn", "target": target}, point=[x1, y1], bounds=bounds)
+                    else:
+                        skipped.append(line.strip())
+                    continue
                 if abs(x2 - x1) > abs(y2 - y1):
                     direction = "LEFT" if x2 < x1 else "RIGHT"
                 else:
                     direction = "UP" if y2 < y1 else "DOWN"
                 add({"kind": "swipe", "direction": direction}, **{"from": [x1, y1], "to": [x2, y2]})
-            elif args[:1] == ["keyevent"] and len(args) == 2 and args[1] in KEYS:
-                add({"kind": "pressKey", "key": KEYS[args[1]]})
+            elif args[:1] == ["keyevent"] and len(args) >= 2 and all(key in KEYS for key in args[1:]):
+                for key in args[1:]:   # `input keyevent 67 67 67` presses three keys
+                    add({"kind": "pressKey", "key": KEYS[key]})
+            elif args[:1] == ["text"] and text_typed_with_adb(fields[2:]):
+                add({"kind": "inputText", "text": {"param": named(text_typed_with_adb(fields[2:]))}})   # adb adds to the field
             elif args:
                 skipped.append(line.strip())
 
@@ -249,7 +297,8 @@ def main(argv=None):
         return 0
     (results / "trace.json").write_text(json.dumps(trace, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     (results / "trace.params.json").write_text(json.dumps(values, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"trace: {len(trace['steps'])} steps, {len(values)} typed texts kept apart, {len(skipped)} commands left out")
+    what = f" ({left_out(skipped)})" if skipped else ""
+    print(f"trace: {len(trace['steps'])} steps, {len(values)} typed texts kept apart, {len(skipped)} commands left out{what}")
     return 0
 
 
