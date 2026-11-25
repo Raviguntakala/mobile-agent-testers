@@ -24,8 +24,8 @@
 
 </div>
 
-<p align="center"><a href="../../assets/localsend-20.mp4"><img src="../../assets/localsend-20.gif" alt="Gravações de tela reais de 20 testadores com IA usando o LocalSend ao mesmo tempo: 10 emuladores de Android e 10 simuladores de iOS em 14 idiomas, de um Pixel pequeno a um iPad de 13 polegadas. Quando um testador termina, o celular mostra quantos problemas ele encontrou. Abre o vídeo." width="100%"></a><br>
-<sub>Gravações de tela reais da execução no LocalSend, sem os tempos de espera. <a href="../../assets/localsend-20.mp4">Vídeo completo (MP4)</a> · <a href="../../docs/runs/localsend-20.md">A execução, aparelho por aparelho</a></sub></p>
+<p align="center"><a href="../../assets/launch-video.mp4"><img src="../../assets/launch-video.gif" alt="Vídeo de lançamento, 26 segundos. Primeiro, gravações de tela reais de 20 testadores com IA usando o LocalSend ao mesmo tempo: 10 emuladores de Android e 10 simuladores de iOS em 14 idiomas; cada celular mostra quantos problemas relatou, 103 no total. Depois, o mapa do dashboard com o app de demo: todas as telas, uma faixa colorida por testador, um bug que vira teste e um caminho repetido sem modelo. Abre o vídeo com som." width="100%"></a><br>
+<sub>Os celulares são gravações de tela reais da execução no LocalSend; o mapa é a demo do dashboard. <a href="../../assets/launch-video.mp4">Vídeo com som (MP4)</a> · <a href="../../assets/localsend-20.mp4">Os 20 celulares, gravação completa</a> · <a href="../../docs/runs/localsend-20.md">A execução, aparelho por aparelho</a></sub></p>
 
 Nenhum script de teste para escrever. Cada testador é um agente do Claude Code com seu próprio simulador de iOS
 ou emulador de Android no GitHub Actions. Ele interpreta uma persona (iPhone SE em sueco com o maior tamanho de

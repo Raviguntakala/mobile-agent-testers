@@ -24,8 +24,8 @@
 
 </div>
 
-<p align="center"><a href="../../assets/localsend-20.mp4"><img src="../../assets/localsend-20.gif" alt="Bản ghi màn hình thật của 20 tester AI dùng LocalSend cùng lúc: 10 Android emulator và 10 iOS Simulator bằng 14 ngôn ngữ, từ một chiếc Pixel nhỏ đến một chiếc iPad 13 inch. Khi một tester chạy xong, điện thoại của nó hiển thị số vấn đề nó đã tìm thấy. Mở video." width="100%"></a><br>
-<sub>Bản ghi màn hình thật của lần chạy LocalSend, đã cắt thời gian chờ. <a href="../../assets/localsend-20.mp4">Video đầy đủ (MP4)</a> · <a href="../../docs/runs/localsend-20.md">Lần chạy, theo từng thiết bị</a></sub></p>
+<p align="center"><a href="../../assets/launch-video.mp4"><img src="../../assets/launch-video.gif" alt="Video ra mắt, 26 giây. Đầu tiên là bản ghi màn hình thật của 20 tester AI dùng LocalSend cùng lúc: 10 Android emulator và 10 iOS Simulator bằng 14 ngôn ngữ, mỗi điện thoại hiển thị số vấn đề nó đã báo cáo, tổng cộng 103. Sau đó là bản đồ của dashboard với ứng dụng demo: mọi màn hình, mỗi tester một làn màu, một bug trở thành bài test, và một đường đi được phát lại không cần mô hình. Mở video có âm thanh." width="100%"></a><br>
+<sub>Các điện thoại là bản ghi màn hình thật của lần chạy LocalSend; bản đồ là bản demo của dashboard. <a href="../../assets/launch-video.mp4">Video có âm thanh (MP4)</a> · <a href="../../assets/localsend-20.mp4">20 điện thoại, bản ghi đầy đủ</a> · <a href="../../docs/runs/localsend-20.md">Lần chạy, theo từng thiết bị</a></sub></p>
 
 Không cần viết test script. Mỗi tester là một agent Claude Code với iOS
 Simulator hoặc Android emulator riêng trên GitHub Actions. Nó đóng vai một persona (iPhone SE

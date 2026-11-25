@@ -22,8 +22,8 @@
 
 </div>
 
-<p align="center"><a href="assets/localsend-20.mp4"><img src="assets/localsend-20.gif" alt="Real screen recordings of 20 AI testers using LocalSend at the same time: 10 Android emulators and 10 iOS Simulators in 14 languages, from a small Pixel to a 13-inch iPad. When a tester finishes, its phone shows how many issues it found. Opens the video." width="100%"></a><br>
-<sub>Real screen recordings of the LocalSend run, idle time cut. <a href="assets/localsend-20.mp4">Full video (MP4)</a> · <a href="docs/runs/localsend-20.md">The run, device by device</a></sub></p>
+<p align="center"><a href="assets/launch-video.mp4"><img src="assets/launch-video.gif" alt="Launch video, 26 seconds. First, real screen recordings of 20 AI testers using LocalSend at the same time: 10 Android emulators and 10 iOS Simulators in 14 languages, each phone showing how many issues it reported, 103 in all. Then the dashboard's map of the demo app: every screen, one colored lane per tester, a bug turned into a test, and a path replayed with no model. Opens the video with sound." width="100%"></a><br>
+<sub>The phones are real screen recordings of the LocalSend run; the map is the dashboard's demo. <a href="assets/launch-video.mp4">Video with sound (MP4)</a> · <a href="assets/localsend-20.mp4">The 20 phones, full recording</a> · <a href="docs/runs/localsend-20.md">The run, device by device</a></sub></p>
 
 No test scripts to write. Each tester is a Claude Code agent with its own iOS
 Simulator or Android emulator on GitHub Actions. It plays a persona (iPhone SE

@@ -24,8 +24,8 @@
 
 </div>
 
-<p align="center"><a href="../../assets/localsend-20.mp4"><img src="../../assets/localsend-20.gif" alt="LocalSend'i aynı anda kullanan 20 yapay zekâ tester'ın gerçek ekran kayıtları: 14 dilde 10 Android emülatörü ve 10 iOS Simulator, küçük bir Pixel'den 13 inç bir iPad'e kadar. Her tester işini bitirdiğinde telefonunda kaç sorun bulduğu görünür. Tıklayınca video açılır." width="100%"></a><br>
-<sub>LocalSend çalıştırmasının gerçek ekran kayıtları; bekleme süreleri kırpıldı. <a href="../../assets/localsend-20.mp4">Videonun tamamı (MP4)</a> · <a href="../../docs/runs/localsend-20.md">Cihaz cihaz çalıştırma sonuçları</a></sub></p>
+<p align="center"><a href="../../assets/launch-video.mp4"><img src="../../assets/launch-video.gif" alt="Tanıtım videosu, 26 saniye. Önce LocalSend'i aynı anda kullanan 20 yapay zekâ tester'ın gerçek ekran kayıtları: 14 dilde 10 Android emülatörü ve 10 iOS Simulator; her telefon bildirdiği sorun sayısını gösteriyor, toplam 103. Ardından dashboard'daki demo uygulamanın haritası: tüm ekranlar, her tester için renkli bir şerit, teste dönüşen bir hata ve modelsiz yeniden oynatılan bir yol. Tıklayınca sesli video açılır." width="100%"></a><br>
+<sub>Telefonlar LocalSend çalıştırmasının gerçek ekran kayıtları; harita dashboard'un demosu. <a href="../../assets/launch-video.mp4">Sesli video (MP4)</a> · <a href="../../assets/localsend-20.mp4">20 telefonun kaydının tamamı</a> · <a href="../../docs/runs/localsend-20.md">Cihaz cihaz çalıştırma sonuçları</a></sub></p>
 
 Test script'i yazmanıza gerek yok. Her tester, GitHub Actions üzerinde kendi iOS
 Simulator'ı ya da Android emülatörü bulunan bir Claude Code ajanıdır. Ajan bir kullanıcı

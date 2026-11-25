@@ -24,8 +24,8 @@
 
 </div>
 
-<p align="center"><a href="../../assets/localsend-20.mp4"><img src="../../assets/localsend-20.gif" alt="20 人の AI テスターが同時に LocalSend を使う実際の画面録画：Android エミュレーター 10 台と iOS シミュレーター 10 台、14 言語、小さな Pixel から 13 インチの iPad まで。テスターが終わると、その端末に見つけた問題の数が表示されます。クリックで動画を開きます。" width="100%"></a><br>
-<sub>LocalSend での実行の実際の画面録画（待ち時間はカット）。<a href="../../assets/localsend-20.mp4">動画全体（MP4）</a> · <a href="../../docs/runs/localsend-20.md">端末ごとの実行記録</a></sub></p>
+<p align="center"><a href="../../assets/launch-video.mp4"><img src="../../assets/launch-video.gif" alt="ローンチ動画（26 秒）。まず、20 人の AI テスターが同時に LocalSend を使う実際の画面録画：Android エミュレーター 10 台と iOS シミュレーター 10 台、14 言語。各端末に報告した問題の数が表示され、合計 103 件。続いて、デモアプリのダッシュボードのマップ：全画面、テスターごとの色のレーン、テストになるバグ、モデルなしで再生される経路。クリックで音声付きの動画を開きます。" width="100%"></a><br>
+<sub>端末の映像は LocalSend での実行の実際の画面録画、マップはダッシュボードのデモです。 <a href="../../assets/launch-video.mp4">音声付き動画（MP4）</a> · <a href="../../assets/localsend-20.mp4">20 台の端末の録画全体</a> · <a href="../../docs/runs/localsend-20.md">端末ごとの実行記録</a></sub></p>
 
 テストスクリプトを書く必要はありません。各テスターは Claude Code のエージェントで、GitHub Actions 上に
 自分専用の iOS シミュレーターまたは Android エミュレーターを持ちます。ペルソナ（スウェーデン語で文字サイズ最大の
