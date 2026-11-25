@@ -181,7 +181,75 @@ function heatPoints(group, keys) {
 
 // ---------- rendering ----------
 
+// ---------- one screen in other forms: the merges made by hand or by Claude, kept in trace.notes.json ----------
+// notes.sameAs = {NN: {key, nn, by}}: this screenshot shows the same screen as screenshot nn of tester key,
+// in another language, text size, device or platform. The map shows one card; traces never change.
+
+/** Applies every merge to the groups the server made, which stay in groups0 so a merge can be undone. */
+function applyMerges() {
+  if (!S.data.groups0) {
+    S.data.groups0 = S.data.groups;
+    for (const p of S.data.personas) for (const s of Object.values(p.screens)) s.group0 = s.group;
+  }
+  const order = Object.keys(S.data.groups0);
+  const parent = {};
+  const find = (g) => { while (parent[g]) g = parent[g]; return g; };
+  for (const p of S.data.personas) {
+    for (const [nn, to] of Object.entries(notesOf(p.key).sameAs || {})) {
+      const a = p.screens[nn], o = to && persona(to.key), b = o && o.screens[to.nn];
+      if (!a || !b) continue;
+      const [ra, rb] = [find(a.group0), find(b.group0)].sort((x, y) => order.indexOf(x) - order.indexOf(y));
+      if (ra !== rb) parent[rb] = ra;   // the group seen first keeps its name
+    }
+  }
+  const groups = {};
+  for (const g of order) {
+    const r = find(g), from = S.data.groups0[g];
+    if (!groups[r]) groups[r] = { title: S.data.groups0[r].title, count: 0, members: [] };
+    groups[r].count += from.count;
+    groups[r].members.push(...from.members);
+  }
+  for (const p of S.data.personas) for (const s of Object.values(p.screens)) s.group = find(s.group0);
+  S.data.groups = groups;
+}
+/** The merges that join screenshots now on group g. */
+function mergesOn(g) {
+  const out = [];
+  for (const p of S.data.personas) {
+    for (const [nn, to] of Object.entries(notesOf(p.key).sameAs || {})) {
+      const a = p.screens[nn];
+      if (a && a.group === g) out.push({ key: p.key, nn, to });
+    }
+  }
+  return out;
+}
+function mergeBox(map, n, shot) {
+  const others = [...map.nodes.values()].filter((o) => o.g !== "start" && o.g !== n.g)
+    .map((o) => ({ g: o.g, v: o.visits[0], name: screenTitle(screenInfo(o.visits[0].nn, o.visits[0].key), o.visits[0].nn) }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const pick = h("select", { "aria-label": "Screen to merge with" }, h("option", { value: "" }, "Pick a screen…"),
+    ...others.map((o) => h("option", { value: o.g }, `${o.name} (${traceOf(o.v.key).persona.id}, ${o.v.nn})`)));
+  const merge = () => {
+    const o = others.find((x) => x.g === pick.value);
+    if (!o) return;
+    edit(() => { const notes = notesOf(shot.key); notes.sameAs = notes.sameAs || {}; notes.sameAs[shot.nn] = { key: o.v.key, nn: o.v.nn, by: "you" }; S.mapShot = { key: shot.key, nn: shot.nn }; });
+  };
+  const made = mergesOn(n.g);
+  return h("div", { class: "box" }, h("h3", {}, "Same screen in another form?", h("span", { class: "hint", style: "margin:0" }, "trace.notes.json")),
+    h("p", { class: "hint", style: "margin:0 0 6px" }, "Another language, text size, device or platform: merge the two cards. Only the map changes, never a trace."),
+    h("div", { class: "row" }, pick, h("button", { class: "fit", onclick: merge }, "Merge")),
+    made.length ? h("ul", { class: "list", style: "margin-top:8px" }, ...made.map((m) => h("li", {},
+      h("span", { class: "grow" }, `${traceOf(m.key).persona.id} ${m.nn} = ${persona(m.to.key) ? traceOf(m.to.key).persona.id : m.to.key} ${m.to.nn}`,
+        h("span", { class: "when" }, m.to.by === "claude" ? "merged by Claude" : "merged by hand")),
+      h("button", { onclick: () => edit(() => { const notes = notesOf(m.key); delete notes.sameAs[m.nn]; if (!Object.keys(notes.sameAs).length) delete notes.sameAs; S.mapShot = null; }) }, "Separate")))) : null);
+}
+
 function render() {
+  applyMerges();
+  if (S.mapSel && S.mapSel !== "start" && !S.data.groups[S.mapSel]) {   // its card was merged into another
+    const info = S.mapShot && screenInfo(S.mapShot.nn, S.mapShot.key);
+    S.mapSel = info ? info.group : null;
+  }
   for (const b of document.querySelectorAll("[data-mapheat]")) b.setAttribute("aria-checked", String(b.dataset.mapheat === S.mapHeat));
   renderTop();
   renderMap();
@@ -603,6 +671,7 @@ function renderMapSide(map) {
         h("button", { class: "danger", onclick: () => mutate(x, (l) => l.splice(x.j, 1)) }, "Delete")))),
       input, h("div", { class: "row", style: "margin-top:6px" }, h("span"), h("button", { class: "fit", onclick: add }, "Comment"))),
     checkBox(n, shot, info),
+    mergeBox(map, n, shot),
     fnd.length ? h("div", { class: "box" }, h("h3", {}, "Findings seen here"), h("ul", { class: "list" }, ...fnd.map((f) => h("li", {},
       h("span", { class: "grow" }, h("span", { class: `dot sev-${f.severity}` }), f.title, h("span", { class: "when" }, `${traceOf(f.key).persona.id} · ${f.severity}`)),
       h("button", { title: "Pick on the screen what shows this bug, or what is missing: the check stays red until the bug is fixed", onclick: () => { S.picking = { el: null, kind: "notVisible", bug: true, started: Date.now() }; renderMap(); } }, "Make it a test"))))) : null,

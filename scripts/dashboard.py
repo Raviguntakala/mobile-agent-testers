@@ -21,6 +21,7 @@ The results are private: the server listens on 127.0.0.1 only, and never serves
 trace.params.json (the texts the agent typed).
 """
 import argparse
+import difflib
 import json
 import os
 import re
@@ -43,6 +44,8 @@ SCREEN = re.compile(r"^(\d{1,4})\.(png|svg)$")
 MEDIA = {"png": "image/png", "svg": "image/svg+xml"}
 NOTES_SCHEMA = "mobile-agent-testers.notes/0"
 SAME_SCREEN = 0.6   # Jaccard similarity above which two screenshots show the same screen
+SAME_LAYOUT = 0.85  # likeness of two screen trees without their texts above which they show the same screen
+OTHER_SCREEN = 0.3  # one tester's two screenshots whose controls are this unlike show two screens
 
 
 # ---------- reading a run ----------
@@ -75,6 +78,33 @@ def screen_elements(xml_path):
     return out
 
 
+def screen_layout(xml_path):
+    """A screen's tree with no text: depth, kind of element, what it does, whether it has a name.
+    It stays the same in every language and text size, so it matches screens with no ids."""
+    try:
+        root = ET.parse(xml_path).getroot()
+    except (ET.ParseError, OSError):
+        return []
+    out = []
+
+    def walk(node, depth):
+        for c in node:
+            if c.tag != "node" or (c.get("package") or "") == "com.android.systemui":
+                continue
+            kind = (c.get("class") or "").rsplit(".", 1)[-1]
+            does = "".join(k[0] for k in ("clickable", "checkable", "scrollable", "password") if c.get(k) == "true")
+            named = "n" if ((c.get("text") or "").strip() or (c.get("content-desc") or "").strip()) else ""
+            out.append(f"{depth}{kind}{does}{named}")
+            walk(c, depth + 1)
+
+    walk(root, 0)
+    return out
+
+
+def layout_likeness(a, b):
+    return difflib.SequenceMatcher(None, a, b, autojunk=False).ratio() if a and b else 0.0
+
+
 def tokens(elements):
     """What identifies a screen: its ids (the same in every language) and the names of its controls."""
     found = set()
@@ -103,29 +133,78 @@ def title_of(elements):
     return texts[0]["label"] if texts else ""
 
 
+def same_screen(a, b):
+    """How much two screenshots look like one screen of the app, from 0 to 1, and whether that is
+    enough. Ids first, as they do not change with the language. With no ids, the tree without its
+    texts, so the same screen in Arabic, in Japanese or at 200% text still matches. Last, the names
+    of the controls."""
+    ids_a, ids_b = {t for t in a["tokens"] if t.startswith("id:")}, {t for t in b["tokens"] if t.startswith("id:")}
+    if len(ids_a) >= 3 and len(ids_b) >= 3:
+        score = similarity(a["tokens"], b["tokens"])
+        return score, score >= SAME_SCREEN
+    if len(a["layout"]) >= 3 and len(b["layout"]) >= 3:
+        score = layout_likeness(a["layout"], b["layout"])
+        return score, score >= SAME_LAYOUT
+    score = similarity(a["tokens"], b["tokens"])
+    return score, score >= SAME_SCREEN
+
+
+def told_apart(shot, group):
+    """True when the group holds a screenshot of the same tester whose controls are unlike this one's:
+    in one language, other names mean another screen, even with the same layout."""
+    mine = {t for t in shot["tokens"] if t.startswith("label:")}
+    for other in group["shots"]:
+        if other["key"] == shot["key"]:
+            theirs = {t for t in other["tokens"] if t.startswith("label:")}
+            if len(mine) >= 2 and len(theirs) >= 2 and len(mine & theirs) / len(mine | theirs) < OTHER_SCREEN:
+                return True
+    return False
+
+
 def group_screens(personas):
-    """Gives each screenshot a group: screenshots of the same screen, by any tester, share it.
-    A heat map adds up the taps of a group."""
-    groups = []   # [tokens of the first screenshot, titles seen, count, screenshots]
+    """Gives each screenshot a group: screenshots of the same screen, by any tester, in any language,
+    text size or device, share it. A heat map adds up the taps of a group. The screen right after a
+    fresh start of the app is one screen for every tester, also when a tablet lays it out its own way."""
+    groups = []   # {"shots": [...], "titles": Counter}
     for p in personas:
         for nn, screen in sorted(p["screens"].items()):
-            toks = screen.pop("_tokens")
+            shot = {"key": p["key"], "nn": nn, "tokens": screen.pop("_tokens"), "layout": screen.pop("_layout"),
+                    "start": nn == p.get("_start")}
             best, score = None, 0.0
             for i, g in enumerate(groups):
-                s = similarity(toks, g[0])
-                if s > score:
+                s, enough = same_screen(shot, g["shots"][0])
+                if enough and s > score and not told_apart(shot, g):
                     best, score = i, s
-            if best is None or score < SAME_SCREEN:
-                groups.append([toks, Counter(), 0, []])
+            if best is None and shot["start"]:
+                best = next((i for i, g in enumerate(groups) if g["start"] and not told_apart(shot, g)), None)
+            if best is None:
+                groups.append({"shots": [], "titles": Counter(), "start": False})
                 best = len(groups) - 1
-            groups[best][2] += 1
-            groups[best][3].append({"key": p["key"], "nn": nn})
+            g = groups[best]
+            g["shots"].append(shot)
+            g["start"] = g["start"] or shot["start"]
             if screen["title"]:
-                groups[best][1][screen["title"]] += 1
+                g["titles"][screen["title"]] += 1
             screen["group"] = f"g{best + 1}"
     # members: every screenshot of the screen; the first one stands for it on the map
-    return {f"g{i + 1}": {"title": (g[1].most_common(1)[0][0] if g[1] else ""), "count": g[2], "members": g[3]}
+    return {f"g{i + 1}": {"title": (g["titles"].most_common(1)[0][0] if g["titles"] else ""), "count": len(g["shots"]),
+                          "members": [{"key": s["key"], "nn": s["nn"]} for s in g["shots"]]}
             for i, g in enumerate(groups)}
+
+
+def fresh_start_screen(trace):
+    """The screenshot right after the trace starts the app with its data cleared, if it does."""
+    steps = trace.get("steps") if isinstance(trace, dict) else None
+    if not isinstance(steps, list) or len(steps) < 2 or not isinstance(steps[0], dict):
+        return None
+    action = steps[0].get("action") or {}
+    if action.get("kind") != "launchApp" or not action.get("clearState"):
+        return None
+    evidence = steps[1].get("evidence") if isinstance(steps[1], dict) else None
+    if isinstance(evidence, dict) and isinstance(evidence.get("screen"), str):
+        return evidence["screen"]
+    last = trace.get("evidence") if len(steps) == 1 else None
+    return last.get("lastScreen") if isinstance(last, dict) else None
 
 
 def find_traces(root):
@@ -168,6 +247,8 @@ def load_run(roots):
         for trace_path in find_traces(root):
             load_persona(personas, roots, i, trace_path)
     groups = group_screens(personas)
+    for p in personas:
+        p.pop("_start", None)
     return {"run": " + ".join(r.resolve().name for r in roots), "personas": personas, "groups": groups}
 
 
@@ -183,7 +264,7 @@ def load_persona(personas, roots, i, trace_path):
             continue
         elements = screen_elements(folder / f"{m.group(1)}.xml")
         screens[m.group(1)] = {"file": f.name, "elements": elements, "title": title_of(elements),
-                               "_tokens": tokens(elements)}
+                               "_tokens": tokens(elements), "_layout": screen_layout(folder / f"{m.group(1)}.xml")}
         # Optional: where a saliency model predicts the eye goes, [[x, y, weight], ...] in 0..1.
         # The map shows it instead of its own estimate.
         saliency = read_json(folder / f"{m.group(1)}.saliency.json")
@@ -200,6 +281,7 @@ def load_persona(personas, roots, i, trace_path):
         # the map maker of briefs/map.md explores every screen; it is not a persona
         "mapper": isinstance(findings, dict) and findings.get("mode") == "map",
         "screens": screens,
+        "_start": fresh_start_screen(trace),
     })
 
 
