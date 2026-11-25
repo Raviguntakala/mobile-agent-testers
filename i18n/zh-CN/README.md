@@ -78,6 +78,7 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
 | **在每台手机上复现一个缺陷报告** | 给出一个 issue 或复现步骤，每个智能体回答“是 / 否 / 不确定”，并附上截图（[briefs/reproduce.md](../../briefs/reproduce.md)）。 |
 | **生成改进报告** | 每个角色把应用用一遍，然后说出在哪里犹豫、原本期待什么、最该先改什么，并标出领域和影响（[briefs/improve.md](../../briefs/improve.md)）。 |
 | **对比两个版本** | 同一批角色分别使用两个分支或构建，最后得到一张表：目标是否达成、操作次数、评分、只在一个版本出现的问题（[docs/compare-versions.md](../../docs/compare-versions.md)）。适合在真正的 A/B 测试之前做检查，但不能代替 A/B 测试。 |
+| **在手机上测试网站** | 同一批角色在手机浏览器里使用任意网站或 Web 应用，在免费的 Linux 运行器上运行（[配置](docs/configuration.md)）。 |
 
 **使用更便宜的模型**：Claude Haiku，或任何兼容 Anthropic 接口的 API（OpenRouter、DeepSeek、Kimi、GLM、MiniMax、通义千问）。发现的质量取决于模型读截图的能力和推理能力（[docs/cheaper-models.md](../../docs/cheaper-models.md)）。
 

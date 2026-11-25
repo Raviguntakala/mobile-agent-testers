@@ -80,6 +80,7 @@ Mỗi lần chạy một cách dùng, chọn bằng các tham số ở trên.
 | **Tái hiện một báo cáo bug** | Trên mọi điện thoại: đưa một issue hoặc các bước, và mỗi agent trả lời có, không hoặc không rõ, kèm ảnh chụp màn hình ([briefs/reproduce.md](../../briefs/reproduce.md)). |
 | **Nhận một báo cáo cải tiến** | Mỗi persona dùng ứng dụng một lần, rồi nói nó đã do dự ở đâu, nó mong đợi điều gì và nên thay đổi gì trước, theo khu vực và mức tác động ([briefs/improve.md](../../briefs/improve.md)). |
 | **So sánh hai phiên bản** | Cùng các persona trên hai branch hoặc hai bản build, rồi một bảng: mục tiêu đạt được, số hành động, điểm số, các vấn đề chỉ thấy ở một phiên bản ([docs/compare-versions.md](../../docs/compare-versions.md)). Một bước kiểm tra trước một A/B test thật, không phải thứ thay thế cho nó. |
+| **Kiểm thử một website trên điện thoại** | Cùng các persona trong trình duyệt của điện thoại, trên bất kỳ website hay web app nào. Chạy trên các runner Linux miễn phí ([cấu hình](docs/configuration.md)). |
 
 **Dùng một model rẻ hơn**: Claude Haiku, hoặc bất kỳ API tương thích Anthropic nào (OpenRouter, DeepSeek, Kimi, GLM, MiniMax, Qwen). Các phát hiện chỉ tốt bằng khả năng đọc ảnh chụp màn hình và suy luận của model ([docs/cheaper-models.md](../../docs/cheaper-models.md)).
 

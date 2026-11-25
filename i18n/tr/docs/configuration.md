@@ -14,6 +14,7 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
 | `android_personas`, `ios_personas` | [personas.json](../../../personas.json) içindeki id'ler, her biri bir telefon; ya da `all`, bir platformu atlamak için `none`. 20 hazır persona: 14 dil, sağdan sola, tabletler, küçükten en büyük erişilebilirlik boyutuna kadar yazı |
 | `brief` | Ajan talimatları: keşif için [AGENT_BRIEF.md](../../../AGENT_BRIEF.md), iyileştirme raporu için [briefs/improve.md](../../../briefs/improve.md) ya da tek bir özellik için kendi talimatın |
 | `bug_report` | Keşif yerine yeniden üretilecek bir hata: bir issue (`owner/repo#123` ya da URL'si) veya metin olarak adımlar. Her ajan bunu kendi cihazında izler ([briefs/reproduce.md](../../../briefs/reproduce.md)) |
+| `web_personas`, `web_url` | Web personalarının id'leri (`tom`, `amelie`, `lena`, `arjun`), `all` ya da `none` (varsayılan) ve test edilecek sitenin adresi. Diğer platformlar varsayılanlarını korur; yalnızca web için `android_personas=none` ve `ios_personas=none` verin. |
 | `model`, `llm_base_url` | Varsayılan `sonnet`, daha az harcamak için `haiku` ya da anahtarı bir `LLM_API_KEY` secret'ında duran, Anthropic uyumlu herhangi bir API ([docs/cheaper-models.md](../../../docs/cheaper-models.md)) |
 | `framework` | `auto` (varsayılan) ya da aşağıdaki framework'lerden birini zorla |
 | `android_build` + `apk_path`, `ios_build` + `ios_app_path` | Kendi build komutun ya da hazır derlenmiş bir uygulamanın indirilmesi (yollar `app_dir`'e göre) |

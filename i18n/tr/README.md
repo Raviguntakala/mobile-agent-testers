@@ -80,6 +80,7 @@ Her çalıştırmada tek bir kullanım; yukarıdaki parametrelerle seçilir.
 | **Bir hatayı her telefonda yeniden üretme** | Bir issue ya da adımları verirsiniz; her ajan ekran görüntüleriyle "evet", "hayır" ya da "belirsiz" diye cevap verir ([briefs/reproduce.md](../../briefs/reproduce.md)). |
 | **İyileştirme raporu** | Her persona uygulamayı bir kez kullanır; ardından nerede tereddüt ettiğini, ne beklediğini ve öncelikle neyin değişmesi gerektiğini, alana ve etkiye göre sıralayarak anlatır ([briefs/improve.md](../../briefs/improve.md)). |
 | **İki sürümü karşılaştırma** | Aynı personalar iki farklı branch ya da build üzerinde çalışır, sonuçlar tek bir tabloda toplanır: ulaşılan hedefler, eylem sayıları, puanlar ve yalnızca bir sürümde görülen sorunlar ([docs/compare-versions.md](../../docs/compare-versions.md)). Bu, gerçek bir A/B testinin yerini tutmaz; ondan önce yapılacak bir ön kontroldür. |
+| **Bir web sitesini telefonlarda test etme** | Aynı personalar bir telefonun tarayıcısında, herhangi bir sitede ya da web uygulamasında. Ücretsiz Linux runner'larda çalışır ([yapılandırma](docs/configuration.md)). |
 
 **Daha ucuz bir model kullanma.** Claude Haiku ya da Anthropic uyumlu herhangi bir API'yi (OpenRouter, DeepSeek, Kimi, GLM, MiniMax, Qwen) kullanabilirsiniz. Bulguların kalitesi, modelin ekran görüntülerini ne kadar iyi okuyup akıl yürütebildiğine bağlıdır ([docs/cheaper-models.md](../../docs/cheaper-models.md)).
 

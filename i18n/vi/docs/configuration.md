@@ -14,6 +14,7 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
 | `android_personas`, `ios_personas` | Các id từ [personas.json](../../../personas.json), mỗi id một điện thoại, `all`, hoặc `none` để bỏ qua một nền tảng. 20 persona có sẵn: 14 ngôn ngữ, chiều phải sang trái, máy tính bảng, cỡ chữ từ nhỏ đến cỡ trợ năng lớn nhất |
 | `brief` | Chỉ dẫn cho agent: [AGENT_BRIEF.md](../../../AGENT_BRIEF.md) để khám phá, [briefs/improve.md](../../../briefs/improve.md) cho một báo cáo cải tiến, hoặc bản của riêng bạn cho một tính năng |
 | `bug_report` | Một bug cần tái hiện thay vì khám phá: một issue (`owner/repo#123` hoặc URL của nó) hoặc các bước dạng văn bản. Mỗi agent làm theo trên thiết bị của riêng mình ([briefs/reproduce.md](../../../briefs/reproduce.md)) |
+| `web_personas`, `web_url` | Id của các persona web (`tom`, `amelie`, `lena`, `arjun`), `all`, hoặc `none` (mặc định), và địa chỉ của website cần kiểm thử. Các nền tảng khác giữ giá trị mặc định, nên hãy đặt `android_personas=none` và `ios_personas=none` khi chỉ chạy web. |
 | `model`, `llm_base_url` | `sonnet` mặc định, `haiku` để tốn ít hơn, hoặc bất kỳ API nào tương thích Anthropic với key của nó trong secret `LLM_API_KEY` ([docs/cheaper-models.md](../../../docs/cheaper-models.md)) |
 | `framework` | `auto` (mặc định) hoặc ép dùng một trong các framework bên dưới |
 | `android_build` + `apk_path`, `ios_build` + `ios_app_path` | Lệnh build của riêng bạn, hoặc tải về một ứng dụng đã build sẵn (đường dẫn tương đối so với `app_dir`) |

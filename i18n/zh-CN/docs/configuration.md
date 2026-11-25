@@ -14,6 +14,7 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
 | `android_personas`, `ios_personas` | [personas.json](../../../personas.json) 中的 id，每个角色一台手机；`all` 表示全部，`none` 表示跳过该平台。内置 20 个角色：14 种语言、从右到左、平板、从小号到最大辅助功能字号 |
 | `brief` | 给智能体的说明：[AGENT_BRIEF.md](../../../AGENT_BRIEF.md) 用于探索，[briefs/improve.md](../../../briefs/improve.md) 用于改进报告，也可以用你自己写的来测某个功能 |
 | `bug_report` | 要复现的缺陷，而不是自由探索：一个 issue（`owner/repo#123` 或它的链接），或者直接写步骤。每个智能体在自己的设备上照着做（[briefs/reproduce.md](../../../briefs/reproduce.md)） |
+| `web_personas`, `web_url` | 网页角色的 id（`tom`、`amelie`、`lena`、`arjun`）、`all` 或 `none`（默认），以及要测试的网站地址。其他平台保持默认值，所以只测网页时请设置 `android_personas=none` 和 `ios_personas=none`。 |
 | `model`、`llm_base_url` | 默认 `sonnet`，想省钱用 `haiku`，也可以用任何兼容 Anthropic 接口的 API，密钥放在 `LLM_API_KEY` secret 里（[docs/cheaper-models.md](../../../docs/cheaper-models.md)） |
 | `framework` | `auto`（默认），或强制使用下表中的某个框架 |
 | `android_build` + `apk_path`, `ios_build` + `ios_app_path` | 你自己的构建命令，或下载一个预构建的应用（路径相对于 `app_dir`） |

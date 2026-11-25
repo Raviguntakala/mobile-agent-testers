@@ -79,6 +79,7 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
 | **バグ報告をすべての端末で再現** | Issue か手順を渡すと、各エージェントが「再現した / しなかった / はっきりしない」をスクリーンショット付きで答えます（[briefs/reproduce.md](../../briefs/reproduce.md)）。 |
 | **改善レポートを作る** | 各ペルソナがアプリを一度使い、どこで迷ったか、何を期待していたか、まず何を変えるべきかを、領域と影響度つきで挙げます（[briefs/improve.md](../../briefs/improve.md)）。 |
 | **2 つのバージョンを比較する** | 同じペルソナで 2 つのブランチやビルドを試し、目標の達成、操作数、スコア、片方のバージョンだけで見つかった問題を 1 つの表にまとめます（[docs/compare-versions.md](../../docs/compare-versions.md)）。本物の A/B テストの前のチェックであり、その代わりにはなりません。 |
+| **ウェブサイトをスマホで試す** | 同じペルソナがスマホのブラウザで、どんなサイトやウェブアプリでも試します。無料の Linux ランナーで動きます（[設定](docs/configuration.md)）。 |
 
 **安いモデルを使う**：Claude Haiku、または Anthropic 互換の API（OpenRouter、DeepSeek、Kimi、GLM、MiniMax、Qwen）。見つかるものの質は、モデルがスクリーンショットをどれだけ正しく読めるかと推論力で決まります（[docs/cheaper-models.md](../../docs/cheaper-models.md)）。
 

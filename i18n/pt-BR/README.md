@@ -79,6 +79,7 @@ Um uso por execução, escolhido com os parâmetros acima.
 | **Reproduzir um relato de bug** | Em cada celular: você passa uma issue ou os passos, e cada agente responde sim, não ou incerto, com capturas ([briefs/reproduce.md](../../briefs/reproduce.md)). |
 | **Gerar um relatório de melhorias** | Cada persona usa o app uma vez e depois diz onde hesitou, o que esperava e o que mudaria primeiro, por área e impacto ([briefs/improve.md](../../briefs/improve.md)). |
 | **Comparar duas versões** | As mesmas personas em dois branches ou builds, e depois uma tabela: objetivos alcançados, ações, notas, problemas vistos em uma versão só ([docs/compare-versions.md](../../docs/compare-versions.md)). Uma checagem antes de um teste A/B de verdade, não um substituto. |
+| **Testar um site em celulares** | As mesmas personas no navegador de um celular, em qualquer site ou app web. Roda nos runners Linux gratuitos ([configuração](docs/configuration.md)). |
 
 **Usar um modelo mais barato**: Claude Haiku, ou qualquer API compatível com a Anthropic (OpenRouter, DeepSeek, Kimi, GLM, MiniMax, Qwen). Os achados dependem de quão bem o modelo lê as capturas e raciocina ([docs/cheaper-models.md](../../docs/cheaper-models.md)).
 
