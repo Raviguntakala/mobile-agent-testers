@@ -97,6 +97,22 @@ class Build(unittest.TestCase):
             {"kind": "tapOn", "target": {"id": "app:id/toolbar"}},   # an id that names one part of the screen is kept
         ])
 
+    def test_a_name_on_several_lines_is_a_name_the_replay_finds(self):
+        # What Flutter says of a tab: its label, a line break, its place. Maestro matches it with a space.
+        (self.dir / "01.xml").write_text("""<hierarchy rotation="0">
+  <node text="" resource-id="android:id/content" class="android.widget.FrameLayout" bounds="[0,0][1080,2400]">
+    <node text="" content-desc="Receive&#10;Tab 1 of 3" resource-id="" class="android.view.View" clickable="true" bounds="[0,2200][360,2360]" />
+    <node text="" content-desc="Send&#10;Tab 2 of 3" resource-id="" class="android.view.View" clickable="true" bounds="[360,2200][720,2360]" />
+    <node text="" content-desc="Quick Save&#10;Off" resource-id="" class="android.view.View" bounds="[100,1200][500,1300]" />
+    <node text="" content-desc="Quick Save&#10;Off" resource-id="" class="android.view.View" bounds="[100,1400][500,1500]" />
+  </node>
+</hierarchy>""", encoding="utf-8")
+        actions, _, _ = self.actions("1\tadb\tshell\tinput\ttap\t540\t2280", "1\tadb\tshell\tinput\ttap\t300\t1450")
+        self.assertEqual(actions, [
+            {"kind": "tapOn", "target": {"text": "Send Tab 2 of 3"}},
+            {"kind": "tapOn", "target": {"text": "Quick Save Off", "index": 1}},
+        ])
+
     def test_the_public_line_counts_how_taps_are_found_and_shows_no_name(self):
         actions, _, _ = self.actions("1\tadb\tshell\tinput\ttap\t500\t660", "1\tadb\tshell\tinput\ttap\t500\t460",
                                      "1\tadb\tshell\tinput\ttap\t540\t1800", "1\tadb\tshell\tinput\tswipe\t500\t1500\t500\t500")

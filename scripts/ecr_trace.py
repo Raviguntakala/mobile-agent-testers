@@ -46,7 +46,10 @@ def read_screen(path):
         here = parent
         bounds = re.findall(r"-?\d+", element.get("bounds", ""))
         if element.tag == "node" and len(bounds) == 4:
-            names = [value for value in (element.get(key) or "" for key in ("text", "content-desc", "hint")) if value.strip()]
+            # A name on several lines (a Flutter tab is "Send\nTab 2 of 3") is kept on one: Maestro
+            # also matches a name with each of its line breaks read as a space.
+            names = [value.replace("\r\n", "\n").replace("\n", " ")
+                     for value in (element.get(key) or "" for key in ("text", "content-desc", "hint")) if value.strip()]
             nodes.append({"label": names[0] if names else "", "names": names, "id": (element.get("resource-id") or "").strip(),
                           "bounds": [int(b) for b in bounds], "parent": parent})
             here = len(nodes) - 1
