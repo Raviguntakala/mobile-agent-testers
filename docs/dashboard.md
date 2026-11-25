@@ -4,12 +4,12 @@ Each Android tester leaves its path in `trace.json` ([docs/replay.md](replay.md)
 
 <a href="https://pierridotite.github.io/mobile-agent-testers/"><img src="../assets/dashboard.png" alt="The dashboard: every screen of the made-up app as a map, one colored lane per tester on each arrow, a heat map on each screen, the selected screen on the right" width="900"></a>
 
-[Try the demo online](https://pierridotite.github.io/mobile-agent-testers/), with a made-up app, or [watch the video](../assets/dashboard-demo.mp4).
+[Try the demo online](https://pierridotite.github.io/mobile-agent-testers/), on LocalSend, a real open-source app, or [watch the video](../assets/dashboard-demo.mp4).
 
 ```bash
 bash scripts/collect.sh <run id>                 # decrypts the results into runs/<run id>/
 python3 scripts/dashboard.py runs/<run id>       # opens http://127.0.0.1:8765
-python3 scripts/dashboard.py --demo              # a made-up run, to try it
+python3 scripts/dashboard.py --demo              # the runs in dashboard/demo-data (LocalSend), else a made-up run
 python3 scripts/dashboard.py runs/<map run> runs/<run id>   # several runs on one map
 ```
 
@@ -63,7 +63,7 @@ A save is then refused if `ecr validate` finds the trace invalid. Use a clone of
 
 ## The online demo
 
-`python3 scripts/dashboard.py --demo --export site/` writes the page and the made-up run as static files that any web host can serve. With no server, edits stay in the page and Save downloads the edited files. Only the demo can be exported: a real run is private. The demo is static files only: no model is ever called and its workflow reads no key or secret.
+`python3 scripts/dashboard.py --demo --export site/` writes the page and the demo runs as static files that any web host can serve. With no server, edits stay in the page and Save downloads the edited files. Only the demo can be exported: a real run is private. The demo is static files only: no model is ever called and its workflow reads no key or secret.
 
 To show a public app instead of the made-up one, pack its collected runs with `python3 scripts/demo_pack.py runs/<run id> --app <public source URL> --name <app name>`. It writes `dashboard/demo-data/` with only the screenshots, screen trees, traces and short findings (never the typed texts, the reports or the agent's output); `--demo` and the online demo then open those runs. Look at every screenshot before you push it.
 
