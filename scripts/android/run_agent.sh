@@ -79,7 +79,8 @@ case "${MAP:-none}" in
       python3 scripts/ecr_trace.py "$AGENT_DIR" --persona "$PERSONA" --app-id "$APP_ID" --agent-output results/agent-output.json || true
     elif [ "$MAP" = robot+agent ]; then
       echo "map: the robot passed every form, no agent called"
-    fi ;;
+    fi
+    python3 scripts/map_stats.py "results/$PERSONA" --agent-output results/agent-output.json || true ;;
   *)
     source scripts/llm_env.sh || exit 1
     ECR_ACTION_LOG="$PWD/results/$PERSONA/actions.tsv"

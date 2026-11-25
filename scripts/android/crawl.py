@@ -184,7 +184,8 @@ class Crawler:
     def __init__(self, phone, results, app_id, taps=150, minutes=15.0, depth=8, clock=time.monotonic):
         self.phone, self.results, self.app_id = phone, Path(results), app_id
         self.budget, self.depth, self.clock = taps, depth, clock
-        self.deadline = clock() + minutes * 60
+        self.began = clock()
+        self.deadline = self.began + minutes * 60
         self.screens, self.issues, self.left_app = [], [], []
         self.taps, self.starts, self.number = 0, 0, 0
         self.folder, self.filled, self.view, self.here = None, set(), None, None
@@ -398,7 +399,7 @@ class Crawler:
         summary = {"mode": "map", "robot": True, "issues": self.issues, "screens_found": found,
                    "blocked": [{"name": s["name"], "path": path_of(s), "screens": s["seen"]} for s in blocked],
                    "left_app": self.left_app, "taps": self.taps, "starts": self.starts,
-                   "finished": not self.out_of_budget()}
+                   "finished": not self.out_of_budget(), "seconds": round(self.clock() - self.began)}
         (self.results / "findings.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         for n in range(1, self.starts + 1):   # each start of the app is a map maker's path on the map
             folder = self.results / f"map-{n:02d}"

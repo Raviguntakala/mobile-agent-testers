@@ -169,3 +169,26 @@ class CrawlTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class MapStatsTest(unittest.TestCase):
+    def test_screens_the_agent_adds_and_what_each_one_cost(self):
+        sys.path.insert(0, str(ROOT / "scripts"))
+        import map_stats
+        phone, folder, crawler, _ = CrawlTest().crawl()
+        agent = folder / "agent"
+        agent.mkdir()
+        shop = FakeShop()
+        (agent / "01.xml").write_text(shop.xml(), encoding="utf-8")            # the sign-up form, already found
+        shop.SCREENS["thanks"] = ("Message sent", [], ["Back to help", "Rate us"])
+        shop.stack = ["thanks"]
+        (agent / "02.xml").write_text(shop.xml(), encoding="utf-8")            # behind the contact form
+        (agent / "findings.json").write_text(json.dumps({"mode": "map", "screens_found": [
+            {"name": "Sign-up", "screens": ["01"]}, {"name": "Message sent", "screens": ["02"]}]}))
+        out = folder / "agent-output.json"
+        out.write_text(json.dumps({"num_turns": 12, "total_cost_usd": 0.05, "result": "private"}))
+        result = map_stats.stats(folder, out)
+        self.assertEqual([s["name"] for s in result["screens"] if s["found_by"] == "agent"], ["Message sent"])
+        self.assertEqual(result["blocked"], ["Write to us"])
+        self.assertEqual(result["agent"], {"num_turns": 12, "total_cost_usd": 0.05})
+        self.assertEqual(result["robot"]["taps"], crawler.taps)
