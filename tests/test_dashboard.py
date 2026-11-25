@@ -1,4 +1,4 @@
-"""scripts/dashboard.py, offline: the demo run, the screen groups, what the server serves and writes."""
+"""scripts/dashboard.py, offline: the demo run, the screen groups, what the server serves and writes (comments only)."""
 import json
 import shutil
 import sys
@@ -25,7 +25,6 @@ class Run(unittest.TestCase):
         run = dashboard.load_run(self.root)
         self.assertEqual(sorted(p["trace"]["persona"]["id"] for p in run["personas"]), ["anna", "kenji", "lucas", "map"])
         for p in run["personas"]:
-            self.assertEqual(dashboard.check_trace(p["trace"]), [])
             self.assertTrue(p["screens"])
             self.assertTrue(all("_tokens" not in s for s in p["screens"].values()))
             self.assertIn("lastScreen", p["trace"]["evidence"])
@@ -72,6 +71,30 @@ class Run(unittest.TestCase):
         self.assertIn(other.resolve(), dashboard.locate([self.root, other], keys[-1]).parents)
         self.assertIsNone(dashboard.locate([self.root, other], "3:android-anna/results/anna"))
         self.assertIsNone(dashboard.locate([self.root, other], "1:../.."))
+        bad = json.loads(json.dumps(trace))
+        bad["steps"][1]["checkpoints"] = [{"id": "c", "check": {"kind": "looksNice", "target": {"text": "OK"}}}]
+        self.assertIn("check c must say visible or notVisible, of a text or an id", dashboard.check_trace(bad))
+
+    def test_the_map_maker_is_marked_and_finds_a_screen_no_persona_reached(self):
+        run = dashboard.load_run(self.root)
+        mapper = [p for p in run["personas"] if p["mapper"]]
+        self.assertEqual([p["trace"]["persona"]["id"] for p in mapper], ["map"])
+        groups = lambda ps: {s["group"] for p in ps for s in p["screens"].values()}
+        others = [p for p in run["personas"] if not p["mapper"]]
+        only_mapped = groups(mapper) - groups(others)
+        self.assertEqual([run["groups"][g]["title"] for g in only_mapped], ["Help"])
+
+    def test_two_runs_open_together_with_distinct_keys(self):
+        other = dashboard_demo.write(Path(tempfile.mkdtemp()))
+        self.addCleanup(shutil.rmtree, other, True)
+        run = dashboard.load_run([self.root, other])
+        keys = [p["key"] for p in run["personas"]]
+        self.assertEqual(len(keys), 8)
+        self.assertEqual(len(set(keys)), 8)
+        self.assertTrue(all(k.startswith(("1:", "2:")) for k in keys))
+        self.assertIn(other.resolve(), dashboard.locate([self.root, other], keys[-1]).parents)
+        self.assertIsNone(dashboard.locate([self.root, other], "3:android-anna/results/anna"))
+        self.assertIsNone(dashboard.locate([self.root, other], "1:../.."))
 
 
 class Export(unittest.TestCase):
@@ -82,7 +105,6 @@ class Export(unittest.TestCase):
         dashboard.export(root, out / "site")
         run = json.loads((out / "site" / "api" / "run").read_text())
         self.assertTrue(run["static"])
-        self.assertFalse(run["ecr"])
         for name in ("index.html", "app.js", "style.css", "api/run.json"):
             self.assertTrue((out / "site" / name).exists(), name)
         for p in run["personas"]:
@@ -139,26 +161,6 @@ class Server(unittest.TestCase):
         self.assertEqual(self.get("/api/screen?persona=../../etc&name=01.png")[0], 404)
         self.assertEqual(self.get("/trace.params.json")[0], 404)
 
-    def test_saving_keeps_the_explored_trace_once(self):
-        key = "android-anna/results/anna"
-        explored = json.loads((self.anna / "trace.json").read_text())
-        edited = json.loads(json.dumps(explored))
-        edited["steps"][1]["intent"] = "Starts"
-        del edited["steps"][2]
-        self.assertEqual(self.post(f"/api/trace?persona={key}", edited), (200, {"ok": True, "checkedByEcr": False}))
-        self.assertEqual(json.loads((self.anna / "trace.json").read_text()), edited)
-        self.assertEqual(json.loads((self.anna / "trace.explored.json").read_text()), explored)
-        edited["steps"][1]["intent"] = "Starts again"
-        self.post(f"/api/trace?persona={key}", edited)
-        self.assertEqual(json.loads((self.anna / "trace.explored.json").read_text()), explored)   # still the explored one
-
-    def test_a_broken_trace_is_not_written(self):
-        key = "android-anna/results/anna"
-        before = (self.anna / "trace.json").read_text()
-        code, body = self.post(f"/api/trace?persona={key}", {"schema": "ecr.trace/0", "steps": []})
-        self.assertEqual(code, 422)
-        self.assertEqual((self.anna / "trace.json").read_text(), before)
-
     def test_notes_and_the_guard_against_other_sites(self):
         key = "android-anna/results/anna"
         notes = {"steps": {"s2": [{"id": "c1", "text": "Too small", "at": "2026-11-25T12:00:00Z", "resolved": False}]}, "trace": []}
@@ -174,9 +176,30 @@ class Server(unittest.TestCase):
         self.assertEqual(saved["screens"]["03"][0]["text"], "Empty list says nothing")
         self.assertEqual(self.post("/api/notes?persona=../../..", notes)[0], 404)
 
-    def test_compiling_needs_ecr(self):
-        trace = json.loads((self.anna / "trace.json").read_text())
-        self.assertEqual(self.post("/api/compile?persona=android-anna/results/anna", trace)[0], 501)
+    def test_a_check_is_saved_and_the_explored_trace_kept_once(self):
+        key = "android-anna/results/anna"
+        explored = json.loads((self.anna / "trace.json").read_text())
+        edited = json.loads(json.dumps(explored))
+        edited["steps"][2].setdefault("checkpoints", []).append(
+            {"id": "s3-check1", "check": {"kind": "notVisible", "target": {"text": "Save"}}, "observed": "failed"})
+        self.assertEqual(self.post(f"/api/trace?persona={key}", edited), (200, {"ok": True, "checkedByEcr": False}))
+        self.assertEqual(json.loads((self.anna / "trace.json").read_text()), edited)
+        self.assertEqual(json.loads((self.anna / "trace.explored.json").read_text()), explored)
+        edited["steps"][2]["checkpoints"][-1]["observed"] = "held"
+        self.assertEqual(self.post(f"/api/trace?persona={key}", edited)[0], 200)
+        self.assertEqual(json.loads((self.anna / "trace.explored.json").read_text()), explored)   # still the explored one
+
+    def test_only_checks_can_change(self):
+        key = "android-anna/results/anna"
+        before = (self.anna / "trace.json").read_text()
+        moved = json.loads(before)
+        moved["steps"][1]["intent"] = "Something else"
+        code, body = self.post(f"/api/trace?persona={key}", moved)
+        self.assertEqual(code, 422)
+        self.assertIn("only checks can change: the steps must stay as explored", body["problems"])
+        self.assertEqual(self.post(f"/api/trace?persona={key}", {"schema": "ecr.trace/0", "steps": []})[0], 422)
+        self.assertEqual(self.post(f"/api/compile?persona={key}", json.loads(before))[0], 404)
+        self.assertEqual((self.anna / "trace.json").read_text(), before)
 
 
 if __name__ == "__main__":

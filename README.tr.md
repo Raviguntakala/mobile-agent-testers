@@ -69,7 +69,7 @@ gh workflow run agent-testers.yml     # demo: 2 Android + 2 iOS testers, ~20 min
 bash scripts/collect.sh <run id>      # decrypts reports, groups duplicates: runs/<id>/SUMMARY.md
 ```
 
-Uygulamanızın tüm ekranlarını tek bir haritada, test edenlerin yolları ve her ekranda bir ısı haritasıyla görmek, sonra yorumlamak ve düzenlemek için: `python3 scripts/dashboard.py runs/<id>` ([docs/dashboard.md](docs/dashboard.md)). [Demoyu deneyin](https://pierridotite.github.io/mobile-agent-testers/) veya [videoyu izleyin](assets/dashboard-demo.mp4).
+Uygulamanızın tüm ekranlarını tek bir haritada, test edenlerin yolları ve her ekranda bir ısı haritasıyla görmek ve her ekrana yorum eklemek için: `python3 scripts/dashboard.py runs/<id>` ([docs/dashboard.md](docs/dashboard.md)). [Demoyu deneyin](https://pierridotite.github.io/mobile-agent-testers/) veya [videoyu izleyin](assets/dashboard-demo.mp4).
 
 Demo uygulamada [bilerek bırakılmış 11 hata](demo-app/BUGS.md) var. [Bir çalıştırmada](docs/runs/) 4 demo test edici bunların 9'unu buldu (ajan başına 2 ile 7 dakika, build'ler dahil tüm çalıştırma yaklaşık 21 dakika), ayrıca kimsenin yerleştirmediği gerçek sorunlar da çıktı (Android gezinme çubuğunun altında kalan bir buton, yeniden başlatmadan sonra korunmayan veriler). Model kullanımı: 4 test edici için 0,87 $.
 

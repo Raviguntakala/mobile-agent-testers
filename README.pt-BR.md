@@ -66,7 +66,7 @@ gh workflow run agent-testers.yml     # demo: 2 testadores Android + 2 iOS, ~20 
 bash scripts/collect.sh <run id>      # descriptografa os relatórios e agrupa duplicados: runs/<id>/SUMMARY.md
 ```
 
-Para ver todas as telas do seu app num mapa, com os percursos dos testers e um mapa de calor em cada tela, e depois comentar e editar: `python3 scripts/dashboard.py runs/<id>` ([docs/dashboard.md](docs/dashboard.md)). [Experimente a demo](https://pierridotite.github.io/mobile-agent-testers/) ou [veja o vídeo](assets/dashboard-demo.mp4).
+Para ver todas as telas do seu app num mapa, com os percursos dos testers e um mapa de calor em cada tela, e comentar cada tela: `python3 scripts/dashboard.py runs/<id>` ([docs/dashboard.md](docs/dashboard.md)). [Experimente a demo](https://pierridotite.github.io/mobile-agent-testers/) ou [veja o vídeo](assets/dashboard-demo.mp4).
 
 O app de demo tem [11 bugs colocados de propósito](demo-app/BUGS.md). Em [uma execução](docs/runs/), os 4 testadores da demo encontraram 9 deles (de 2 a 7 minutos por agente, cerca de 21 minutos no total, builds incluídos), além de problemas reais que ninguém colocou (um botão debaixo da barra de navegação do Android, dados que não ficam salvos depois de reabrir). Uso do modelo: US$ 0,87 para os 4.
 

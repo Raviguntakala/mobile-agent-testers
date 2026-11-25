@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tester paths</title>
+<title>App map</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,21 +11,17 @@
   <div class="brand">
     <span class="logo" aria-hidden="true"></span>
     <div>
-      <strong>Tester paths</strong>
+      <strong>App map</strong>
       <span class="run" id="run-name"></span>
     </div>
   </div>
-  <div class="seg views" role="radiogroup" aria-label="View">
-    <button data-view="map" role="radio" title="Every screen of the app, joined by the paths of the testers">Map</button>
-    <button data-view="paths" role="radio" title="One tester's path, step by step, to edit it as a test">Paths</button>
-  </div>
   <div class="ecr" tabindex="0" aria-describedby="ecr-tip">
     <span class="ecr-step on">Explore</span><span class="arrow">→</span>
-    <span class="ecr-step" id="ecr-compile">Compile</span><span class="arrow">→</span>
+    <span class="ecr-step">Compile</span><span class="arrow">→</span>
     <span class="ecr-step">Replay</span>
     <div class="tip" id="ecr-tip" role="tooltip">
-      An agent <b>explored</b> the app once, as a persona. Its path is a trace: steps that name what was tapped, not where.
-      Edit it here, then <b>compile</b> it to a Maestro flow that <b>replays</b> on every build with no model.
+      Agents <b>explored</b> the app: the map maker opened every screen once, the personas tried to reach their goals.
+      Each path is a trace that names what was tapped, not where. <code>ecr compile</code> turns it into a Maestro flow that <b>replays</b> on every build with no model.
     </div>
   </div>
   <a class="demo-note" id="demo-note" hidden href="https://github.com/pierridotite/mobile-agent-testers" target="_blank" rel="noopener">Demo with a made-up app · run it on yours</a>
@@ -33,60 +29,9 @@
     <button id="undo" class="icon" title="Undo (Ctrl+Z)" aria-label="Undo">↶</button>
     <button id="redo" class="icon" title="Redo (Ctrl+Shift+Z)" aria-label="Redo">↷</button>
     <span class="status" id="status" aria-live="polite"></span>
-    <button id="save" class="primary" title="Save the trace and the comments (Ctrl+S)">Save</button>
+    <button id="save" class="primary" title="Save the checks to trace.json and the comments to trace.notes.json (Ctrl+S)">Save</button>
   </div>
 </header>
-
-<main class="layout">
-  <aside class="left panel">
-    <h2>Testers</h2>
-    <ul id="personas" class="personas"></ul>
-    <h2>Findings <span class="count" id="finding-count"></span></h2>
-    <ul id="findings" class="findings"></ul>
-  </aside>
-
-  <section class="stage">
-    <div class="preview-wrap">
-      <div class="persona-card" id="persona-card"></div>
-      <div class="phone" id="phone">
-        <img id="shot" alt="">
-        <canvas id="heat"></canvas>
-        <svg id="overlay" aria-hidden="true"></svg>
-        <div class="launch" id="launch"></div>
-        <div class="picking" id="picking" hidden>Click an element on the screen</div>
-      </div>
-      <div class="screen-caption" id="screen-caption"></div>
-    </div>
-    <div class="transport">
-      <button id="first" class="icon" title="First step (Home)" aria-label="First step">⏮</button>
-      <button id="prev" class="icon" title="Previous step (←)" aria-label="Previous step">◀</button>
-      <button id="play" class="icon play" title="Play (Space)" aria-label="Play">▶</button>
-      <button id="next" class="icon" title="Next step (→)" aria-label="Next step">▶︎</button>
-      <button id="last" class="icon" title="Last step (End)" aria-label="Last step">⏭</button>
-      <span class="counter" id="counter"></span>
-      <label class="select">Speed
-        <select id="speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select>
-      </label>
-      <div class="seg" role="radiogroup" aria-label="Heat map">
-        <span>Heat map</span>
-        <button data-heat="off" role="radio">Off</button>
-        <button data-heat="me" role="radio">This tester</button>
-        <button data-heat="all" role="radio">All testers</button>
-      </div>
-    </div>
-  </section>
-
-  <aside class="right panel">
-    <nav class="tabs" role="tablist">
-      <button role="tab" data-tab="step" class="on">Step</button>
-      <button role="tab" data-tab="flow">Maestro flow</button>
-      <button role="tab" data-tab="report">Report</button>
-    </nav>
-    <div class="tab" id="tab-step"></div>
-    <div class="tab" id="tab-flow" hidden></div>
-    <div class="tab" id="tab-report" hidden></div>
-  </aside>
-</main>
 
 <section class="map" id="map">
   <div class="map-canvas" id="map-canvas">
@@ -98,43 +43,12 @@
         <button data-mapheat="estimated" role="radio" title="Estimated from the tappable elements, or a saliency model">Estimated</button>
         <button data-mapheat="both" role="radio" title="Real taps, completed by the estimate where testers tapped little">Both</button>
       </div>
+      <label class="select">Path <select id="map-path" aria-label="Show one tester's path"></select></label>
       <button id="map-fit" title="Fit the map to the window">Fit</button>
     </div>
-    <div class="map-legend"><b id="map-summary"></b> · Arrow width: how many testers went from one screen to the next. Dashed: only the map maker. Drag to move, scroll to zoom.</div>
+    <div class="map-legend"><b id="map-summary"></b> · Arrow width: how many testers went from one screen to the next. Dashed: only the map maker. Click a screen to comment it or add a check. Drag to move, scroll to zoom.</div>
   </div>
   <aside class="panel map-side" id="map-side"></aside>
-</section>
-
-<section class="timeline" id="timeline">
-  <div class="tl-head">
-    <div class="tl-tools">
-      <button id="add-step" title="Add a step after the selected one">+ Step</button>
-      <button id="dup-step" title="Duplicate (Ctrl+D)">Duplicate</button>
-      <button id="del-step" title="Delete (Del)">Delete</button>
-    </div>
-    <label class="zoom">Zoom <input type="range" id="zoom" min="48" max="220" value="112"></label>
-  </div>
-  <div class="tl-body">
-    <div class="tl-labels">
-      <div class="tl-ruler-label"></div>
-      <div class="lab">Screens</div>
-      <div class="lab">Actions</div>
-      <div class="lab">Checks</div>
-      <div class="lab">Comments</div>
-      <div class="lab">Findings</div>
-    </div>
-    <div class="tl-scroll" id="tl-scroll">
-      <div class="tl-content" id="tl-content">
-        <div class="ruler" id="ruler"></div>
-        <div class="track" id="track-screens"></div>
-        <div class="track" id="track-actions"></div>
-        <div class="track small" id="track-checks"></div>
-        <div class="track small" id="track-notes"></div>
-        <div class="track small" id="track-findings"></div>
-        <div class="playhead" id="playhead"><span></span></div>
-      </div>
-    </div>
-  </div>
 </section>
 
 <div class="empty-state" id="loading">Loading the run…</div>

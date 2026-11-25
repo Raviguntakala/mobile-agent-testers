@@ -69,7 +69,7 @@ gh workflow run agent-testers.yml     # demo: 2 Android + 2 iOS testers, ~20 min
 bash scripts/collect.sh <run id>      # decrypts reports, groups duplicates: runs/<id>/SUMMARY.md
 ```
 
-Để xem mọi màn hình của ứng dụng trên một bản đồ, với đường đi của các tester và bản đồ nhiệt trên từng màn hình, rồi bình luận và chỉnh sửa: `python3 scripts/dashboard.py runs/<id>` ([docs/dashboard.md](docs/dashboard.md)). [Thử bản demo](https://pierridotite.github.io/mobile-agent-testers/) hoặc [xem video](assets/dashboard-demo.mp4).
+Để xem mọi màn hình của ứng dụng trên một bản đồ, với đường đi của các tester và bản đồ nhiệt trên từng màn hình, và bình luận từng màn hình: `python3 scripts/dashboard.py runs/<id>` ([docs/dashboard.md](docs/dashboard.md)). [Thử bản demo](https://pierridotite.github.io/mobile-agent-testers/) hoặc [xem video](assets/dashboard-demo.mp4).
 
 Ứng dụng demo có [11 bug cố ý](demo-app/BUGS.md). Trong [một lần chạy](docs/runs/), 4 tester demo đã tìm thấy 9 trong số đó (2 đến 7 phút mỗi agent, khoảng 21 phút cho cả lần chạy, tính cả thời gian build), cộng thêm các vấn đề thật không ai gài (một nút nằm dưới thanh điều hướng Android, không dữ liệu nào được giữ lại sau khi mở lại). Mức dùng model: $0.87 cho cả 4.
 

@@ -65,7 +65,7 @@ gh workflow run agent-testers.yml     # 演示：2 个 Android + 2 个 iOS 测�
 bash scripts/collect.sh <run id>      # 解密报告并归并重复项：runs/<id>/SUMMARY.md
 ```
 
-在一张地图上查看应用的所有页面、测试者的操作路径和每个页面的热力图，并添加评论、进行编辑：`python3 scripts/dashboard.py runs/<id>`（[docs/dashboard.md](docs/dashboard.md)）。[试用演示](https://pierridotite.github.io/mobile-agent-testers/)，或[观看视频](assets/dashboard-demo.mp4)。
+在一张地图上查看应用的所有页面、测试者的操作路径和每个页面的热力图，并为每个页面添加评论：`python3 scripts/dashboard.py runs/<id>`（[docs/dashboard.md](docs/dashboard.md)）。[试用演示](https://pierridotite.github.io/mobile-agent-testers/)，或[观看视频](assets/dashboard-demo.mp4)。
 
 演示应用里有 [11 个故意埋下的缺陷](demo-app/BUGS.md)。在[一次运行](docs/runs/)中，4 个演示测试员找到了其中 9 个（每个智能体 2 到 7 分钟，整次运行约 21 分钟，含构建），还发现了没人埋下的真实问题（一个按钮被 Android 导航栏挡住、重新启动后数据没有保留）。模型用量：4 个共 0.87 美元。
 

@@ -66,7 +66,7 @@ gh workflow run agent-testers.yml     # デモ：Android 2 + iOS 2 のテスタ�
 bash scripts/collect.sh <run id>      # レポートを復号して重複をまとめる：runs/<id>/SUMMARY.md
 ```
 
-アプリの全画面を1枚のマップで表示し、テスターの操作経路と各画面のヒートマップを確認して、コメントや編集ができます：`python3 scripts/dashboard.py runs/<id>`（[docs/dashboard.md](docs/dashboard.md)）。[デモを試す](https://pierridotite.github.io/mobile-agent-testers/)、または[動画を見る](assets/dashboard-demo.mp4)。
+アプリの全画面を1枚のマップで表示し、テスターの操作経路と各画面のヒートマップを確認して、画面ごとにコメントできます：`python3 scripts/dashboard.py runs/<id>`（[docs/dashboard.md](docs/dashboard.md)）。[デモを試す](https://pierridotite.github.io/mobile-agent-testers/)、または[動画を見る](assets/dashboard-demo.mp4)。
 
 デモアプリには[わざと仕込んだバグが 11 個](demo-app/BUGS.md)あります。[ある実行](docs/runs/)では、4 人のデモテスターがそのうち 9 個を見つけ（エージェントごとに 2〜7 分、ビルドを含めて全体で約 21 分）、さらに誰も仕込んでいない本物の問題（Android のナビゲーションバーの下に隠れたボタン、再起動するとデータが残っていない）も見つけました。モデル使用量：4 人で 0.87 ドル。
 
