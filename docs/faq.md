@@ -54,6 +54,7 @@ It sometimes misreads a screen: 3 of LocalSend's 20 agents flagged the Simulator
 - **Encrypted results**: public repo logs are public, so everything is encrypted with your key.
 - **Analytics blocked** inside the phones, so tests never touch your real stats.
 - **One summary** on your machine. With `SUMMARY_GROUPING=1`, Claude groups the reports that describe the same bug (one call on your Claude login), so you see how many personas hit each one and which personas found which kind of issue. With `SUMMARY_WEBHOOK_URL` set, a short version also goes to your Slack or Discord webhook, from your machine only.
+- **Draft issues** on your machine: `python3 scripts/draft_issues.py runs/<id>` previews one GitHub issue per finding from `SUMMARY.md`, and `--create --repo OWNER/REPO` opens the ones you confirm with `gh`.
 - **Tests** on every push, offline and with no phone: accessibility check, persona matrix, summary, encrypted results ([tests/](../tests/)).
 
 ## Why not Maestro, Appium or agent-device?

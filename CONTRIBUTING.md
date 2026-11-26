@@ -47,7 +47,7 @@ On Android, these are `adb shell settings put` calls (`secure high_text_contrast
 
 ### Findings to issues
 
-[scripts/summarize.py](scripts/summarize.py) writes `SUMMARY.md` on your machine, after [scripts/collect.sh](scripts/collect.sh) decrypts the results. An opt-in step there could open draft issues in your app's repo with `gh issue create`, one per distinct bug, with the personas that hit it and their screenshots, or post the summary to Slack or Discord. It must stay on your machine: the results are private, never upload them from the runner.
+[scripts/summarize.py](scripts/summarize.py) writes `SUMMARY.md` on your machine, after [scripts/collect.sh](scripts/collect.sh) decrypts the results. [scripts/draft_issues.py](scripts/draft_issues.py) turns those findings into draft GitHub issues with `gh issue create` (dry-run by default; opt-in with `--create --repo OWNER/REPO`). An opt-in step could also post the summary to Slack or Discord. It must stay on your machine: the results are private, never upload them from the runner.
 
 ### Other CI
 
