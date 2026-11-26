@@ -25,5 +25,7 @@ done
 echo "Decrypted into $OUT"
 if python3 -c "" 2>/dev/null; then   # Windows without Python: the results are there, only the summary is skipped
   python3 "$(dirname "$0")/summarize.py" "$OUT" > "$OUT/SUMMARY.md" && echo "Summary: $OUT/SUMMARY.md"
+  # opt-in: a short version to your Slack or Discord webhook, from this machine only
+  [ -n "${SUMMARY_WEBHOOK_URL:-}" ] && python3 "$(dirname "$0")/notify.py" "$OUT" || true
 fi
 echo "How did it go? Tell us what it found, or where it got in the way: https://github.com/pierridotite/mobile-agent-testers/issues/new?template=usage-feedback.yml"
