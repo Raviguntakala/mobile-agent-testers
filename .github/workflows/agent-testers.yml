@@ -313,6 +313,7 @@ jobs:
           FONT_SCALE: ${{ matrix.font_scale }}
           THEME: ${{ matrix.theme }}
           INCREASE_CONTRAST: ${{ matrix.increase_contrast }}
+          COLOR_FILTER: ${{ matrix.color_filter }}
           LOCALE: ${{ matrix.locale }}
           GEO: ${{ matrix.geo }}
           APP_ID: ${{ inputs.app_id }}

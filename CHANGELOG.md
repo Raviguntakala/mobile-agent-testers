@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- **Color blindness filters (Android)**: optional `color_filter` field in a persona's `device` (`protanopia`, `deuteranopia` or `tritanopia`). `scripts/android/run_agent.sh` enables Android's display daltonizer in simulation mode (`1`, `2` or `3`) before the app launches and names the filter in the agent's prompt. `xcrun simctl ui` has no color filter option on iOS yet, so the field is Android only. Felipe uses `deuteranopia`.
 - **A credit line in what you share**: `SUMMARY.md`, the draft issues and the Slack or Discord message now end with one line, "Tested with mobile-agent-testers", with a link to this repository. `SUMMARY_CREDIT=0` removes it everywhere.
 - **Share your work**: [docs/share.md](docs/share.md) lists the video and images you can reuse, a `tested with mobile-agent-testers` badge, starting points for a post and a showcase list. `CITATION.cff` adds GitHub's "Cite this repository" button.
 - **Run summary to Slack or Discord (opt-in)**: with `SUMMARY_WEBHOOK_URL` set on your machine, `collect.sh` posts a short version of `SUMMARY.md` to that webhook: how many reports and distinct bugs, the top 5 by severity and which personas hit them. Slack or Discord is picked from the webhook host (`SUMMARY_WEBHOOK_KIND` overrides it). It runs after decryption, never in the workflow, and prints neither the URL nor the message. `scripts/notify.py` also runs on its own.

@@ -4,6 +4,8 @@ Prints <platform>=<json> for $GITHUB_OUTPUT."""
 import json
 import os
 
+COLOR_FILTERS = ("protanopia", "deuteranopia", "tritanopia")
+
 platform = os.environ.get("PLATFORM", "android")
 wanted = [p.strip() for p in os.environ.get("PERSONAS", "").split(",") if p.strip()]
 personas = {p["id"]: p for p in json.load(open("personas.json", encoding="utf-8"))}
@@ -25,6 +27,16 @@ for pid in wanted:
     row = {"persona": pid, "theme": d.get("theme", "light"), "locale": p.get("locale", "en-US"),
            "geo": f"{geo[0]},{geo[1]}",
            "increase_contrast": "true" if d.get("increase_contrast") else "false"}
+    raw_filter = d.get("color_filter")
+    color_filter = "" if raw_filter is None else raw_filter
+    if raw_filter is not None and raw_filter != "":
+        if platform != "android":
+            raise SystemExit(f"color_filter is Android only (set on {pid}, platform {platform}).")
+        if not isinstance(raw_filter, str) or raw_filter not in COLOR_FILTERS:
+            raise SystemExit(
+                f"Unknown color_filter for {pid}: {raw_filter!r}. "
+                f"Use one of: {', '.join(COLOR_FILTERS)}."
+            )
     if platform == "web":  # a mobile browser: Playwright device profile, see scripts/web/browser.py
         row.update({"emulate": d.get("emulate", "iPhone 15"), "device": d.get("name", d.get("emulate", "iPhone 15")),
                     "reduce_motion": "true" if d.get("reduce_motion") else "false"})
@@ -34,6 +46,7 @@ for pid in wanted:
                     "reduce_motion": "true" if d.get("reduce_motion") else "false"})
     else:
         row.update({"profile": d.get("profile", "pixel_6"), "api": d.get("android_api", 34),
-                    "font_scale": str(d.get("font_scale", 1.0)), "device": d.get("name", "Pixel 6, Android 14")})
+                    "font_scale": str(d.get("font_scale", 1.0)), "device": d.get("name", "Pixel 6, Android 14"),
+                    "color_filter": color_filter})
     rows.append(row)
 print(f"{platform}=" + json.dumps(rows, ensure_ascii=False))
