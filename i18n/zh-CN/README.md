@@ -70,7 +70,10 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
 
 ## 能做什么
 
-每次运行选一种用法，用上面的参数设置。
+每个角色像新用户一样探索你的应用，并报告一路上遇到的障碍，附带编号截图。一次运行也可以把一个功能从头测到尾、复现一个缺陷报告、生成改进报告、对比两个版本，或在手机上测试网站。每次运行选一种用法，用上面的参数设置。
+
+<details>
+<summary>六种用法，逐一说明</summary>
 
 | 用法 | 你会得到什么 |
 |---|---|
@@ -80,6 +83,8 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
 | **生成改进报告** | 每个角色把应用用一遍，然后说出在哪里犹豫、原本期待什么、最该先改什么，并标出领域和影响（[briefs/improve.md](../../briefs/improve.md)）。 |
 | **对比两个版本** | 同一批角色分别使用两个分支或构建，最后得到一张表：目标是否达成、操作次数、评分、只在一个版本出现的问题（[docs/compare-versions.md](../../docs/compare-versions.md)）。适合在真正的 A/B 测试之前做检查，但不能代替 A/B 测试。 |
 | **在手机上测试网站** | 同一批角色在手机浏览器里使用任意网站或 Web 应用，在免费的 Linux 运行器上运行（[配置](docs/configuration.md)）。 |
+
+</details>
 
 **使用更便宜的模型**：Claude Haiku，或任何兼容 Anthropic 接口的 API（OpenRouter、DeepSeek、Kimi、GLM、MiniMax、通义千问）。发现的质量取决于模型读截图的能力和推理能力（[docs/cheaper-models.md](../../docs/cheaper-models.md)）。
 
@@ -105,13 +110,18 @@ Maestro、Appium 运行你写好的测试。这些智能体寻找没人想到要
 
 ## 真实运行
 
-在开源应用上的真实运行，没有预先埋入任何缺陷。
+在开源应用上的真实运行，没有预先埋入任何缺陷。在 [LocalSend](https://github.com/localsend/localsend)（Flutter，10 万星）上，20 台手机、14 种语言，69 分钟发现了 46 个不同的缺陷，模型用量 4.62 美元。其中 1 个是阻断级：瑞典语、最大字号的 iPhone SE 上根本无法发送文字消息。
+
+<details>
+<summary>三次运行：LocalSend、AnkiDroid、Flutter 官方动画示例</summary>
 
 | 应用 | 手机 | 智能体发现了什么 | 用时、模型用量 |
 |---|---|---|---|
 | [LocalSend](https://github.com/localsend/localsend)（Flutter，10 万星） | 20 台：10 台 Android、10 台 iOS，14 种语言 | 46 个不同的缺陷，其中 1 个阻断级：瑞典语、最大字号的 iPhone SE 上根本无法发送文字消息 | 69 分钟，4.62 美元 |
 | [AnkiDroid](https://github.com/ankidroid/Anki-Android)（Kotlin，1.2 万星，发布版 APK） | 10 台 Android | 43 个不同的问题，比如字体 200% 时答题按钮被切掉一半，三种语言里“Get started”仍是英文 | 不到 10 分钟，4.69 美元 |
 | [Flutter 官方动画示例](https://github.com/flutter/packages/tree/main/packages/animations/example) | 1 台 Android、1 台 iOS | 两个智能体各自报告了同一个拼写错误，还发现应用不支持深色模式 | 19 分钟，0.47 美元 |
+
+</details>
 
 在 LocalSend 上，46 个缺陷中有 34 个与字号和无障碍都无关：流程中断、静默失败、缺失的翻译、平板布局。截图、每个发现以及重新运行的命令：[docs/examples.zh-CN.md](docs/examples.md)。
 

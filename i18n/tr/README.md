@@ -72,7 +72,10 @@ Demo uygulamaya [bilerek 11 hata yerleştirildi](../../demo-app/BUGS.md). [Bir t
 
 ## Neler yapabilir
 
-Her çalıştırmada tek bir kullanım; yukarıdaki parametrelerle seçilir.
+Her persona uygulamanızı yeni bir kullanıcı gibi keşfeder ve karşısına çıkan engelleri numaralı ekran görüntüleriyle raporlar. Bir çalıştırma ayrıca tek bir özelliği baştan sona test edebilir, bir hatayı yeniden üretebilir, iyileştirme raporu yazabilir, iki sürümü karşılaştırabilir ya da bir web sitesini telefonlarda test edebilir. Her çalıştırmada tek bir kullanım; yukarıdaki parametrelerle seçilir.
+
+<details>
+<summary>Altı kullanım, tek tek</summary>
 
 | Kullanım | Ne elde edersiniz |
 |---|---|
@@ -82,6 +85,8 @@ Her çalıştırmada tek bir kullanım; yukarıdaki parametrelerle seçilir.
 | **İyileştirme raporu** | Her persona uygulamayı bir kez kullanır; ardından nerede tereddüt ettiğini, ne beklediğini ve öncelikle neyin değişmesi gerektiğini, alana ve etkiye göre sıralayarak anlatır ([briefs/improve.md](../../briefs/improve.md)). |
 | **İki sürümü karşılaştırma** | Aynı personalar iki farklı branch ya da build üzerinde çalışır, sonuçlar tek bir tabloda toplanır: ulaşılan hedefler, eylem sayıları, puanlar ve yalnızca bir sürümde görülen sorunlar ([docs/compare-versions.md](../../docs/compare-versions.md)). Bu, gerçek bir A/B testinin yerini tutmaz; ondan önce yapılacak bir ön kontroldür. |
 | **Bir web sitesini telefonlarda test etme** | Aynı personalar bir telefonun tarayıcısında, herhangi bir sitede ya da web uygulamasında. Ücretsiz Linux runner'larda çalışır ([yapılandırma](docs/configuration.md)). |
+
+</details>
 
 **Daha ucuz bir model kullanma.** Claude Haiku ya da Anthropic uyumlu herhangi bir API'yi (OpenRouter, DeepSeek, Kimi, GLM, MiniMax, Qwen) kullanabilirsiniz. Bulguların kalitesi, modelin ekran görüntülerini ne kadar iyi okuyup akıl yürütebildiğine bağlıdır ([docs/cheaper-models.md](../../docs/cheaper-models.md)).
 
@@ -107,13 +112,18 @@ Bir hata bulan test eden, hiçbir betiğin yazmayacağı bir yol izlemiştir. He
 
 ## Gerçek çalıştırmalar
 
-Açık kaynak uygulamalarda yapılmış gerçek çalıştırmalar; hiçbir hata önceden yerleştirilmedi.
+Açık kaynak uygulamalarda yapılmış gerçek çalıştırmalar; hiçbir hata önceden yerleştirilmedi. [LocalSend](https://github.com/localsend/localsend) (Flutter, 100 bin yıldız) üzerinde 14 dilde 20 telefon, 69 dakikada 46 farklı hata buldu; model maliyeti 4,62 $ oldu. Bunlardan biri engelleyici (blocker): en büyük yazı boyutundaki İsveççe bir iPhone SE'de metin mesajı hiç gönderilemiyor.
+
+<details>
+<summary>Üç çalıştırma: LocalSend, AnkiDroid ve Flutter'ın animasyon örneği</summary>
 
 | Uygulama | Telefonlar | Bulgular | Süre, model maliyeti |
 |---|---|---|---|
 | [LocalSend](https://github.com/localsend/localsend) (Flutter, 100 bin yıldız) | 20: 10 Android, 10 iOS, 14 dil | 46 farklı hata, 1 engelleyici hata (blocker): en büyük yazı boyutundaki İsveççe bir iPhone SE'de metin mesajı hiç gönderilemiyor | 69 dk, 4,62 $ |
 | [AnkiDroid](https://github.com/ankidroid/Anki-Android) (Kotlin, 12 bin yıldız, release APK) | 10 Android | 43 farklı sorun; bunlar arasında %200 yazı ölçeğinde yarısı kesilen cevap butonları ve üç dilde İngilizce kalmış "Get started" butonu var | 10 dk'dan kısa, 4,69 $ |
 | [Flutter'ın animasyon örneği](https://github.com/flutter/packages/tree/main/packages/animations/example) | 1 Android, 1 iOS | İki ajanın birbirinden bağımsız olarak bulduğu aynı yazım hatası ve karanlık modu desteklemeyen bir uygulama | 19 dk, 0,47 $ |
+
+</details>
 
 LocalSend'de bulunan 46 hatanın 34'ünün yazı boyutu ya da erişilebilirlikle bir ilgisi yoktu: bozuk akışlar, hata vermeden başarısız olan işlemler, eksik çeviriler ve tablet düzenleri. Ekran görüntüleri, tüm bulgular ve çalıştırmaları tekrarlamak için gereken komutlar: [docs/examples.tr.md](docs/examples.md).
 

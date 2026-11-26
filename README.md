@@ -65,7 +65,10 @@ The demo app has [11 deliberate bugs](demo-app/BUGS.md). In [one run](docs/runs/
 
 ## What it does
 
-One use per run, set with the inputs above.
+Each persona explores your app like a new user and reports what gets in the way, with numbered screenshots. A run can also follow one feature end to end, reproduce a bug report, write an improvement report, compare two versions or test a website on phones. One use per run, set with the inputs above.
+
+<details>
+<summary>The six uses, one by one</summary>
 
 | Use | What you get |
 |---|---|
@@ -75,6 +78,8 @@ One use per run, set with the inputs above.
 | **Get an improvement report** | Where each persona hesitated, what it expected, what to change first ([brief](briefs/improve.md)). |
 | **Compare two versions** | The same personas on two branches or builds, then one table of goals, scores and issues ([how](docs/compare-versions.md)). |
 | **Test a website on phones** | The same personas in a phone's browser, on any site or web app. It runs on free Linux runners ([configuration](docs/configuration.md)). |
+
+</details>
 
 Any Anthropic-compatible model works, from Claude Haiku to OpenRouter, DeepSeek, Kimi, GLM, MiniMax or Qwen; findings are only as good as the model's reading of screenshots ([docs/cheaper-models.md](docs/cheaper-models.md)). Maestro or Appium run the tests you write; these agents look for what nobody thought to test ([how it compares](docs/compare.md)).
 
@@ -98,13 +103,18 @@ The traces follow Explore-Compile-Replay, my open format that compiles an agent'
 
 ## Real runs
 
-Open-source apps, with nothing planted.
+Open-source apps, with nothing planted. On [LocalSend](https://github.com/localsend/localsend) (Flutter, 100k stars), 20 phones in 14 languages found 46 distinct bugs in 69 minutes, for $4.62 of model usage. One is a blocker: on an iPhone SE in Swedish at the largest text size, you can't send a text message at all.
+
+<details>
+<summary>The three runs: LocalSend, AnkiDroid, Flutter's animations sample</summary>
 
 | App | Phones | What the agents found | Time, model usage |
 |---|---|---|---|
 | [LocalSend](https://github.com/localsend/localsend) (Flutter, 100k stars) | 20: 10 Android, 10 iOS, 14 languages | 46 distinct bugs, 1 blocker: on an iPhone SE in Swedish at the largest text size, you can't send a text message at all | 69 min, $4.62 |
 | [AnkiDroid](https://github.com/ankidroid/Anki-Android) (Kotlin, 12k stars, release APK) | 10 Android | 43 distinct issues, among them answer buttons cut in half at 200% font and "Get started" left in English in three languages | under 10 min, $4.69 |
 | [Flutter's animations sample](https://github.com/flutter/packages/tree/main/packages/animations/example) | 1 Android, 1 iOS | The same typo, reported by both agents on their own, and an app that ignores dark mode | 19 min, $0.47 |
+
+</details>
 
 34 of LocalSend's 46 bugs had nothing to do with text size or accessibility: broken flows, silent failures, missing translations, tablet layouts. Screenshots, every finding and the commands to run them again: [docs/examples.md](docs/examples.md).
 

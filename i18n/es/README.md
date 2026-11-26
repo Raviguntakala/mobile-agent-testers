@@ -71,7 +71,10 @@ La app de demo tiene [11 errores puestos a propósito](../../demo-app/BUGS.md). 
 
 ## Qué puede hacer
 
-Un uso por ejecución, elegido con los parámetros de arriba.
+Cada persona explora tu app como un usuario nuevo y cuenta qué le impide avanzar, con capturas numeradas. Una ejecución también puede recorrer una función de principio a fin, reproducir un informe de error, escribir un informe de mejoras, comparar dos versiones o probar un sitio web en teléfonos. Un uso por ejecución, elegido con los parámetros de arriba.
+
+<details>
+<summary>Los seis usos, uno por uno</summary>
 
 | Uso | Lo que obtienes |
 |---|---|
@@ -81,6 +84,8 @@ Un uso por ejecución, elegido con los parámetros de arriba.
 | **Obtener un informe de mejoras** | Cada persona usa la app una vez y luego dice dónde dudó, qué esperaba y qué cambiaría primero, por área e impacto ([briefs/improve.md](../../briefs/improve.md)). |
 | **Comparar dos versiones** | Las mismas personas en dos ramas o builds, y luego una tabla: objetivos alcanzados, acciones, puntuaciones, errores vistos en una sola versión ([docs/compare-versions.md](../../docs/compare-versions.md)). Una comprobación antes de un test A/B real, no un sustituto. |
 | **Probar un sitio web en teléfonos** | Las mismas personas en el navegador de un teléfono, en cualquier sitio o app web. Funciona en los runners Linux gratuitos ([configuración](docs/configuration.md)). |
+
+</details>
 
 **Usar un modelo más barato**: Claude Haiku, o cualquier API compatible con Anthropic (OpenRouter, DeepSeek, Kimi, GLM, MiniMax, Qwen). Los hallazgos dependen de lo bien que el modelo lea las capturas y razone ([docs/cheaper-models.md](../../docs/cheaper-models.md)).
 
@@ -106,13 +111,18 @@ Las trazas siguen Explore-Compile-Replay, mi formato abierto que compila el reco
 
 ## Ejecuciones reales
 
-Ejecuciones reales en apps de código abierto, sin nada plantado.
+Ejecuciones reales en apps de código abierto, sin nada plantado. En [LocalSend](https://github.com/localsend/localsend) (Flutter, 100 000 estrellas), 20 teléfonos en 14 idiomas encontraron 46 errores distintos en 69 minutos, por 4,62 $ de uso del modelo. Uno es bloqueante: en un iPhone SE en sueco con el texto más grande, no se puede enviar ningún mensaje de texto.
+
+<details>
+<summary>Las tres ejecuciones: LocalSend, AnkiDroid y el ejemplo de animaciones de Flutter</summary>
 
 | App | Teléfonos | Lo que encontraron los agentes | Tiempo, uso del modelo |
 |---|---|---|---|
 | [LocalSend](https://github.com/localsend/localsend) (Flutter, 100 000 estrellas) | 20: 10 Android, 10 iOS, 14 idiomas | 46 errores distintos, 1 bloqueante: en un iPhone SE en sueco con el texto más grande, no se puede enviar ningún mensaje de texto | 69 min, 4,62 $ |
 | [AnkiDroid](https://github.com/ankidroid/Anki-Android) (Kotlin, 12 000 estrellas, APK publicado) | 10 Android | 43 problemas distintos, entre ellos los botones de respuesta cortados por la mitad con la fuente al 200 % y «Get started» en inglés en tres idiomas | menos de 10 min, 4,69 $ |
 | [Ejemplo de animaciones de Flutter](https://github.com/flutter/packages/tree/main/packages/animations/example) | 1 Android, 1 iOS | La misma errata, encontrada por los dos agentes cada uno por su cuenta, y una app que ignora el modo oscuro | 19 min, 0,47 $ |
+
+</details>
 
 En LocalSend, 34 de los 46 errores no tenían nada que ver con el tamaño del texto ni con la accesibilidad: flujos rotos, fallos silenciosos, traducciones que faltan, diseños de tableta. Capturas, cada hallazgo y los comandos para volver a ejecutarlos: [docs/examples.es.md](docs/examples.md).
 

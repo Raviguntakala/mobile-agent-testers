@@ -71,7 +71,10 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
 
 ## できること
 
-1 回の実行で 1 つの使い方。上のパラメーターで選びます。
+各ペルソナが新しいユーザーとしてアプリを探索し、妨げになったことを番号付きのスクリーンショットとともに報告します。ほかに、1 つの機能を最初から最後まで試す、バグ報告を再現する、改善レポートを作る、2 つのバージョンを比較する、ウェブサイトをスマホで試す、といった使い方もできます。1 回の実行で 1 つの使い方。上のパラメーターで選びます。
+
+<details>
+<summary>6 つの使い方を 1 つずつ</summary>
 
 | 使い方 | 得られるもの |
 |---|---|
@@ -81,6 +84,8 @@ gh workflow run agent-testers.yml -f source_repo=you/app -f app_id=com.you.app \
 | **改善レポートを作る** | 各ペルソナがアプリを一度使い、どこで迷ったか、何を期待していたか、まず何を変えるべきかを、領域と影響度つきで挙げます（[briefs/improve.md](../../briefs/improve.md)）。 |
 | **2 つのバージョンを比較する** | 同じペルソナで 2 つのブランチやビルドを試し、目標の達成、操作数、スコア、片方のバージョンだけで見つかった問題を 1 つの表にまとめます（[docs/compare-versions.md](../../docs/compare-versions.md)）。本物の A/B テストの前のチェックであり、その代わりにはなりません。 |
 | **ウェブサイトをスマホで試す** | 同じペルソナがスマホのブラウザで、どんなサイトやウェブアプリでも試します。無料の Linux ランナーで動きます（[設定](docs/configuration.md)）。 |
+
+</details>
 
 **安いモデルを使う**：Claude Haiku、または Anthropic 互換の API（OpenRouter、DeepSeek、Kimi、GLM、MiniMax、Qwen）。見つかるものの質は、モデルがスクリーンショットをどれだけ正しく読めるかと推論力で決まります（[docs/cheaper-models.md](../../docs/cheaper-models.md)）。
 
@@ -106,13 +111,18 @@ Maestro や Appium はあなたが書いたテストを実行します。この�
 
 ## 実際の実行
 
-オープンソースのアプリでの実際の実行です。仕込んだバグはありません。
+オープンソースのアプリでの実際の実行です。仕込んだバグはありません。[LocalSend](https://github.com/localsend/localsend)（Flutter、スター数 10 万）では、14 言語・20 台の端末が 69 分で異なるバグ 46 件を見つけました。モデル使用量は 4.62 ドルです。うち 1 件はブロッカーで、スウェーデン語で文字サイズ最大の iPhone SE ではテキストメッセージを一切送れません。
+
+<details>
+<summary>3 つの実行：LocalSend、AnkiDroid、Flutter 公式のアニメーションサンプル</summary>
 
 | アプリ | 端末 | エージェントが見つけたもの | 時間、モデル使用量 |
 |---|---|---|---|
 | [LocalSend](https://github.com/localsend/localsend)（Flutter、スター数 10 万） | 20 台：Android 10 台、iOS 10 台、14 言語 | 異なるバグ 46 件、うちブロッカー 1 件：スウェーデン語で文字サイズ最大の iPhone SE では、テキストメッセージを一切送れない | 69 分、4.62 ドル |
 | [AnkiDroid](https://github.com/ankidroid/Anki-Android)（Kotlin、スター数 1.2 万、リリース版 APK） | Android 10 台 | 異なる問題 43 件。フォント 200% で回答ボタンが半分に切れる、3 つの言語で「Get started」が英語のまま、など | 10 分未満、4.69 ドル |
 | [Flutter 公式のアニメーションサンプル](https://github.com/flutter/packages/tree/main/packages/animations/example) | Android 1 台、iOS 1 台 | 2 つのエージェントがそれぞれ同じタイプミスを報告。アプリはダークモードにも対応していない | 19 分、0.47 ドル |
+
+</details>
 
 LocalSend では、46 件のバグのうち 34 件が文字サイズともアクセシビリティとも無関係でした：途中で止まる流れ、黙って失敗する操作、抜けている翻訳、崩れたタブレットのレイアウト。スクリーンショット、すべての指摘、もう一度実行するためのコマンド：[docs/examples.ja.md](docs/examples.md)。
 

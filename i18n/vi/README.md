@@ -72,7 +72,10 @@ Mọi input (build, brief, báo cáo bug, model rẻ hơn, tham số build, vide
 
 ## Nó làm được gì
 
-Mỗi lần chạy một cách dùng, chọn bằng các tham số ở trên.
+Mỗi persona khám phá ứng dụng của bạn như một người dùng mới và báo cáo những gì cản trở, kèm ảnh chụp màn hình được đánh số. Một lần chạy cũng có thể chạy một tính năng từ đầu đến cuối, tái hiện một báo cáo bug, viết một báo cáo cải tiến, so sánh hai phiên bản hoặc kiểm thử một website trên điện thoại. Mỗi lần chạy một cách dùng, chọn bằng các tham số ở trên.
+
+<details>
+<summary>Sáu cách dùng, từng cách một</summary>
 
 | Cách dùng | Bạn nhận được gì |
 |---|---|
@@ -82,6 +85,8 @@ Mỗi lần chạy một cách dùng, chọn bằng các tham số ở trên.
 | **Nhận một báo cáo cải tiến** | Mỗi persona dùng ứng dụng một lần, rồi nói nó đã do dự ở đâu, nó mong đợi điều gì và nên thay đổi gì trước, theo khu vực và mức tác động ([briefs/improve.md](../../briefs/improve.md)). |
 | **So sánh hai phiên bản** | Cùng các persona trên hai branch hoặc hai bản build, rồi một bảng: mục tiêu đạt được, số hành động, điểm số, các vấn đề chỉ thấy ở một phiên bản ([docs/compare-versions.md](../../docs/compare-versions.md)). Một bước kiểm tra trước một A/B test thật, không phải thứ thay thế cho nó. |
 | **Kiểm thử một website trên điện thoại** | Cùng các persona trong trình duyệt của điện thoại, trên bất kỳ website hay web app nào. Chạy trên các runner Linux miễn phí ([cấu hình](docs/configuration.md)). |
+
+</details>
 
 **Dùng một model rẻ hơn**: Claude Haiku, hoặc bất kỳ API tương thích Anthropic nào (OpenRouter, DeepSeek, Kimi, GLM, MiniMax, Qwen). Các phát hiện chỉ tốt bằng khả năng đọc ảnh chụp màn hình và suy luận của model ([docs/cheaper-models.md](../../docs/cheaper-models.md)).
 
@@ -107,13 +112,18 @@ Các trace theo Explore-Compile-Replay, định dạng mở của tôi, biên d�
 
 ## Các lần chạy thật
 
-Các lần chạy thật trên các ứng dụng mã nguồn mở, không gài sẵn gì cả.
+Các lần chạy thật trên các ứng dụng mã nguồn mở, không gài sẵn gì cả. Trên [LocalSend](https://github.com/localsend/localsend) (Flutter, 100k stars), 20 điện thoại với 14 ngôn ngữ đã tìm thấy 46 bug khác nhau trong 69 phút, với $4.62 dùng model. Trong đó có 1 bug chặn: trên một chiếc iPhone SE dùng tiếng Thụy Điển ở cỡ chữ lớn nhất, bạn không thể gửi tin nhắn văn bản chút nào.
+
+<details>
+<summary>Ba lần chạy: LocalSend, AnkiDroid và ứng dụng mẫu animations của Flutter</summary>
 
 | Ứng dụng | Điện thoại | Agent đã tìm thấy gì | Thời gian, mức dùng model |
 |---|---|---|---|
 | [LocalSend](https://github.com/localsend/localsend) (Flutter, 100k stars) | 20: 10 Android, 10 iOS, 14 ngôn ngữ | 46 bug khác nhau, 1 bug chặn: trên một chiếc iPhone SE dùng tiếng Thụy Điển ở cỡ chữ lớn nhất, bạn không thể gửi tin nhắn văn bản chút nào | 69 phút, $4.62 |
 | [AnkiDroid](https://github.com/ankidroid/Anki-Android) (Kotlin, 12k stars, APK bản release) | 10 Android | 43 vấn đề khác nhau, trong đó có các nút trả lời bị cắt một nửa ở font 200% và "Get started" còn nguyên tiếng Anh trong ba ngôn ngữ | dưới 10 phút, $4.69 |
 | [Ứng dụng mẫu animations của Flutter](https://github.com/flutter/packages/tree/main/packages/animations/example) | 1 Android, 1 iOS | Cùng một lỗi chính tả, được cả hai agent tự báo cáo độc lập, và một ứng dụng phớt lờ chế độ tối | 19 phút, $0.47 |
+
+</details>
 
 34 trong số 46 bug của LocalSend không liên quan gì đến cỡ chữ hay khả năng tiếp cận: các luồng bị hỏng, lỗi âm thầm, thiếu bản dịch, bố cục máy tính bảng. Ảnh chụp màn hình, mọi phát hiện và các lệnh để chạy lại chúng: [docs/examples.vi.md](docs/examples.md).
 
