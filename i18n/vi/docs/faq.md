@@ -53,7 +53,8 @@ Có. Một persona là vài dòng trong [personas.json](../../../personas.json):
 - **Kiểm tra trợ năng** trên mọi màn hình: các điều khiển không có tên và vùng chạm dưới 48 dp (Android) hoặc 44 pt (iOS), để agent xác nhận trên ảnh chụp màn hình.
 - **Kết quả được mã hóa**: log của repo công khai là công khai, nên mọi thứ được mã hóa bằng key của bạn.
 - **Chặn phân tích** bên trong điện thoại, để các lần kiểm thử không bao giờ chạm vào số liệu thật của bạn.
-- **Một bản tóm tắt** trên máy của bạn: Claude gom các báo cáo mô tả cùng một bug, để bạn thấy bao nhiêu persona gặp mỗi bug và persona nào tìm thấy loại vấn đề nào.
+- **Một bản tóm tắt** trên máy của bạn. Với `SUMMARY_GROUPING=1`, Claude gom các báo cáo mô tả cùng một bug (một lần gọi bằng tài khoản Claude của bạn), để bạn thấy bao nhiêu persona gặp mỗi bug và persona nào tìm thấy loại vấn đề nào. Khi đặt `SUMMARY_WEBHOOK_URL`, một bản ngắn cũng được gửi tới webhook Slack hoặc Discord của bạn, chỉ từ máy của bạn.
+- **Bản nháp issue** trên máy của bạn: `python3 scripts/draft_issues.py runs/<id>` xem trước một issue GitHub cho mỗi phát hiện trong `SUMMARY.md`, và `--create --repo OWNER/REPO` mở những issue bạn xác nhận bằng `gh`.
 - **Test** trên mỗi lần push, ngoại tuyến và không cần điện thoại: kiểm tra trợ năng, ma trận persona, tóm tắt, kết quả được mã hóa ([tests/](../../../tests/)).
 
 ## Sao không dùng Maestro, Appium hay agent-device?

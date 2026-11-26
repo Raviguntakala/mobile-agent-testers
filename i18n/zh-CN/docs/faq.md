@@ -53,7 +53,8 @@
 - **每个屏幕都做无障碍检查**：没有名称的控件，以及小于 48 dp（Android）或 44 pt（iOS）的触控目标，由智能体在截图上确认。
 - **结果加密**：公开仓库的日志是公开的，所以一切都用你的密钥加密。
 - **手机内屏蔽统计分析**，测试不会碰到你的真实数据。
-- **在你的电脑上生成一份汇总**：Claude 把描述同一缺陷的报告归并起来，你能看到每个缺陷被多少个角色遇到，以及哪些角色发现了哪类问题。
+- **在你的电脑上生成一份汇总**：设置 `SUMMARY_GROUPING=1` 后，Claude 把描述同一缺陷的报告归并起来（用你自己的 Claude 登录调用一次），你能看到每个缺陷被多少个角色遇到，以及哪些角色发现了哪类问题。设置 `SUMMARY_WEBHOOK_URL` 后，还会从你的电脑把一份简短版本发到你的 Slack 或 Discord webhook。
+- **在你的电脑上生成 issue 草稿**：`python3 scripts/draft_issues.py runs/<id>` 为 `SUMMARY.md` 里的每个发现预览一个 GitHub issue，加上 `--create --repo OWNER/REPO` 后用 `gh` 创建你确认的那些。
 - **每次推送都会测试**，离线、无需手机：无障碍检查、角色矩阵、汇总、加密结果（[tests/](../../../tests/)）。
 
 ## 为什么不用 Maestro、Appium 或 agent-device？

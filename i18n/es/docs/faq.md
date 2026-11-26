@@ -53,7 +53,8 @@ A veces interpreta mal una pantalla: 3 de los 20 agentes de LocalSend señalaron
 - **Revisión de accesibilidad** en cada pantalla: controles sin nombre y zonas táctiles por debajo de 48 dp (Android) o 44 pt (iOS), que el agente confirma en la captura.
 - **Resultados cifrados**: los logs de un repositorio público son públicos, así que todo se cifra con tu clave.
 - **Analítica bloqueada** dentro de los teléfonos, para que las pruebas nunca toquen tus estadísticas reales.
-- **Un resumen** en tu máquina: Claude agrupa los informes que describen el mismo error, así ves cuántas personas encontraron cada uno y qué personas encontraron cada tipo de problema.
+- **Un resumen** en tu máquina. Con `SUMMARY_GROUPING=1`, Claude agrupa los informes que describen el mismo error (una llamada con tu sesión de Claude), así ves cuántas personas encontraron cada uno y qué personas encontraron cada tipo de problema. Con `SUMMARY_WEBHOOK_URL` definida, una versión corta también va a tu webhook de Slack o Discord, solo desde tu máquina.
+- **Borradores de issues** en tu máquina: `python3 scripts/draft_issues.py runs/<id>` muestra un issue de GitHub por hallazgo de `SUMMARY.md`, y `--create --repo OWNER/REPO` abre con `gh` los que confirmes.
 - **Pruebas** en cada push, sin conexión y sin teléfono: revisión de accesibilidad, matriz de personas, resumen, resultados cifrados ([tests/](../../../tests/)).
 
 ## ¿Por qué no Maestro, Appium o agent-device?

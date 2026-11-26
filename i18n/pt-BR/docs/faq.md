@@ -53,7 +53,8 @@ Sim. Uma persona são algumas linhas no [personas.json](../../../personas.json):
 - **Verificação de acessibilidade** em cada tela: controles sem nome e áreas de toque menores que 48 dp (Android) ou 44 pt (iOS), que o agente confirma na captura.
 - **Resultados criptografados**: os logs de um repositório público são públicos, então tudo é criptografado com a sua chave.
 - **Analytics bloqueado** dentro dos celulares, para os testes nunca mexerem nas suas estatísticas reais.
-- **Um resumo** na sua máquina: o Claude agrupa os relatórios que descrevem o mesmo bug, então você vê quantas personas encontraram cada um e quais personas encontraram cada tipo de problema.
+- **Um resumo** na sua máquina. Com `SUMMARY_GROUPING=1`, o Claude agrupa os relatórios que descrevem o mesmo bug (uma chamada com o seu login do Claude), então você vê quantas personas encontraram cada um e quais personas encontraram cada tipo de problema. Com `SUMMARY_WEBHOOK_URL` definida, uma versão curta também vai para o seu webhook do Slack ou Discord, só a partir da sua máquina.
+- **Rascunhos de issues** na sua máquina: `python3 scripts/draft_issues.py runs/<id>` mostra uma issue do GitHub por achado do `SUMMARY.md`, e `--create --repo OWNER/REPO` abre com o `gh` as que você confirmar.
 - **Testes** a cada push, offline e sem celular: verificação de acessibilidade, matriz de personas, resumo, resultados criptografados ([tests/](../../../tests/)).
 
 ## Por que não Maestro, Appium ou agent-device?

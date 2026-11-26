@@ -53,7 +53,8 @@ Zaman zaman bir ekranı yanlış yorumlar: LocalSend'deki 20 ajanın 3'ü, Simul
 - **Her ekranda erişilebilirlik kontrolü yapılır**: adı olmayan kontroller ve 48 dp (Android) ya da 44 pt (iOS) altındaki dokunma alanları tespit edilir, ajan da bunları ekran görüntüsü üzerinde doğrular.
 - **Sonuçlar şifrelenir**: public repoların logları herkese açık olduğu için her şey sizin anahtarınızla şifrelenir.
 - **Analitik engellenir**: telefonların içinde analitik engellendiği için testler gerçek istatistiklerinizi etkilemez.
-- **Tek bir özet** sizin bilgisayarınızda oluşturulur: Claude aynı hatayı anlatan raporları gruplar; böylece her hataya kaç personanın takıldığını ve hangi personanın hangi tür sorunları bulduğunu görürsünüz.
+- **Tek bir özet** sizin bilgisayarınızda oluşturulur. `SUMMARY_GROUPING=1` ile Claude aynı hatayı anlatan raporları gruplar (kendi Claude oturumunuzla tek bir çağrı); böylece her hataya kaç personanın takıldığını ve hangi personanın hangi tür sorunları bulduğunu görürsünüz. `SUMMARY_WEBHOOK_URL` tanımlıysa kısa bir sürüm de yalnızca sizin bilgisayarınızdan Slack ya da Discord webhook'unuza gönderilir.
+- **Issue taslakları** sizin bilgisayarınızda: `python3 scripts/draft_issues.py runs/<id>`, `SUMMARY.md` içindeki her bulgu için bir GitHub issue'sunun önizlemesini gösterir; `--create --repo OWNER/REPO` ise onayladıklarınızı `gh` ile açar.
 - **Testler** her push'ta, internet ve telefon gerektirmeden çalışır: erişilebilirlik kontrolü, persona matrisi, özet ve şifrelenmiş sonuçlar ([tests/](../../../tests/)).
 
 ## Neden Maestro, Appium ya da agent-device değil?
