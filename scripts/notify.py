@@ -7,6 +7,7 @@ the URL nor the message is printed: only whether it was posted.
 The message says how many reports and distinct bugs (identical titles merged, as in
 SUMMARY.md without SUMMARY_GROUPING), the top ones by severity and which personas hit them.
 Slack or Discord is picked from the webhook host; SUMMARY_WEBHOOK_KIND=slack|discord overrides it.
+The message ends with one line that names the tool; SUMMARY_CREDIT=0 removes it.
 Usage: SUMMARY_WEBHOOK_URL=https://hooks.slack.com/... python3 scripts/notify.py <collected_run_dir>"""
 import json, os, sys
 import urllib.error
@@ -98,7 +99,8 @@ def main():
     if not url:
         return 0
     findings, scores = summarize.load(sys.argv[1])
-    return 0 if post(url, message(findings, scores)) else 1
+    text, line = message(findings, scores), summarize.credit(markdown=False)
+    return 0 if post(url, f"{text}\n{line}" if line else text) else 1
 
 
 if __name__ == "__main__":

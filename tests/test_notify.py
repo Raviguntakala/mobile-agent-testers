@@ -167,6 +167,20 @@ class Main(unittest.TestCase):
             self.assertEqual(url, SLACK)
             self.assertIn("3 distinct bugs", text)
 
+    def test_credit_line_and_how_to_remove_it(self):
+        line = f"Tested with mobile-agent-testers: {summarize.REPO}"
+        for value, expected in (("1", True), ("0", False)):
+            with tempfile.TemporaryDirectory() as tmp, \
+                    mock.patch.dict(os.environ, {"SUMMARY_WEBHOOK_URL": DISCORD, "SUMMARY_CREDIT": value}), \
+                    mock.patch.object(sys, "argv", ["notify.py", tmp]), \
+                    mock.patch.object(notify, "post", return_value=True) as post:
+                write_run(tmp, FINDINGS)
+                self.assertEqual(notify.main(), 0)
+                text = post.call_args[0][1]
+                self.assertEqual(text.endswith("\n" + line), expected)
+                self.assertEqual("mobile-agent-testers" in text, expected)
+                self.assertLess(len(text), 2000)
+
 
 if __name__ == "__main__":
     unittest.main()

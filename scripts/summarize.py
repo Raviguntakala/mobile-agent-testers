@@ -10,6 +10,8 @@ A reproduction run (bug_report input, briefs/reproduce.md) starts with a table:
 which devices reproduced the reported bug, which did not, and the evidence.
 An improvement run (briefs/improve.md) adds a walkthrough table (goal reached,
 actions and score of each persona) and the improvements by area and impact.
+The summary ends with one line that names the tool, and so do the draft issues and
+the Slack or Discord message. SUMMARY_CREDIT=0 removes it everywhere.
 Usage: python3 scripts/summarize.py <collected_run_dir>"""
 import json, os, re, shutil, subprocess, sys
 from collections import defaultdict
@@ -20,6 +22,14 @@ ORDER = {"blocker": 0, "major": 1, "minor": 2, "cosmetic": 3}
 RESULTS = ("yes", "unclear", "no")   # answers of briefs/reproduce.md, in table order
 GOALS = ("yes", "partly", "no")      # goal_reached of briefs/improve.md
 IMPACTS = ("high", "medium", "low")
+REPO = "https://github.com/pierridotite/mobile-agent-testers"
+
+
+def credit(markdown=True):
+    """The line that names the tool in what you may share. Empty with SUMMARY_CREDIT=0."""
+    if os.environ.get("SUMMARY_CREDIT", "1").strip() == "0":
+        return ""
+    return f"Tested with [mobile-agent-testers]({REPO})." if markdown else f"Tested with mobile-agent-testers: {REPO}"
 AREAS = ("onboarding", "navigation", "copy", "layout", "feedback", "trust", "performance",
          "feature", "accessibility", "translation")
 CLASSES = ["layout and text size", "feedback and errors", "accessibility", "translation",
@@ -285,6 +295,8 @@ def render(findings, scores, groups, by_claude, repro=None, walk=None):
             for r in merged:
                 lines.append(f"- **{cell(r['title'])}**")
                 lines += [f"  - {f['persona']} ({f['severity']}): {f['title']}" for f in r["reports"]]
+    if credit():
+        lines += ["", credit()]
     return "\n".join(lines) + "\n"
 
 

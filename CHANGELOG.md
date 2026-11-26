@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- **A credit line in what you share**: `SUMMARY.md`, the draft issues and the Slack or Discord message now end with one line, "Tested with mobile-agent-testers", with a link to this repository. `SUMMARY_CREDIT=0` removes it everywhere.
 - **Share your work**: [docs/share.md](docs/share.md) lists the video and images you can reuse, a `tested with mobile-agent-testers` badge, starting points for a post and a showcase list. `CITATION.cff` adds GitHub's "Cite this repository" button.
 - **Run summary to Slack or Discord (opt-in)**: with `SUMMARY_WEBHOOK_URL` set on your machine, `collect.sh` posts a short version of `SUMMARY.md` to that webhook: how many reports and distinct bugs, the top 5 by severity and which personas hit them. Slack or Discord is picked from the webhook host (`SUMMARY_WEBHOOK_KIND` overrides it). It runs after decryption, never in the workflow, and prints neither the URL nor the message. `scripts/notify.py` also runs on its own.
 - **Findings to draft GitHub issues**: `python3 scripts/draft_issues.py runs/<id>` turns the distinct findings in `SUMMARY.md` into draft GitHub issues on your machine, with severity, affected personas, devices and local screenshot paths. Dry run is the default (no network call). `--create --repo OWNER/REPO` opens them with `gh issue create`, asking confirmation for each issue with the target repo shown, so findings are never posted to a public testers repo by mistake.

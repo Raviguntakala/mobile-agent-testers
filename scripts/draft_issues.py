@@ -5,6 +5,7 @@ in GitHub Actions. Dry-run is the default: proposed titles and bodies are
 printed to stdout without calling `gh`. Pass --create --repo OWNER/REPO to open
 issues with `gh issue create` (prompts before each issue unless --yes is also
 given).
+Each issue ends with one line that names the tool; SUMMARY_CREDIT=0 removes it.
 
 Usage:
   python3 scripts/draft_issues.py [SUMMARY.md | runs/<run id>]
@@ -14,7 +15,7 @@ import argparse, json, re, shutil, subprocess, sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from summarize import ORDER, personas_by_id, phone  # noqa: E402
+from summarize import ORDER, credit, personas_by_id, phone  # noqa: E402
 
 REPO_RE = re.compile(r"^[A-Za-z0-9_.-]+(/[A-Za-z0-9_.-]+){1,2}$")
 PERSONA_CELL_RE = re.compile(r"^\d+\s*\((.*)\)$")
@@ -208,6 +209,8 @@ def build_draft(finding, personas_map, shot_index):
         lines += ["", "### Agent reports"] + [f"- `{r['persona']}` ({r['severity']}): {r['title']}" for r in finding["reports"]]
     if screenshots:
         lines += ["", "### Screenshots"] + [f"- `{p}`" for p in screenshots]
+    if credit():
+        lines += ["", credit()]
     return {"title": finding["title"], "severity": finding["severity"], "personas": finding["personas"],
             "screens": finding["screens"], "screenshots": screenshots, "body": "\n".join(lines) + "\n"}
 

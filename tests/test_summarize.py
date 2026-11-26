@@ -99,6 +99,16 @@ class Summary(unittest.TestCase):
         self.assertTrue(out.stdout.startswith("# Agent test summary\n"))
         self.assertIn("SUMMARY_GROUPING=1", out.stdout)
 
+    def test_credit_line_and_how_to_remove_it(self):
+        line = f"Tested with [mobile-agent-testers]({summarize.REPO})."
+        groups = summarize.group_by_title(self.findings)
+        with mock.patch.dict(os.environ, {"SUMMARY_CREDIT": "1"}):
+            self.assertTrue(summarize.render(self.findings, [6, 8, 7], groups, False).endswith("\n\n" + line + "\n"))
+        with mock.patch.dict(os.environ, {"SUMMARY_CREDIT": "0"}):
+            out = summarize.render(self.findings, [6, 8, 7], groups, False)
+            self.assertNotIn("mobile-agent-testers", out)
+            self.assertTrue(out.endswith("|\n"))
+
 
 class Reproduction(unittest.TestCase):
     """A run with bug_report: each persona answers whether it reproduced the bug."""

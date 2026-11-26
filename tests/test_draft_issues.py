@@ -92,6 +92,16 @@ class DraftIssuesEndToEnd(unittest.TestCase):
         self.assertIn("`noah/results/noah/04.png`", proc.stdout)
         self.assertIn("Dry run: 3 draft issues shown, none created.", proc.stdout)
 
+    def test_credit_line_and_how_to_remove_it(self):
+        line = "Tested with [mobile-agent-testers](https://github.com/pierridotite/mobile-agent-testers)."
+        proc = self.run_cli(str(self.run_dir), env_extra={"SUMMARY_CREDIT": "1"})
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual(proc.stdout.count(line), 3)
+        proc = self.run_cli(str(self.run_dir), env_extra={"SUMMARY_CREDIT": "0"})
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("=== Draft 3/3 ===", proc.stdout)
+        self.assertNotIn("mobile-agent-testers", proc.stdout)
+
     def test_default_summary_in_cwd(self):
         proc = self.run_cli(cwd=self.run_dir)
         self.assertEqual(proc.returncode, 0, proc.stderr)

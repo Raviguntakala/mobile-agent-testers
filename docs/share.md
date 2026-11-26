@@ -52,6 +52,12 @@ Posts and talks:
 
 - Yours goes here.
 
+## The credit line
+
+`SUMMARY.md`, the draft issues from `scripts/draft_issues.py` and the Slack or Discord message end with one line: "Tested with mobile-agent-testers", with a link to this repository. It tells the people you share a result with where it comes from.
+
+To remove it everywhere, set `SUMMARY_CREDIT=0` before you run `collect.sh`, `draft_issues.py` or `notify.py`.
+
 ## Citing the project
 
 In a paper, a talk or a product page, cite the repository. The "Cite this repository" button on GitHub gives the reference, from [CITATION.cff](../CITATION.cff).
