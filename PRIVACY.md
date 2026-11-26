@@ -17,6 +17,9 @@ account.
 - `scripts/merge_screens.py` runs only when you start it. It sends the titles
   and element names of the map's cards, with the testers' languages and devices,
   to Claude through your own Claude Code login. No screenshot is sent.
+- `scripts/draft_issues.py` runs only on your machine after decryption. It
+  previews draft issues without network calls by default, and runs
+  `gh issue create` only when you pass `--create` and confirm.
 
 Questions: open an issue at
 https://github.com/pierridotite/mobile-agent-testers/issues
