@@ -30,13 +30,12 @@ for pid in wanted:
     raw_filter = d.get("color_filter")
     color_filter = "" if raw_filter is None else raw_filter
     if raw_filter is not None and raw_filter != "":
-        if platform != "android":
-            raise SystemExit(f"color_filter is Android only (set on {pid}, platform {platform}).")
         if not isinstance(raw_filter, str) or raw_filter not in COLOR_FILTERS:
             raise SystemExit(
                 f"Unknown color_filter for {pid}: {raw_filter!r}. "
                 f"Use one of: {', '.join(COLOR_FILTERS)}."
             )
+    row["color_filter"] = color_filter
     if platform == "web":  # a mobile browser: Playwright device profile, see scripts/web/browser.py
         row.update({"emulate": d.get("emulate", "iPhone 15"), "device": d.get("name", d.get("emulate", "iPhone 15")),
                     "reduce_motion": "true" if d.get("reduce_motion") else "false"})
@@ -46,7 +45,6 @@ for pid in wanted:
                     "reduce_motion": "true" if d.get("reduce_motion") else "false"})
     else:
         row.update({"profile": d.get("profile", "pixel_6"), "api": d.get("android_api", 34),
-                    "font_scale": str(d.get("font_scale", 1.0)), "device": d.get("name", "Pixel 6, Android 14"),
-                    "color_filter": color_filter})
+                    "font_scale": str(d.get("font_scale", 1.0)), "device": d.get("name", "Pixel 6, Android 14")})
     rows.append(row)
 print(f"{platform}=" + json.dumps(rows, ensure_ascii=False))

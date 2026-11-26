@@ -434,6 +434,7 @@ jobs:
           THEME: ${{ matrix.theme }}
           INCREASE_CONTRAST: ${{ matrix.increase_contrast }}
           REDUCE_MOTION: ${{ matrix.reduce_motion }}
+          COLOR_FILTER: ${{ matrix.color_filter }}
           LOCALE: ${{ matrix.locale }}
           GEO: ${{ matrix.geo }}
           APP_ID: ${{ inputs.app_id }}
@@ -466,7 +467,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Tools (Playwright with WebKit and Chromium, Claude Code)
         run: |
-          python3 -m pip install -q playwright==1.58.0
+          python3 -m pip install -q playwright==1.58.0 pillow
           python3 -m playwright install --with-deps webkit chromium > /dev/null
           npm install -g --silent @anthropic-ai/claude-code
 
@@ -499,6 +500,7 @@ jobs:
           THEME: ${{ matrix.theme }}
           INCREASE_CONTRAST: ${{ matrix.increase_contrast }}
           REDUCE_MOTION: ${{ matrix.reduce_motion }}
+          COLOR_FILTER: ${{ matrix.color_filter }}
           LOCALE: ${{ matrix.locale }}
           GEO: ${{ matrix.geo }}
           WEB_URL: ${{ inputs.web_url }}

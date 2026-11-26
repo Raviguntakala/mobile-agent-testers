@@ -26,29 +26,16 @@ export APP_ID
 adb install -r -g app.apk || adb install -r app.apk
 adb shell settings put system font_scale "${FONT_SCALE:-1.0}"
 [ "${THEME:-light}" = dark ] && adb shell cmd uimode night yes
-# High contrast text and color blindness simulation. Animations are already off on every emulator (disable-animations in the workflow)
+# High contrast text and color blindness filter. Animations are already off on every emulator (disable-animations in the workflow).
+# Color blindness simulation is applied directly to screenshots in scripts/android/screen.py, since SurfaceFlinger's
+# display daltonizer does not affect `adb exec-out screencap`.
 A11Y=""
 if [ "${INCREASE_CONTRAST:-false}" = true ]; then
   adb shell settings put secure high_text_contrast_enabled 1 && A11Y="$A11Y, high contrast text on"
 fi
 if [ -n "${COLOR_FILTER:-}" ]; then
-  # AOSP SurfaceFlinger daltonizer simulation codes (Developer Options "Simulate color space"):
-  # 1=protanopia, 2=deuteranopia, 3=tritanopia (11-13 are color correction, not simulation)
-  DALTONIZER=""
-  case "$COLOR_FILTER" in
-    protanopia) DALTONIZER=1 ;;
-    deuteranopia) DALTONIZER=2 ;;
-    tritanopia) DALTONIZER=3 ;;
-    *) echo "Unknown color_filter ($COLOR_FILTER): persona runs without it" ;;
-  esac
-  if [ -n "$DALTONIZER" ]; then
-    if adb shell settings put secure accessibility_display_daltonizer_enabled 1 \
-      && adb shell settings put secure accessibility_display_daltonizer "$DALTONIZER"; then
-      A11Y="$A11Y, color filter $COLOR_FILTER"
-    else
-      echo "Could not set color filter $COLOR_FILTER: persona runs without it"
-    fi
-  fi
+  export COLOR_FILTER
+  A11Y="$A11Y, color filter $COLOR_FILTER"
 fi
 adb emu geo fix "${GEO#*,}" "${GEO%,*}" >/dev/null 2>&1   # longitude first
 adb shell monkey -p "$APP_ID" -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1

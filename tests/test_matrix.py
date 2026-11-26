@@ -72,10 +72,9 @@ class Matrix(unittest.TestCase):
         for platform in ("android", "ios", "web"):
             for row in rows(platform, ids[platform][0]):
                 self.assertEqual(row["increase_contrast"], "false")
+                self.assertEqual(row["color_filter"], "")
                 if platform in ("ios", "web"):
                     self.assertEqual(row["reduce_motion"], "false")
-                if platform == "android":
-                    self.assertEqual(row["color_filter"], "")
 
     def test_accessibility_settings_reach_the_row(self):
         saw_color_filter = False
@@ -86,57 +85,50 @@ class Matrix(unittest.TestCase):
             with self.subTest(p["id"]):
                 row = rows(p["platform"], p["id"])[0]
                 self.assertEqual(row["increase_contrast"], "true" if d.get("increase_contrast") else "false")
+                self.assertEqual(row["color_filter"], d.get("color_filter", ""))
                 if p["platform"] in ("ios", "web"):
                     self.assertEqual(row["reduce_motion"], "true" if d.get("reduce_motion") else "false")
-                if p["platform"] == "android":
-                    self.assertEqual(row["color_filter"], d.get("color_filter", ""))
-                    if d.get("color_filter"):
-                        saw_color_filter = True
-        self.assertTrue(saw_color_filter, "expected at least one Android persona with color_filter")
+                if d.get("color_filter"):
+                    saw_color_filter = True
+        self.assertTrue(saw_color_filter, "expected at least one persona with color_filter")
 
-    def test_color_filter_values_and_platform_checks(self):
+    def test_color_filter_values_work_across_platforms_and_reject_bad_values(self):
         with tempfile.TemporaryDirectory() as tmp:
             pfile = Path(tmp) / "personas.json"
             samples = [
-                {"id": f"a_{f}", "platform": "android", "device": {"color_filter": f}}
+                {"id": f"{plat}_{f}", "platform": plat, "device": {"color_filter": f}}
+                for plat in ("android", "ios", "web")
                 for f in COLOR_FILTERS
             ] + [
                 {"id": "a_bad", "platform": "android", "device": {"color_filter": "monochrome"}},
                 {"id": "a_int", "platform": "android", "device": {"color_filter": 0}},
-                {"id": "i_bad", "platform": "ios", "device": {"color_filter": "deuteranopia"}},
-                {"id": "w_bad", "platform": "web", "device": {"color_filter": "protanopia"}},
+                {"id": "i_bad", "platform": "ios", "device": {"color_filter": "grayscale"}},
             ]
             pfile.write_text(json.dumps(samples), encoding="utf-8")
-            for f in COLOR_FILTERS:
-                row = rows("android", f"a_{f}", cwd=tmp)[0]
-                self.assertEqual(row["color_filter"], f)
-            for pid in ("a_bad", "a_int"):
-                out = matrix("android", pid, cwd=tmp)
+            for plat in ("android", "ios", "web"):
+                for f in COLOR_FILTERS:
+                    row = rows(plat, f"{plat}_{f}", cwd=tmp)[0]
+                    self.assertEqual(row["color_filter"], f)
+            for plat, pid in (("android", "a_bad"), ("android", "a_int"), ("ios", "i_bad")):
+                out = matrix(plat, pid, cwd=tmp)
                 self.assertNotEqual(out.returncode, 0)
                 self.assertIn("Unknown color_filter", out.stderr)
-            for platform, pid in (("ios", "i_bad"), ("web", "w_bad")):
-                out = matrix(platform, pid, cwd=tmp)
-                self.assertNotEqual(out.returncode, 0)
-                self.assertIn("Android only", out.stderr)
 
     def test_run_scripts_apply_the_accessibility_settings(self):
         ios = (ROOT / "scripts/ios/run_agent.sh").read_text(encoding="utf-8")
         android = (ROOT / "scripts/android/run_agent.sh").read_text(encoding="utf-8")
+        web_run = (ROOT / "scripts/web/run_agent.sh").read_text(encoding="utf-8")
         self.assertIn('simctl ui "$UDID" increase_contrast enabled', ios)
         self.assertIn("com.apple.Accessibility ReduceMotionEnabled -bool true", ios)
         self.assertIn("settings put secure high_text_contrast_enabled 1", android)
-        self.assertIn("settings put secure accessibility_display_daltonizer_enabled 1", android)
-        self.assertIn('settings put secure accessibility_display_daltonizer "$DALTONIZER"', android)
-        for name, code in (("protanopia", "1"), ("deuteranopia", "2"), ("tritanopia", "3")):
-            self.assertIn(f"{name}) DALTONIZER={code}", android)
-        self.assertIn("color filter $COLOR_FILTER", android)
+        for script in (android, ios, web_run):
+            self.assertIn("color filter $COLOR_FILTER", script)
+        for plat in ("android", "ios", "web"):
+            self.assertIn("COLOR_FILTER: ${{ matrix.color_filter }}", job(plat))
         # Before the app starts, so it reads them at launch
         self.assertLess(ios.index("increase_contrast"), ios.index("simctl launch"))
         self.assertLess(ios.index("ReduceMotionEnabled"), ios.index("simctl launch"))
         self.assertLess(android.index("high_text_contrast_enabled"), android.index("monkey -p"))
-        self.assertLess(android.index("accessibility_display_daltonizer_enabled"), android.index("monkey -p"))
-        self.assertLess(android.index('accessibility_display_daltonizer "$DALTONIZER"'), android.index("monkey -p"))
-        self.assertIn("COLOR_FILTER: ${{ matrix.color_filter }}", job("android"))
         # Web: browser context options, set before the page opens
         web = (ROOT / "scripts/web/browser.py").read_text(encoding="utf-8")
         self.assertIn('reduced_motion="reduce" if env.get("REDUCE_MOTION") == "true"', web)
@@ -178,10 +170,8 @@ class Personas(unittest.TestCase):
                 if p["platform"] == "android":
                     # Animations are off on every emulator already (disable-animations)
                     self.assertNotIn("reduce_motion", d)
-                    if "color_filter" in d:
-                        self.assertIn(d["color_filter"], COLOR_FILTERS)
-                else:
-                    self.assertNotIn("color_filter", d)
+                if "color_filter" in d:
+                    self.assertIn(d["color_filter"], COLOR_FILTERS)
                 if p["platform"] == "web":
                     # A Playwright device name (tests/test_web.py checks them when Playwright is installed)
                     self.assertTrue(d["emulate"] and d["name"])
