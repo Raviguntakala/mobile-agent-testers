@@ -99,8 +99,30 @@ class Post(unittest.TestCase):
         rec = Recorder(status=204)
         ok, shown = run_post(DISCORD, "hello", rec)
         self.assertTrue(ok)
-        self.assertEqual(json.loads(rec.requests[0].data), {"content": "hello"})
+        self.assertEqual(json.loads(rec.requests[0].data),
+                         {"content": "hello", "allowed_mentions": {"parse": []}})
         self.assertNotIn("fake-token", shown)
+
+    def test_titles_cannot_mention_the_channel(self):
+        findings = [{"id": 1, "persona": "anna", "severity": "major",
+                     "title": "Tap @everyone and <!channel> & confirm", "screen": ""}]
+        text = notify.message(findings, [])
+        self.assertIn("@everyone", text)
+        self.assertIn("<!channel>", text)
+        rec = Recorder()
+        ok, _ = run_post(SLACK, text, rec)
+        self.assertTrue(ok)
+        slack = json.loads(rec.requests[0].data)["text"]
+        self.assertIn("@everyone", slack)
+        self.assertIn("&lt;!channel&gt;", slack)
+        self.assertNotIn("<!channel>", slack)
+        self.assertIn("&amp; confirm", slack)
+        rec2 = Recorder(status=204)
+        ok, _ = run_post(DISCORD, text, rec2)
+        self.assertTrue(ok)
+        body = json.loads(rec2.requests[0].data)
+        self.assertEqual(body["content"], text)
+        self.assertEqual(body["allowed_mentions"], {"parse": []})
 
     def test_kind_override_and_lookalike_host(self):
         self.assertEqual(notify.kind("https://notdiscordapp.com/x"), "slack")

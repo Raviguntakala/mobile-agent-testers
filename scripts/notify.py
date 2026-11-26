@@ -61,7 +61,11 @@ def kind(url):
 
 
 def payload(url, text):
-    return {"content": text} if kind(url) == "discord" else {"text": text}
+    if kind(url) == "discord":
+        # Titles come from text the agent read in the app: do not honour @everyone.
+        return {"content": text, "allowed_mentions": {"parse": []}}
+    # Slack treats &, < and > as markup (e.g. <!channel>); escape & first.
+    return {"text": text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")}
 
 
 def post(url, text, opener=urllib.request.urlopen):
