@@ -84,8 +84,9 @@ class DraftIssuesEndToEnd(unittest.TestCase):
         self.assertIn("=== Draft 1/3 ===", proc.stdout)
         self.assertIn("Title: App crashes on rotate | landscape", proc.stdout)
         self.assertIn("Title: Send button cut at large text", proc.stdout)
-        self.assertIn("Small phone, Android 11 (en-GB, x1.3)", proc.stdout)
-        self.assertIn("iPhone 16 Pro Max, iOS 18 (en-US, extra-extra-extra-large)", proc.stdout)
+        self.assertIn("`anna`, Small phone, Android 11 (en-GB, x1.3)", proc.stdout)
+        self.assertIn("`noah`, iPhone 16 Pro Max, iOS 18 (en-US, extra-extra-extra-large)", proc.stdout)
+        self.assertNotIn("—", proc.stdout)
         self.assertIn("`anna/results/anna/05.png`", proc.stdout)
         self.assertIn("`anna/results/anna/06.png`", proc.stdout)
         self.assertIn("`noah/results/noah/04.png`", proc.stdout)
@@ -102,10 +103,18 @@ class DraftIssuesEndToEnd(unittest.TestCase):
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertEqual(self.read_gh_calls(), [])
 
+    def test_create_requires_repo(self):
+        for extra in ((), ("--yes",)):
+            proc = self.run_cli(str(self.run_dir), "--create", *extra)
+            self.assertEqual(proc.returncode, 2)
+            self.assertIn("--repo", proc.stderr)
+            self.assertEqual(self.read_gh_calls(), [])
+
     def test_confirmation_n_skips_and_y_creates(self):
         proc = self.run_cli(str(self.run_dir), "--create", "--repo", "you/app",
                             "--label", "bug", "--label", "mobile-agent-testers", stdin_text="n\ny\nn\n")
         self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("Create this issue in you/app? [y/N/a/q]", proc.stdout)
         calls = self.read_gh_calls()
         self.assertEqual(len(calls), 1)
         self.assertEqual(calls[0]["args"], [
@@ -130,18 +139,19 @@ class DraftIssuesEndToEnd(unittest.TestCase):
         self.assertIn("Created 3, skipped 0, failed 0.", proc.stdout)
 
     def test_confirmation_a_creates_remaining_and_q_stops(self):
-        proc = self.run_cli(str(self.run_dir), "--create", stdin_text="n\na\n")
+        proc = self.run_cli(str(self.run_dir), "--create", "--repo", "you/app", stdin_text="n\na\n")
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertEqual(len(self.read_gh_calls()), 2)
         self.assertIn("Created 2, skipped 1, failed 0.", proc.stdout)
         self.log_path.unlink()
-        proc2 = self.run_cli(str(self.run_dir), "--create", stdin_text="q\n")
+        proc2 = self.run_cli(str(self.run_dir), "--create", "--repo", "you/app", stdin_text="q\n")
         self.assertEqual(proc2.returncode, 0, proc2.stderr)
         self.assertEqual(self.read_gh_calls(), [])
         self.assertIn("Created 0, skipped 3, failed 0.", proc2.stdout)
 
     def test_gh_failure_reports_error_and_continues_batch(self):
-        proc = self.run_cli(str(self.run_dir), "--create", "--yes", env_extra={"FAKE_GH_FAIL_ON": "Send button"})
+        proc = self.run_cli(str(self.run_dir), "--create", "--yes", "--repo", "you/app",
+                            env_extra={"FAKE_GH_FAIL_ON": "Send button"})
         self.assertEqual(proc.returncode, 1)
         self.assertEqual(len(self.read_gh_calls()), 3)
         self.assertIn("HTTP 422: Validation Failed", proc.stderr)
@@ -150,7 +160,8 @@ class DraftIssuesEndToEnd(unittest.TestCase):
     def test_missing_gh_binary_is_handled_gracefully(self):
         empty_bin = self.root / "empty-bin"
         empty_bin.mkdir()
-        proc = self.run_cli(str(self.run_dir), "--create", "--yes", env_extra={"PATH": str(empty_bin)})
+        proc = self.run_cli(str(self.run_dir), "--create", "--yes", "--repo", "you/app",
+                            env_extra={"PATH": str(empty_bin)})
         self.assertEqual(proc.returncode, 1)
         self.assertIn("gh CLI not found on PATH", proc.stderr)
 
@@ -176,7 +187,7 @@ class ParsingAndEdgeCases(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             empty_normal = Path(d) / "empty.md"
             empty_normal.write_text(summarize.render([], [], [], False), encoding="utf-8")
-            proc = subprocess.run([sys.executable, str(ROOT / "scripts/draft_issues.py"), str(empty_normal), "--create", "--yes"],
+            proc = subprocess.run([sys.executable, str(ROOT / "scripts/draft_issues.py"), str(empty_normal), "--create", "--yes", "--repo", "you/app"],
                                   env=dict(os.environ, PATH=""), capture_output=True, text=True)
             self.assertEqual(proc.returncode, 0, proc.stderr)
             self.assertIn("No findings", proc.stdout)
@@ -236,14 +247,17 @@ class ParsingAndEdgeCases(unittest.TestCase):
                  "screens": ["../../secret.txt", "/etc/passwd", "..", ".hidden", "07"]}]}})
             self.assertEqual(draft_issues.load_persona_screenshots(run_dir)[("anna", "bad path")], ["anna/results/anna/07.png"])
 
-    def test_create_issue_handles_file_not_found_and_timeout(self):
+    def test_create_issue_handles_missing_repo_file_not_found_and_timeout(self):
         draft = {"title": "Bug", "body": "Body\n"}
+        ok, msg = draft_issues.create_issue("gh", draft, "")
+        self.assertFalse(ok)
+        self.assertIn("--repo", msg)
         with mock.patch.object(draft_issues.subprocess, "run", side_effect=FileNotFoundError()):
-            ok, msg = draft_issues.create_issue("gh", draft)
+            ok, msg = draft_issues.create_issue("gh", draft, "you/app")
             self.assertFalse(ok)
             self.assertIn("not found", msg)
         with mock.patch.object(draft_issues.subprocess, "run", side_effect=subprocess.TimeoutExpired(cmd=["gh"], timeout=60)):
-            ok, msg = draft_issues.create_issue("gh", draft)
+            ok, msg = draft_issues.create_issue("gh", draft, "you/app")
             self.assertFalse(ok)
             self.assertIn("timed out", msg)
 

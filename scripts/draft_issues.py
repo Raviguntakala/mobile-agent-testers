@@ -2,8 +2,9 @@
 
 Runs only on your machine after scripts/collect.sh decrypts the results: never
 in GitHub Actions. Dry-run is the default: proposed titles and bodies are
-printed to stdout without calling `gh`. Pass --create to open issues with
-`gh issue create` (prompts before each issue unless --yes is also given).
+printed to stdout without calling `gh`. Pass --create --repo OWNER/REPO to open
+issues with `gh issue create` (prompts before each issue unless --yes is also
+given).
 
 Usage:
   python3 scripts/draft_issues.py [SUMMARY.md | runs/<run id>]
@@ -188,8 +189,8 @@ def format_device(persona_id, personas_map):
     device, locale, size = phone(info)
     details = ", ".join(x for x in (locale, size) if x)
     if device and details:
-        return f"`{persona_id}` — {device} ({details})"
-    return f"`{persona_id}` — {device}" if device else (f"`{persona_id}` ({details})" if details else f"`{persona_id}`")
+        return f"`{persona_id}`, {device} ({details})"
+    return f"`{persona_id}`, {device}" if device else (f"`{persona_id}` ({details})" if details else f"`{persona_id}`")
 
 
 def build_draft(finding, personas_map, shot_index):
@@ -220,7 +221,7 @@ def format_dry_run(drafts, repo="", labels=()):
         if labels:
             head.append(f"Labels: {', '.join(labels)}")
         blocks.append("\n".join(head + [""]) + d["body"])
-    return "\n".join(blocks) + f"\nDry run: {total} draft {'issue' if total == 1 else 'issues'} shown, none created. Pass --create to open them with gh.\n"
+    return "\n".join(blocks) + f"\nDry run: {total} draft {'issue' if total == 1 else 'issues'} shown, none created. Pass --create --repo OWNER/REPO to open them with gh.\n"
 
 
 def validate_repo(repo):
@@ -239,9 +240,9 @@ def clean_labels(raw_labels):
 
 def create_issue(gh_exe, draft, repo="", labels=(), timeout=GH_TIMEOUT):
     """Creates one GitHub issue with `gh issue create`, passing body via stdin."""
-    cmd = [gh_exe, "issue", "create", "--title", draft["title"], "--body-file", "-"]
-    if repo:
-        cmd += ["--repo", repo]
+    if not repo:
+        return False, "--repo OWNER/REPO is required to create an issue."
+    cmd = [gh_exe, "issue", "create", "--title", draft["title"], "--body-file", "-", "--repo", repo]
     for label in labels:
         cmd += ["--label", label]
     try:
@@ -258,14 +259,14 @@ def create_issue(gh_exe, draft, repo="", labels=(), timeout=GH_TIMEOUT):
     return True, proc.stdout.strip()
 
 
-def confirm_issue(index, total, draft, stdin=None, stdout=None):
+def confirm_issue(index, total, draft, repo, stdin=None, stdout=None):
     inp, out = sys.stdin if stdin is None else stdin, sys.stdout if stdout is None else stdout
     meta = [f"Personas: {', '.join(draft['personas']) or 'unknown'}"]
     if draft["screens"]:
         meta.append(f"Screen: {', '.join(draft['screens'])}")
     if draft["screenshots"]:
         meta.append(f"Screenshots: {len(draft['screenshots'])}")
-    out.write(f"\n[{index}/{total}] ({draft['severity']}) {draft['title']}\n  {' | '.join(meta)}\nCreate this issue? [y/N/a/q] ")
+    out.write(f"\n[{index}/{total}] ({draft['severity']}) {draft['title']}\n  {' | '.join(meta)}\nCreate this issue in {repo}? [y/N/a/q] ")
     out.flush()
     line = inp.readline()
     if not line:
@@ -277,10 +278,10 @@ def confirm_issue(index, total, draft, stdin=None, stdout=None):
 def parse_args(argv=None):
     p = argparse.ArgumentParser(description="Turn distinct findings in SUMMARY.md into draft GitHub issues (dry-run by default).")
     p.add_argument("source", nargs="?", default="SUMMARY.md", help="SUMMARY.md file or collected run folder (default: ./SUMMARY.md).")
-    p.add_argument("--create", action="store_true", help="Open issues with `gh issue create` (prompts unless --yes is set).")
+    p.add_argument("--create", action="store_true", help="Open issues with `gh issue create` (requires --repo; prompts unless --yes is set).")
     p.add_argument("--dry-run", action="store_true", help="Print draft issues without calling `gh` (default; overrides --create).")
     p.add_argument("-y", "--yes", action="store_true", help="Skip interactive confirmation when --create is set.")
-    p.add_argument("--repo", default="", help="Target GitHub repository in OWNER/REPO format.")
+    p.add_argument("--repo", default="", help="Target GitHub repository in OWNER/REPO format (required with --create).")
     p.add_argument("--label", action="append", default=[], help="Label to add to each created issue (repeatable).")
     return p.parse_args(argv)
 
@@ -293,6 +294,10 @@ def main(argv=None):
         repo, labels = validate_repo(args.repo.strip()), clean_labels(args.label)
     except ValueError as exc:
         print(str(exc), file=sys.stderr)
+        return 2
+    will_create = args.create and not args.dry_run
+    if will_create and not repo:
+        print("--repo OWNER/REPO is required with --create so issues are not opened in the current folder's repo.", file=sys.stderr)
         return 2
     try:
         summary_path, run_dir = resolve_summary_path(args.source)
@@ -308,7 +313,7 @@ def main(argv=None):
 
     personas_map, shot_index = personas_by_id(), load_persona_screenshots(run_dir)
     drafts = [build_draft(f, personas_map, shot_index) for f in findings]
-    if not args.create or args.dry_run:
+    if not will_create:
         print(format_dry_run(drafts, repo=repo, labels=labels), end="")
         return 0
 
@@ -321,7 +326,7 @@ def main(argv=None):
     create_all, total = bool(args.yes), len(drafts)
     for idx, draft in enumerate(drafts, 1):
         if not create_all:
-            choice = confirm_issue(idx, total, draft)
+            choice = confirm_issue(idx, total, draft, repo)
             if choice == "q":
                 skipped += total - idx + 1
                 break

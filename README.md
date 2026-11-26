@@ -42,7 +42,6 @@ gh repo create my-testers --public --template pierridotite/mobile-agent-testers 
 cd my-testers && ./setup.sh           # key pair + secrets + Claude token (Windows: .\setup.ps1)
 gh workflow run agent-testers.yml     # demo: 2 Android + 2 iOS testers, ~20 min
 bash scripts/collect.sh <run id>      # decrypts reports, writes runs/<id>/SUMMARY.md
-python3 scripts/draft_issues.py runs/<id>  # preview draft GitHub issues (--create to open with gh)
 ```
 
 Then on your own app:
