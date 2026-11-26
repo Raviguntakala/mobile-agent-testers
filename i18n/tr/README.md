@@ -129,7 +129,7 @@ LocalSend'de bulunan 46 hatanın 34'ünün yazı boyutu ya da erişilebilirlikle
 
 ## Katkıda bulunun
 
-[Alınmaya hazır 11 issue var](https://github.com/pierridotite/mobile-agent-testers/issues/9), beşi [good first issue](https://github.com/pierridotite/mobile-agent-testers/labels/good%20first%20issue): yeni personalar, Slack veya Discord özeti, başka bir ajan CLI'ı, web uygulamaları, GitLab CI, çeviriler. İki kişi aynı şeyi yapmasın diye aldığınız issue'ya yorum yazın. [CONTRIBUTING.md](../../CONTRIBUTING.md) her birinin nereden başladığını ve çevrimdışı nasıl test edileceğini anlatır. Sorular: [Discord](https://discord.gg/WuaCANscr8).
+[Alınmaya hazır issue'lar var](https://github.com/pierridotite/mobile-agent-testers/issues/9), bazıları [good first issue](https://github.com/pierridotite/mobile-agent-testers/labels/good%20first%20issue): yeni personalar, başka bir ajan CLI'ı, GitLab CI, çeviriler. İki kişi aynı şeyi yapmasın diye aldığınız issue'ya yorum yazın. [CONTRIBUTING.md](../../CONTRIBUTING.md) her birinin nereden başladığını ve çevrimdışı nasıl test edileceğini anlatır. Pull request'iniz birleştirildi mi ya da kendi uygulamanızda mı denediniz? [Çalışmanızı gösterin](../../docs/share.md). Sorular: [Discord](https://discord.gg/WuaCANscr8).
 
 ## Ekipler için barındırılan sürüm (araştırılıyor)
 

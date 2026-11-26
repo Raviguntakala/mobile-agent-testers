@@ -128,7 +128,7 @@ No LocalSend, 34 dos 46 bugs não tinham nada a ver com tamanho de texto nem com
 
 ## Contribuir
 
-[11 issues estão prontas para pegar](https://github.com/pierridotite/mobile-agent-testers/issues/9), cinco delas [good first issues](https://github.com/pierridotite/mobile-agent-testers/labels/good%20first%20issue): novas personas, um resumo no Slack ou Discord, outro CLI de agente, apps web, GitLab CI, traduções. Comente na que você pegar para que duas pessoas não façam a mesma coisa. O [CONTRIBUTING.md](../../CONTRIBUTING.md) diz por onde cada uma começa e como testá-la offline. Dúvidas: [Discord](https://discord.gg/WuaCANscr8).
+[Há issues prontas para pegar](https://github.com/pierridotite/mobile-agent-testers/issues/9), algumas delas [good first issues](https://github.com/pierridotite/mobile-agent-testers/labels/good%20first%20issue): novas personas, outro CLI de agente, GitLab CI, traduções. Comente na que você pegar para que duas pessoas não façam a mesma coisa. O [CONTRIBUTING.md](../../CONTRIBUTING.md) diz por onde cada uma começa e como testá-la offline. Teve um pull request aceito ou rodou no seu app? [Mostre o seu trabalho](../../docs/share.md). Dúvidas: [Discord](https://discord.gg/WuaCANscr8).
 
 ## Versão hospedada para equipes (em estudo)
 

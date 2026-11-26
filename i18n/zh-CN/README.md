@@ -127,7 +127,7 @@ Maestro、Appium 运行你写好的测试。这些智能体寻找没人想到要
 
 ## 参与贡献
 
-[有 11 个 issue 等人认领](https://github.com/pierridotite/mobile-agent-testers/issues/9)，其中 5 个是 [good first issue](https://github.com/pierridotite/mobile-agent-testers/labels/good%20first%20issue)：新的人物角色、发送到 Slack 或 Discord 的摘要、其他智能体 CLI、Web 应用、GitLab CI、翻译。认领时请在 issue 下留言，避免两个人做同一件事。[CONTRIBUTING.md](../../CONTRIBUTING.md) 说明了每项从哪里开始以及如何离线测试。有问题请到 [Discord](https://discord.gg/WuaCANscr8)。
+[有一些 issue 等人认领](https://github.com/pierridotite/mobile-agent-testers/issues/9)，其中一部分是 [good first issue](https://github.com/pierridotite/mobile-agent-testers/labels/good%20first%20issue)：新的人物角色、其他智能体 CLI、GitLab CI、翻译。认领时请在 issue 下留言，避免两个人做同一件事。[CONTRIBUTING.md](../../CONTRIBUTING.md) 说明了每项从哪里开始以及如何离线测试。PR 被合并了，或者在自己的应用上跑过？[来展示你的成果](../../docs/share.md)。有问题请到 [Discord](https://discord.gg/WuaCANscr8)。
 
 ## 团队托管版（探索中）
 

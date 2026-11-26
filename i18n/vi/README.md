@@ -129,7 +129,7 @@ Các lần chạy thật trên các ứng dụng mã nguồn mở, không gài s
 
 ## Đóng góp
 
-[11 issue đang chờ người nhận](https://github.com/pierridotite/mobile-agent-testers/issues/9), năm trong số đó là [good first issue](https://github.com/pierridotite/mobile-agent-testers/labels/good%20first%20issue): persona mới, tóm tắt gửi Slack hoặc Discord, một agent CLI khác, ứng dụng web, GitLab CI, bản dịch. Hãy bình luận vào issue bạn nhận để hai người không làm trùng nhau. [CONTRIBUTING.md](../../CONTRIBUTING.md) cho biết mỗi việc bắt đầu từ đâu và cách test ngoại tuyến. Câu hỏi: [Discord](https://discord.gg/WuaCANscr8).
+[Có các issue đang chờ người nhận](https://github.com/pierridotite/mobile-agent-testers/issues/9), một số là [good first issue](https://github.com/pierridotite/mobile-agent-testers/labels/good%20first%20issue): persona mới, một agent CLI khác, GitLab CI, bản dịch. Hãy bình luận vào issue bạn nhận để hai người không làm trùng nhau. [CONTRIBUTING.md](../../CONTRIBUTING.md) cho biết mỗi việc bắt đầu từ đâu và cách test ngoại tuyến. Pull request của bạn đã được merge, hay bạn đã chạy nó trên ứng dụng của mình? [Hãy giới thiệu việc bạn làm](../../docs/share.md). Câu hỏi: [Discord](https://discord.gg/WuaCANscr8).
 
 ## Phiên bản hosted cho nhóm (đang thăm dò)
 

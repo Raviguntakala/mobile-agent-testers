@@ -128,7 +128,7 @@ En LocalSend, 34 de los 46 errores no tenían nada que ver con el tamaño del te
 
 ## Contribuir
 
-[11 issues están listas para tomar](https://github.com/pierridotite/mobile-agent-testers/issues/9), cinco de ellas [good first issues](https://github.com/pierridotite/mobile-agent-testers/labels/good%20first%20issue): nuevas personas, un resumen en Slack o Discord, otro CLI de agente, apps web, GitLab CI, traducciones. Comenta en la que tomes para que dos personas no hagan lo mismo. [CONTRIBUTING.md](../../CONTRIBUTING.md) dice por dónde empieza cada una y cómo probarla sin conexión. Preguntas: [Discord](https://discord.gg/WuaCANscr8).
+[Hay issues listas para tomar](https://github.com/pierridotite/mobile-agent-testers/issues/9), algunas de ellas [good first issues](https://github.com/pierridotite/mobile-agent-testers/labels/good%20first%20issue): nuevas personas, otro CLI de agente, GitLab CI, traducciones. Comenta en la que tomes para que dos personas no hagan lo mismo. [CONTRIBUTING.md](../../CONTRIBUTING.md) dice por dónde empieza cada una y cómo probarla sin conexión. ¿Te fusionaron un pull request o lo probaste en tu app? [Muestra tu trabajo](../../docs/share.md). Preguntas: [Discord](https://discord.gg/WuaCANscr8).
 
 ## Versión alojada para equipos (en estudio)
 

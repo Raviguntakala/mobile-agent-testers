@@ -120,7 +120,7 @@ Open-source apps, with nothing planted. On [LocalSend](https://github.com/locals
 
 ## Contributing
 
-[11 issues are ready to take](https://github.com/pierridotite/mobile-agent-testers/issues/9), five of them [good first issues](https://github.com/pierridotite/mobile-agent-testers/labels/good%20first%20issue): new personas, a Slack or Discord summary, another agent CLI, web apps, GitLab CI, translations. Comment on the one you take so two people don't build the same thing. [CONTRIBUTING.md](CONTRIBUTING.md) says where each one starts and how to test it offline. Questions: [Discord](https://discord.gg/WuaCANscr8).
+[Issues are ready to take](https://github.com/pierridotite/mobile-agent-testers/issues/9), some of them [good first issues](https://github.com/pierridotite/mobile-agent-testers/labels/good%20first%20issue): new personas, another agent CLI, GitLab CI, translations. Comment on the one you take so two people don't build the same thing. [CONTRIBUTING.md](CONTRIBUTING.md) says where each one starts and how to test it offline. Merged a pull request, or ran it on your app? [Show your work](docs/share.md). Questions: [Discord](https://discord.gg/WuaCANscr8).
 
 ## Hosted version for teams (exploring)
 

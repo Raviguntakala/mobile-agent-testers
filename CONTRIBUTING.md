@@ -65,6 +65,10 @@ Translations live in `i18n/<language>/`, with the same tree as the root: `i18n/e
 
 The demo app has [11 planted bugs](demo-app/BUGS.md), so it makes a small benchmark. Run the same personas with different models (the `model` and `llm_base_url` inputs, see [docs/cheaper-models.md](docs/cheaper-models.md)) and publish what each one found and cost, as a page of [docs/runs/](docs/runs/) with its JSON data.
 
+## After your pull request merges
+
+Show it. Post what you built on Reddit, X, LinkedIn or your blog, in your own words: you did the work, it is yours to present. [docs/share.md](docs/share.md) has the video and the images you can reuse, a badge, and a list where you add your link. Drop the link on [Discord](https://discord.gg/WuaCANscr8) too, so the others see it.
+
 ## Questions
 
 Open an issue, or a thread in [Discussions](https://github.com/pierridotite/mobile-agent-testers/discussions).

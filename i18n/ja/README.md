@@ -128,7 +128,7 @@ LocalSend では、46 件のバグのうち 34 件が文字サイズともアク
 
 ## コントリビュート
 
-[すぐ取り組める issue が 11 件](https://github.com/pierridotite/mobile-agent-testers/issues/9)あり、うち 5 件は [good first issue](https://github.com/pierridotite/mobile-agent-testers/labels/good%20first%20issue) です：新しいペルソナ、Slack や Discord へのサマリー、別のエージェント CLI、Web アプリ、GitLab CI、翻訳。同じものを二人で作らないよう、取り組む issue にコメントしてください。[CONTRIBUTING.md](../../CONTRIBUTING.md) にそれぞれの始め方とオフラインでのテスト方法があります。質問は [Discord](https://discord.gg/WuaCANscr8) へ。
+[すぐ取り組める issue](https://github.com/pierridotite/mobile-agent-testers/issues/9) があり、一部は [good first issue](https://github.com/pierridotite/mobile-agent-testers/labels/good%20first%20issue) です：新しいペルソナ、別のエージェント CLI、GitLab CI、翻訳。同じものを二人で作らないよう、取り組む issue にコメントしてください。[CONTRIBUTING.md](../../CONTRIBUTING.md) にそれぞれの始め方とオフラインでのテスト方法があります。プルリクエストがマージされた方、自分のアプリで試した方は、[ぜひ紹介してください](../../docs/share.md)。質問は [Discord](https://discord.gg/WuaCANscr8) へ。
 
 ## チーム向けホスト版（検討中）
 
